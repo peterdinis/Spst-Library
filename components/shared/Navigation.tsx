@@ -5,6 +5,7 @@ import { Book, BookOpen, Home, Library, Menu, Users, X } from "lucide-react";
 import Link from "next/link";
 import { useState, FC } from "react";
 import { Button } from "../ui/button";
+import ThemeToggle from "./ThemeToggle";
 
 const Navigation: FC = () => {
 	const [mobileOpen, setMobileOpen] = useState(false);
@@ -61,6 +62,7 @@ const Navigation: FC = () => {
 						<Button asChild variant="secondary">
 							<Link href="/login/teacher">Prihlásenie učiteľ</Link>
 						</Button>
+                        <ThemeToggle />
 					</div>
 
 					{/* Mobile Hamburger */}
