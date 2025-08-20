@@ -3,10 +3,10 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Book, BookOpen, Home, Library, Menu, Users, X } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, FC } from "react";
 import { Button } from "../ui/button";
 
-const Navigation: React.FC = () => {
+const Navigation: FC = () => {
 	const [mobileOpen, setMobileOpen] = useState(false);
 
 	return (
@@ -17,7 +17,7 @@ const Navigation: React.FC = () => {
 					<Link href="/" className="flex items-center space-x-2 hover-float">
 						<Library className="h-8 w-8 text-primary" />
 						<span className="text-xl font-bold bg-gradient-hero bg-clip-text text-zinc-900">
-							Školská knižnica
+							SPŠT Knižnica
 						</span>
 					</Link>
 
