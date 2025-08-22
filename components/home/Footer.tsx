@@ -9,15 +9,15 @@ const Footer: FC = () => {
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">
               <BookOpen className="h-8 w-8 text-secondary" />
-              <span className="text-2xl font-bold">SchoolLibrary</span>
+              <span className="text-2xl font-bold">SPŠT Knižnica</span>
             </div>
             <p className="text-primary-foreground/80 mb-4">
-              Empowering education through accessible digital library resources
+              Posilňujeme vzdelávanie prostredníctvom dostupných digitálnych knižničných zdrojov
             </p>
             <div className="flex items-center justify-center space-x-1 text-sm">
-              <span>Made with</span>
+              <span>Vyrobené s</span>
               <Star className="h-4 w-4 text-secondary fill-current" />
-              <span>for students and teachers</span>
+              <span>pre študentov a učiteľov</span>
             </div>
           </div>
         </div>
