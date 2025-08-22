@@ -64,7 +64,7 @@ const SearchBar: FC<SearchBarProps> = ({ onSearch, placeholder = "Search...", cl
             </FormItem>
           )}
         />
-        <Button type="submit" className="ml-2 bg-gradient-hero hover:shadow-glow transition-smooth">
+        <Button type="submit" variant={"default"} className="ml-2 transition-smooth">
           Search
         </Button>
       </form>

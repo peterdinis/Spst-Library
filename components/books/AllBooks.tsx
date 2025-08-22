@@ -2,6 +2,7 @@
 
 import { FC, useState, useMemo } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import {
     Book,
     Calendar,
@@ -213,8 +214,8 @@ const AllBooks: FC = () => {
         <div className="min-h-screen bg-background">
             <main className="container mx-auto px-4 py-8">
                 <div className="text-center mb-8 animate-fade-in">
-                    <h1 className="text-4xl font-bold mb-4 bg-gradient-hero bg-clip-text text-transparent">
-                        Library Books
+                    <h1 className="text-4xl font-bold mb-4 bg-gradient-hero bg-clip-text">
+                        Všetky knihy
                     </h1>
                     <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
                         Discover and explore all books available in our school library
@@ -250,12 +251,15 @@ const AllBooks: FC = () => {
                     <>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
                             {currentBooks.map((book, index) => (
-                                <div
+                                <motion.div
                                     key={book.id}
-                                    className="block animate-slide-up hover-float transition-smooth"
-                                    style={{ animationDelay: `${index * 0.1}s` }}
+                                    className="block"
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.1, type: "spring", stiffness: 100 }}
+                                    whileHover={{ y: -5, scale: 1.02 }}
                                 >
-                                    <Card className="h-full shadow-card hover:shadow-glow transition-smooth border-0 bg-gradient-card">
+                                    <Card className="h-full shadow-card hover:shadow-glow transition-smooth border-0 shadow-xl bg-gradient-card">
                                         <CardHeader className="pb-3">
                                             <div className="flex items-start justify-between mb-2">
                                                 <div className="p-2 rounded-lg bg-primary/10">
@@ -301,7 +305,7 @@ const AllBooks: FC = () => {
                                             </div>
                                         </CardContent>
                                     </Card>
-                                </div>
+                                </motion.div>
                             ))}
                         </div>
 

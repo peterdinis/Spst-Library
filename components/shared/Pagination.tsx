@@ -53,7 +53,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange, className = "" }: P
         size="sm"
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="transition-smooth hover:bg-primary hover:text-primary-foreground"
+        className="transition-smooth"
       >
         <ChevronLeft className="h-4 w-4" />
         Previous
