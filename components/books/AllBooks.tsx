@@ -303,6 +303,15 @@ const AllBooks: FC = () => {
                                                     {book.isbn}
                                                 </Badge>
                                             </div>
+
+                                            <div className="pt-4">
+                                                <Link
+                                                    href={`/books/${book.id}`}
+                                                    className="inline-block w-full text-center bg-primary text-white py-2 px-4 rounded-md hover:bg-primary/90 transition"
+                                                >
+                                                    View Details
+                                                </Link>
+                                            </div>
                                         </CardContent>
                                     </Card>
                                 </motion.div>
