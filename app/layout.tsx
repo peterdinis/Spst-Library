@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import Navigation from "@/components/shared/Navigation";
+import ScrollToTop from "@/components/shared/ScrollToTop";
 
 export const metadata: Metadata = {
 	title: "SPŠT Knižnica Bardejov",
@@ -50,6 +51,7 @@ export default function RootLayout({
 				>
 					<Navigation />
 					{children}
+					<ScrollToTop />
 				</ThemeProvider>
 			</body>
 		</html>

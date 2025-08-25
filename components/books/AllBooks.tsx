@@ -249,7 +249,7 @@ const AllBooks: FC = () => {
                     </div>
                 ) : (
                     <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+                        <div className="grid grid-cols-1 shadow-2xl md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
                             {currentBooks.map((book, index) => (
                                 <motion.div
                                     key={book.id}
@@ -259,7 +259,7 @@ const AllBooks: FC = () => {
                                     transition={{ delay: index * 0.1, type: "spring", stiffness: 100 }}
                                     whileHover={{ y: -5, scale: 1.02 }}
                                 >
-                                    <Card className="h-full shadow-card hover:shadow-glow transition-smooth border-0 shadow-xl bg-gradient-card">
+                                    <Card className="h-full shadow-2xl hover:shadow-glow transition-smooth border-0">
                                         <CardHeader className="pb-3">
                                             <div className="flex items-start justify-between mb-2">
                                                 <div className="p-2 rounded-lg bg-primary/10">
