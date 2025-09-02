@@ -4,6 +4,7 @@ import "./globals.css";
 import { Navigation } from "@/components/shared/Navigation";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import TransitionProvider from "@/components/providers/TransitionProvider";
+import ScrollToTop from "@/components/shared/ScrollToTop";
 
 const ubuntu = Ubuntu({
   weight: "700",
@@ -63,6 +64,7 @@ export default function RootLayout({
           <TransitionProvider>
             <Navigation />
             {children}
+            <ScrollToTop />
           </TransitionProvider>
         </ThemeProvider>
       </body>
