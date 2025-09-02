@@ -3,6 +3,7 @@ import { Ubuntu } from "next/font/google";
 import "./globals.css";
 import { Navigation } from "@/components/shared/Navigation";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import TransitionProvider from "@/components/providers/TransitionProvider";
 
 const ubuntu = Ubuntu({
   weight: "700",
@@ -55,13 +56,15 @@ export default function RootLayout({
       <body
         className={`${ubuntu} antialiased`}
       >
-        <ThemeProvider 
+        <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange>
-          <Navigation />
-          {children}
+          <TransitionProvider>
+            <Navigation />
+            {children}
+          </TransitionProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -20,8 +20,31 @@ import { BorrowData, BorrowDialog } from "../borrow/BorrowDialog";
 import Link from "next/link";
 import { Separator } from "../ui/separator";
 
+// Define the Book type
+interface Book {
+  id: string;
+  title: string;
+  author: string;
+  category: string;
+  isbn: string;
+  publishedYear: number;
+  available: boolean;
+  description: string;
+  fullDescription?: string;
+  pages?: number;
+  language?: string;
+  publisher?: string;
+  rating?: number;
+  totalRatings?: number;
+  genres?: string[];
+  tags?: string[];
+  copiesTotal?: number;
+  copiesAvailable?: number;
+  dueDate?: string;
+}
+
 // Mock data - in a real app this would come from an API
-const mockBooks = [
+const mockBooks: Book[] = [
   {
     id: "1",
     title: "To Kill a Mockingbird",
@@ -69,7 +92,7 @@ const mockBooks = [
 export default function BookDetail() {
   const { id } = useParams();
   const router = useRouter()
-  const [book, setBook] = useState(null);
+  const [book, setBook] = useState<Book | null>(null);
   const [showBorrowDialog, setShowBorrowDialog] = useState(false);
   const { toast } = useToast();
 
@@ -97,7 +120,12 @@ export default function BookDetail() {
     });
 
     // Update book availability (in real app, this would be an API call)
-    setBook(prev => prev ? { ...prev, available: false, dueDate: borrowData.toDate.toISOString() } : null);
+    setBook(prev => prev ? { 
+      ...prev, 
+      available: false, 
+      dueDate: borrowData.toDate.toISOString(),
+      copiesAvailable: prev.copiesAvailable ? prev.copiesAvailable - 1 : undefined
+    } : null);
   };
 
   const handleReturn = () => {
@@ -109,7 +137,12 @@ export default function BookDetail() {
     });
 
     // Update book availability (in real app, this would be an API call)
-    setBook(prev => prev ? { ...prev, available: true, dueDate: undefined } : null);
+    setBook(prev => prev ? { 
+      ...prev, 
+      available: true, 
+      dueDate: undefined,
+      copiesAvailable: prev.copiesAvailable !== undefined ? prev.copiesAvailable + 1 : undefined
+    } : null);
   };
 
   if (!book) {
@@ -130,7 +163,7 @@ export default function BookDetail() {
         <div className="mb-6 animate-fade-in">
           <Button
             variant="ghost"
-            onClick={() => router.push("")}
+            onClick={() => router.push("/books")}
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -332,7 +365,7 @@ export default function BookDetail() {
                   </div>
                 )}
                 
-                {book.copiesTotal && (
+                {book.copiesTotal !== undefined && (
                   <>
                     <Separator />
                     <div className="flex items-center justify-between">
