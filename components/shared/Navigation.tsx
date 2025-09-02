@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { BookOpen, Users, Bookmark, User, LogOut, Menu, X, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ModeToggle } from "./ModeToggle";
 
 export const Navigation = () => {
   const navigation = useRouter()
@@ -38,7 +39,7 @@ export const Navigation = () => {
               <Link
                 key={to}
                 href={to}
-                className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-smooth hover:bg-muted ${location.pathname === to ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"
+                className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-smooth hover:bg-muted text-muted-foreground hover:text-foreground
                   }`}
               >
                 <Icon className="h-4 w-4" />
@@ -74,6 +75,7 @@ export const Navigation = () => {
                 </Button>
               </Link>
             )}
+            <ModeToggle />
           </div>
 
           {/* Mobile menu button */}
@@ -97,8 +99,8 @@ export const Navigation = () => {
                   key={to}
                   href={to}
                   onClick={() => setIsOpen(false)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-smooth ${location.pathname === to ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                    }`}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-smooth text-muted-foreground hover:text-foreground hover:bg-muted
+                  `}
                 >
                   <Icon className="h-4 w-4" />
                   <span>{label}</span>
