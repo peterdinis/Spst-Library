@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -33,7 +37,12 @@ export interface BorrowData {
   toDate: Date;
 }
 
-export const BorrowDialog = ({ open, onOpenChange, bookTitle, onConfirm }: BorrowDialogProps) => {
+export const BorrowDialog = ({
+  open,
+  onOpenChange,
+  bookTitle,
+  onConfirm,
+}: BorrowDialogProps) => {
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
   const [fromDate, setFromDate] = useState<Date>();
@@ -43,7 +52,7 @@ export const BorrowDialog = ({ open, onOpenChange, bookTitle, onConfirm }: Borro
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!name || !lastName || !fromDate || !toDate) {
       toast({
         title: "Please fill all fields",
@@ -63,18 +72,18 @@ export const BorrowDialog = ({ open, onOpenChange, bookTitle, onConfirm }: Borro
     }
 
     setIsLoading(true);
-    
+
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       onConfirm({
         name,
         lastName,
         fromDate,
         toDate,
       });
-      
+
       // Reset form
       setName("");
       setLastName("");
@@ -101,7 +110,7 @@ export const BorrowDialog = ({ open, onOpenChange, bookTitle, onConfirm }: Borro
             Fill in your details to borrow "{bookTitle}"
           </DialogDescription>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -135,14 +144,17 @@ export const BorrowDialog = ({ open, onOpenChange, bookTitle, onConfirm }: Borro
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-left font-normal",
-                      !fromDate && "text-muted-foreground"
+                      !fromDate && "text-muted-foreground",
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {fromDate ? format(fromDate, "PPP") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-card border shadow-elegant z-50" align="start">
+                <PopoverContent
+                  className="w-auto p-0 bg-card border shadow-elegant z-50"
+                  align="start"
+                >
                   <Calendar
                     mode="single"
                     selected={fromDate}
@@ -162,14 +174,17 @@ export const BorrowDialog = ({ open, onOpenChange, bookTitle, onConfirm }: Borro
                     variant="outline"
                     className={cn(
                       "w-full justify-start text-left font-normal",
-                      !toDate && "text-muted-foreground"
+                      !toDate && "text-muted-foreground",
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {toDate ? format(toDate, "PPP") : "Pick a date"}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-card border shadow-elegant z-50" align="start">
+                <PopoverContent
+                  className="w-auto p-0 bg-card border shadow-elegant z-50"
+                  align="start"
+                >
                   <Calendar
                     mode="single"
                     selected={toDate}

@@ -1,18 +1,24 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  BookOpen, 
-  User, 
-  ArrowLeft, 
+import {
+  BookOpen,
+  User,
+  ArrowLeft,
   Clock,
   Star,
   Users,
   FileText,
-  Hash
+  Hash,
 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useToast } from "@/hooks/useToast";
@@ -53,17 +59,29 @@ const mockBooks: Book[] = [
     isbn: "978-0-06-112008-4",
     publishedYear: 1960,
     available: true,
-    description: "A gripping tale of racial injustice and the loss of innocence in the American South. Set in the fictional town of Maycomb, Alabama, in the 1930s, the story is told through the eyes of Scout Finch, a young girl whose father, Atticus, is a lawyer defending a black man falsely accused of rape. Through Scout's innocent perspective, Harper Lee explores themes of moral growth, prejudice, and the complexities of human nature in a divided society.",
-    fullDescription: "Harper Lee's Pulitzer Prize-winning masterpiece explores the roots of human behavior through the story of Scout Finch and her father, Atticus. Set in a sleepy Alabama town in the 1930s, the novel addresses issues of race, class, and moral courage through the trial of Tom Robinson, a black man accused of rape. The story is told from the perspective of six-year-old Scout, whose coming-of-age journey reveals the harsh realities of prejudice and injustice. Through Atticus Finch's unwavering moral compass and the children's encounters with their mysterious neighbor Boo Radley, Lee crafts a powerful narrative about empathy, understanding, and the loss of innocence. The novel remains one of the most important works of American literature, offering timeless lessons about standing up for what's right, even in the face of overwhelming opposition.",
+    description:
+      "A gripping tale of racial injustice and the loss of innocence in the American South. Set in the fictional town of Maycomb, Alabama, in the 1930s, the story is told through the eyes of Scout Finch, a young girl whose father, Atticus, is a lawyer defending a black man falsely accused of rape. Through Scout's innocent perspective, Harper Lee explores themes of moral growth, prejudice, and the complexities of human nature in a divided society.",
+    fullDescription:
+      "Harper Lee's Pulitzer Prize-winning masterpiece explores the roots of human behavior through the story of Scout Finch and her father, Atticus. Set in a sleepy Alabama town in the 1930s, the novel addresses issues of race, class, and moral courage through the trial of Tom Robinson, a black man accused of rape. The story is told from the perspective of six-year-old Scout, whose coming-of-age journey reveals the harsh realities of prejudice and injustice. Through Atticus Finch's unwavering moral compass and the children's encounters with their mysterious neighbor Boo Radley, Lee crafts a powerful narrative about empathy, understanding, and the loss of innocence. The novel remains one of the most important works of American literature, offering timeless lessons about standing up for what's right, even in the face of overwhelming opposition.",
     pages: 376,
     language: "English",
     publisher: "Harper & Row",
     rating: 4.8,
     totalRatings: 2847,
-    genres: ["Classic Literature", "Fiction", "Historical Fiction", "Coming of Age"],
-    tags: ["Pulitzer Prize Winner", "American Literature", "Social Justice", "Childhood"],
+    genres: [
+      "Classic Literature",
+      "Fiction",
+      "Historical Fiction",
+      "Coming of Age",
+    ],
+    tags: [
+      "Pulitzer Prize Winner",
+      "American Literature",
+      "Social Justice",
+      "Childhood",
+    ],
     copiesTotal: 8,
-    copiesAvailable: 5
+    copiesAvailable: 5,
   },
   {
     id: "2",
@@ -74,31 +92,43 @@ const mockBooks: Book[] = [
     publishedYear: 1949,
     available: false,
     dueDate: "2024-01-15",
-    description: "A dystopian social science fiction novel about totalitarian control.",
-    fullDescription: "George Orwell's chilling vision of a totalitarian society where Big Brother watches everything and the Thought Police monitor even your thoughts. Winston Smith works for the Ministry of Truth, rewriting history to fit the Party's current narrative. In this world, facts are malleable, privacy is extinct, and individual thought is the ultimate crime. When Winston begins a forbidden love affair with Julia and starts to question the Party's control, he embarks on a dangerous journey toward truth and freedom. Set in a future London, the novel introduces concepts like 'doublethink,' 'newspeak,' and 'thoughtcrime' that have become part of our cultural vocabulary. Orwell's masterpiece remains a powerful warning about the dangers of unchecked government power and the fragility of truth in the face of propaganda.",
+    description:
+      "A dystopian social science fiction novel about totalitarian control.",
+    fullDescription:
+      "George Orwell's chilling vision of a totalitarian society where Big Brother watches everything and the Thought Police monitor even your thoughts. Winston Smith works for the Ministry of Truth, rewriting history to fit the Party's current narrative. In this world, facts are malleable, privacy is extinct, and individual thought is the ultimate crime. When Winston begins a forbidden love affair with Julia and starts to question the Party's control, he embarks on a dangerous journey toward truth and freedom. Set in a future London, the novel introduces concepts like 'doublethink,' 'newspeak,' and 'thoughtcrime' that have become part of our cultural vocabulary. Orwell's masterpiece remains a powerful warning about the dangers of unchecked government power and the fragility of truth in the face of propaganda.",
     pages: 328,
-    language: "English", 
+    language: "English",
     publisher: "Secker & Warburg",
     rating: 4.7,
     totalRatings: 3421,
-    genres: ["Science Fiction", "Dystopian", "Political Fiction", "Classic Literature"],
-    tags: ["Totalitarianism", "Surveillance", "Political Satire", "Mind Control"],
+    genres: [
+      "Science Fiction",
+      "Dystopian",
+      "Political Fiction",
+      "Classic Literature",
+    ],
+    tags: [
+      "Totalitarianism",
+      "Surveillance",
+      "Political Satire",
+      "Mind Control",
+    ],
     copiesTotal: 6,
-    copiesAvailable: 0
+    copiesAvailable: 0,
   },
   // Add more mock books as needed
 ];
 
 export default function BookDetail() {
   const { id } = useParams();
-  const router = useRouter()
+  const router = useRouter();
   const [book, setBook] = useState<Book | null>(null);
   const [showBorrowDialog, setShowBorrowDialog] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     // In a real app, this would be an API call
-    const foundBook = mockBooks.find(b => b.id === id);
+    const foundBook = mockBooks.find((b) => b.id === id);
     if (foundBook) {
       setBook(foundBook);
     } else {
@@ -120,12 +150,18 @@ export default function BookDetail() {
     });
 
     // Update book availability (in real app, this would be an API call)
-    setBook(prev => prev ? { 
-      ...prev, 
-      available: false, 
-      dueDate: borrowData.toDate.toISOString(),
-      copiesAvailable: prev.copiesAvailable ? prev.copiesAvailable - 1 : undefined
-    } : null);
+    setBook((prev) =>
+      prev
+        ? {
+            ...prev,
+            available: false,
+            dueDate: borrowData.toDate.toISOString(),
+            copiesAvailable: prev.copiesAvailable
+              ? prev.copiesAvailable - 1
+              : undefined,
+          }
+        : null,
+    );
   };
 
   const handleReturn = () => {
@@ -137,12 +173,19 @@ export default function BookDetail() {
     });
 
     // Update book availability (in real app, this would be an API call)
-    setBook(prev => prev ? { 
-      ...prev, 
-      available: true, 
-      dueDate: undefined,
-      copiesAvailable: prev.copiesAvailable !== undefined ? prev.copiesAvailable + 1 : undefined
-    } : null);
+    setBook((prev) =>
+      prev
+        ? {
+            ...prev,
+            available: true,
+            dueDate: undefined,
+            copiesAvailable:
+              prev.copiesAvailable !== undefined
+                ? prev.copiesAvailable + 1
+                : undefined,
+          }
+        : null,
+    );
   };
 
   if (!book) {
@@ -179,12 +222,14 @@ export default function BookDetail() {
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-4 sm:space-y-0">
                   <div className="flex-1">
-                    <CardTitle className="text-3xl font-bold mb-2">{book.title}</CardTitle>
+                    <CardTitle className="text-3xl font-bold mb-2">
+                      {book.title}
+                    </CardTitle>
                     <CardDescription className="text-lg flex items-center space-x-2">
                       <User className="h-5 w-5" />
                       <span>by {book.author}</span>
                     </CardDescription>
-                    
+
                     <div className="flex flex-wrap gap-2 mt-4">
                       {book.genres?.map((genre, index) => (
                         <Badge key={index} variant="secondary">
@@ -193,9 +238,9 @@ export default function BookDetail() {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div className="text-right">
-                    <Badge 
+                    <Badge
                       variant={book.available ? "default" : "secondary"}
                       className={`text-lg px-4 py-2 ${book.available ? "bg-success text-success-foreground" : ""}`}
                     >
@@ -213,7 +258,10 @@ export default function BookDetail() {
             </Card>
 
             {/* Description */}
-            <Card className="shadow-card animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <Card
+              className="shadow-card animate-slide-up"
+              style={{ animationDelay: "0.1s" }}
+            >
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <FileText className="h-5 w-5" />
@@ -229,7 +277,10 @@ export default function BookDetail() {
 
             {/* Tags */}
             {book.tags && book.tags.length > 0 && (
-              <Card className="shadow-card animate-slide-up" style={{ animationDelay: '0.2s' }}>
+              <Card
+                className="shadow-card animate-slide-up"
+                style={{ animationDelay: "0.2s" }}
+              >
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Hash className="h-5 w-5" />
@@ -239,7 +290,11 @@ export default function BookDetail() {
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     {book.tags.map((tag, index) => (
-                      <Badge key={index} variant="outline" className="bg-accent/10">
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="bg-accent/10"
+                      >
                         {tag}
                       </Badge>
                     ))}
@@ -258,7 +313,7 @@ export default function BookDetail() {
               </CardHeader>
               <CardContent className="space-y-3">
                 {book.available ? (
-                  <Button 
+                  <Button
                     onClick={() => setShowBorrowDialog(true)}
                     className="w-full"
                     size="lg"
@@ -266,7 +321,7 @@ export default function BookDetail() {
                     Borrow Book
                   </Button>
                 ) : (
-                  <Button 
+                  <Button
                     onClick={handleReturn}
                     variant="outline"
                     className="w-full"
@@ -275,11 +330,11 @@ export default function BookDetail() {
                     Return Book
                   </Button>
                 )}
-                
+
                 <Button variant="outline" className="w-full" size="lg">
                   Add to Wishlist
                 </Button>
-                
+
                 <Link href={`/books?author=${encodeURIComponent(book.author)}`}>
                   <Button variant="ghost" className="w-full" size="lg">
                     More by Author
@@ -289,7 +344,10 @@ export default function BookDetail() {
             </Card>
 
             {/* Book Details */}
-            <Card className="shadow-card animate-scale-in" style={{ animationDelay: '0.1s' }}>
+            <Card
+              className="shadow-card animate-scale-in"
+              style={{ animationDelay: "0.1s" }}
+            >
               <CardHeader>
                 <CardTitle>Book Details</CardTitle>
               </CardHeader>
@@ -299,16 +357,16 @@ export default function BookDetail() {
                     <span className="text-muted-foreground">ISBN:</span>
                     <span className="font-mono text-sm">{book.isbn}</span>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Published:</span>
                     <span>{book.publishedYear}</span>
                   </div>
-                  
+
                   <Separator />
-                  
+
                   {book.pages && (
                     <>
                       <div className="flex justify-between">
@@ -318,7 +376,7 @@ export default function BookDetail() {
                       <Separator />
                     </>
                   )}
-                  
+
                   {book.language && (
                     <>
                       <div className="flex justify-between">
@@ -328,17 +386,19 @@ export default function BookDetail() {
                       <Separator />
                     </>
                   )}
-                  
+
                   {book.publisher && (
                     <>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Publisher:</span>
+                        <span className="text-muted-foreground">
+                          Publisher:
+                        </span>
                         <span>{book.publisher}</span>
                       </div>
                       <Separator />
                     </>
                   )}
-                  
+
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Category:</span>
                     <Badge variant="outline">{book.category}</Badge>
@@ -348,7 +408,10 @@ export default function BookDetail() {
             </Card>
 
             {/* Rating & Availability */}
-            <Card className="shadow-card animate-scale-in" style={{ animationDelay: '0.2s' }}>
+            <Card
+              className="shadow-card animate-scale-in"
+              style={{ animationDelay: "0.2s" }}
+            >
               <CardHeader>
                 <CardTitle>Rating & Availability</CardTitle>
               </CardHeader>
@@ -364,7 +427,7 @@ export default function BookDetail() {
                     </span>
                   </div>
                 )}
-                
+
                 {book.copiesTotal !== undefined && (
                   <>
                     <Separator />

@@ -1,5 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Calendar, User, Clock, Eye } from "lucide-react";
 import Link from "next/link";
@@ -22,7 +28,6 @@ interface BookCardProps {
 }
 
 export const BookCard = ({ book }: BookCardProps) => {
-
   return (
     <Card className="hover-lift shadow-card group">
       <CardHeader className="pb-4">
@@ -36,9 +41,11 @@ export const BookCard = ({ book }: BookCardProps) => {
               <span className="text-sm">{book.author}</span>
             </div>
           </div>
-          <Badge 
+          <Badge
             variant={book.available ? "default" : "secondary"}
-            className={book.available ? "bg-success text-success-foreground" : ""}
+            className={
+              book.available ? "bg-success text-success-foreground" : ""
+            }
           >
             {book.available ? "Available" : "Borrowed"}
           </Badge>
@@ -62,7 +69,7 @@ export const BookCard = ({ book }: BookCardProps) => {
             </div>
           )}
         </div>
-        
+
         {book.description && (
           <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
             {book.description}
@@ -72,7 +79,10 @@ export const BookCard = ({ book }: BookCardProps) => {
 
       <CardFooter>
         <Link href={`/books/${book.id}`} className="w-full">
-          <Button variant="default" className="w-full flex items-center space-x-2">
+          <Button
+            variant="default"
+            className="w-full flex items-center space-x-2"
+          >
             <Eye className="h-4 w-4" />
             <span>View Details</span>
           </Button>

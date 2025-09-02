@@ -7,7 +7,7 @@ import TransitionProvider from "@/components/providers/TransitionProvider";
 
 const ubuntu = Ubuntu({
   weight: "700",
-  subsets: ["latin"]
+  subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
@@ -53,14 +53,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${ubuntu} antialiased`}
-      >
+      <body className={`${ubuntu} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
-          disableTransitionOnChange>
+          disableTransitionOnChange
+        >
           <TransitionProvider>
             <Navigation />
             {children}

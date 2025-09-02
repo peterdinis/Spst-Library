@@ -1,14 +1,23 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { BookOpen, Users, Bookmark, User, LogOut, Menu, X, UserCircle } from "lucide-react";
+import {
+  BookOpen,
+  Users,
+  Bookmark,
+  User,
+  LogOut,
+  Menu,
+  X,
+  UserCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ModeToggle } from "./ModeToggle";
 
 export const Navigation = () => {
-  const navigation = useRouter()
+  const navigation = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState({ name: "John Student", role: "student" });
 
@@ -30,7 +39,9 @@ export const Navigation = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <BookOpen className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold text-primary">Školská knižnica</span>
+            <span className="text-xl font-bold text-primary">
+              Školská knižnica
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -53,7 +64,11 @@ export const Navigation = () => {
             {user ? (
               <>
                 <Link href="/profile">
-                  <Button variant="ghost" size="sm" className="flex items-center space-x-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center space-x-1"
+                  >
                     <UserCircle className="h-4 w-4" />
                     <span>{user.name}</span>
                   </Button>
@@ -85,7 +100,11 @@ export const Navigation = () => {
               size="sm"
               onClick={() => setIsOpen(!isOpen)}
             >
-              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {isOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
             </Button>
           </div>
         </div>
