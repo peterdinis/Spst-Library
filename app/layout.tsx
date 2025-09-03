@@ -5,6 +5,7 @@ import { Navigation } from "@/components/shared/Navigation";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import TransitionProvider from "@/components/providers/TransitionProvider";
 import ScrollToTop from "@/components/shared/ScrollToTop";
+import QueryProvider from "@/components/providers/QueryProvider";
 
 const ubuntu = Ubuntu({
   weight: "700",
@@ -62,9 +63,11 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TransitionProvider>
-            <Navigation />
-            {children}
-            <ScrollToTop />
+            <QueryProvider>
+              <Navigation />
+              {children}
+              <ScrollToTop />
+            </QueryProvider>
           </TransitionProvider>
         </ThemeProvider>
       </body>
