@@ -1,3 +1,13 @@
+"use client";
+
+import Link from "next/link";
+import {
+  BookOpen,
+  User,
+  Calendar,
+  Eye,
+} from "lucide-react";
+import { Badge } from "../ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -6,21 +16,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { BookOpen, Calendar, User, Clock, Eye } from "lucide-react";
-import Link from "next/link";
 
 interface Book {
-  id: string;
-  title: string;
-  author: string;
-  category: string;
-  isbn: string;
-  publishedYear: number;
-  available: boolean;
-  dueDate?: string;
-  coverImage?: string;
+  id: number;
+  name: string;
   description?: string;
+  year?: number;
+  isAvailable: boolean;
+  isNew: boolean;
+  category?: {
+    id: number;
+    name: string;
+  } | null;
+  author: {
+    id: number;
+    name: string;
+  };
 }
 
 interface BookCardProps {
@@ -29,43 +40,43 @@ interface BookCardProps {
 
 export const BookCard = ({ book }: BookCardProps) => {
   return (
-    <Card className="hover-lift shadow-card group">
+    <Card className="hover-lift shadow-card group h-full flex flex-col">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <CardTitle className="text-lg font-semibold text-foreground group-hover:text-primary transition-smooth line-clamp-2">
-              {book.title}
+              {book.name}
             </CardTitle>
             <div className="flex items-center space-x-1 mt-2 text-muted-foreground">
               <User className="h-4 w-4" />
-              <span className="text-sm">{book.author}</span>
+              <span className="text-sm">{book.author.name}</span>
             </div>
           </div>
           <Badge
-            variant={book.available ? "default" : "secondary"}
+            variant={book.isAvailable ? "default" : "secondary"}
             className={
-              book.available ? "bg-success text-success-foreground" : ""
+              book.isAvailable
+                ? "bg-green-100 text-green-800 border-green-200"
+                : "bg-amber-100 text-amber-800 border-amber-200"
             }
           >
-            {book.available ? "Available" : "Borrowed"}
+            {book.isAvailable ? "Available" : "Borrowed"}
           </Badge>
         </div>
       </CardHeader>
 
-      <CardContent className="pb-4">
+      <CardContent className="pb-4 flex-grow">
         <div className="space-y-2 text-sm text-muted-foreground">
-          <div className="flex items-center space-x-2">
-            <BookOpen className="h-4 w-4" />
-            <span>{book.category}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Calendar className="h-4 w-4" />
-            <span>Published: {book.publishedYear}</span>
-          </div>
-          {!book.available && book.dueDate && (
-            <div className="flex items-center space-x-2 text-destructive">
-              <Clock className="h-4 w-4" />
-              <span>Due: {new Date(book.dueDate).toLocaleDateString()}</span>
+          {book.category && (
+            <div className="flex items-center space-x-2">
+              <BookOpen className="h-4 w-4" />
+              <span>{book.category.name}</span>
+            </div>
+          )}
+          {book.year && (
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-4 w-4" />
+              <span>Published: {book.year}</span>
             </div>
           )}
         </div>

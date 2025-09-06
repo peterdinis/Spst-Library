@@ -6,7 +6,6 @@ import {
   Filter,
   Search,
   BookOpen,
-  ChevronDown,
   X,
   Sparkles,
   Library,
@@ -16,7 +15,6 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
-  List,
 } from "lucide-react";
 import { Input } from "../ui/input";
 import {
@@ -35,62 +33,98 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useBooks } from "@/hooks/books/useAllBooks";
+
+// -------------------- TYPES --------------------
+interface Author {
+  id: string;
+  name: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Rating {
+  id: string;
+  score: number;
+}
+
+interface BookTag {
+  id: string;
+  name: string;
+}
 
 interface Book {
   id: string;
-  title: string;
-  author: string;
-  category: string;
-  isbn: string;
-  publishedYear: number;
-  available: boolean;
-  dueDate?: string;
-  coverImage?: string;
+  name: string; // backend field
   description?: string;
+  createdAt: string;
+
+  // relations
+  author: Author;
+  category: Category;
+  ratings: Rating[];
+  bookTags: BookTag[];
+
+  // frontend-specific (mock for now, until BE supports)
+  available?: boolean;
+  dueDate?: string;
+  publishedYear?: number;
+  coverImage?: string;
 }
 
+// -------------------- BOOK CARD --------------------
 interface BookCardProps {
   book: Book;
 }
 
 export const BookCard = ({ book }: BookCardProps) => {
+  const available = book.available ?? true;
   return (
     <Card className="hover-lift shadow-card group h-full flex flex-col">
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <CardTitle className="text-lg font-semibold text-foreground group-hover:text-primary transition-smooth line-clamp-2">
-              {book.title}
+              {book.name}
             </CardTitle>
-            <div className="flex items-center space-x-1 mt-2 text-muted-foreground">
-              <User className="h-4 w-4" />
-              <span className="text-sm">{book.author}</span>
-            </div>
+            {book.author && (
+              <div className="flex items-center space-x-1 mt-2 text-muted-foreground">
+                <User className="h-4 w-4" />
+                <span className="text-sm">{book.author.name}</span>
+              </div>
+            )}
           </div>
           <Badge
-            variant={book.available ? "default" : "secondary"}
+            variant={available ? "default" : "secondary"}
             className={
-              book.available
+              available
                 ? "bg-green-100 text-green-800 border-green-200"
                 : "bg-amber-100 text-amber-800 border-amber-200"
             }
           >
-            {book.available ? "Available" : "Borrowed"}
+            {available ? "Available" : "Borrowed"}
           </Badge>
         </div>
       </CardHeader>
 
       <CardContent className="pb-4 flex-grow">
         <div className="space-y-2 text-sm text-muted-foreground">
-          <div className="flex items-center space-x-2">
-            <BookOpen className="h-4 w-4" />
-            <span>{book.category}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Calendar className="h-4 w-4" />
-            <span>Published: {book.publishedYear}</span>
-          </div>
-          {!book.available && book.dueDate && (
+          {book.category && (
+            <div className="flex items-center space-x-2">
+              <BookOpen className="h-4 w-4" />
+              <span>{book.category.name}</span>
+            </div>
+          )}
+          {book.publishedYear && (
+            <div className="flex items-center space-x-2">
+              <Calendar className="h-4 w-4" />
+              <span>Published: {book.publishedYear}</span>
+            </div>
+          )}
+          {!available && book.dueDate && (
             <div className="flex items-center space-x-2 text-destructive">
               <Clock className="h-4 w-4" />
               <span>Due: {new Date(book.dueDate).toLocaleDateString()}</span>
@@ -120,210 +154,54 @@ export const BookCard = ({ book }: BookCardProps) => {
   );
 };
 
-const mockBooks = [
-  {
-    id: "1",
-    title: "To Kill a Mockingbird",
-    author: "Harper Lee",
-    category: "Classic Literature",
-    isbn: "978-0-06-112008-4",
-    publishedYear: 1960,
-    available: true,
-    coverImage: "/placeholder.jpg",
-    description:
-      "A gripping tale of racial injustice and the loss of innocence in the American South.",
-  },
-  {
-    id: "2",
-    title: "1984",
-    author: "George Orwell",
-    category: "Science Fiction",
-    isbn: "978-0-452-28423-4",
-    publishedYear: 1949,
-    available: false,
-    dueDate: "2024-01-15",
-    coverImage: "/placeholder.jpg",
-    description:
-      "A dystopian social science fiction novel about totalitarian control.",
-  },
-  {
-    id: "3",
-    title: "The Great Gatsby",
-    author: "F. Scott Fitzgerald",
-    category: "Classic Literature",
-    isbn: "978-0-7432-7356-5",
-    publishedYear: 1925,
-    available: true,
-    coverImage: "/placeholder.jpg",
-    description: "A critique of the American Dream set in the Jazz Age.",
-  },
-  {
-    id: "4",
-    title: "Pride and Prejudice",
-    author: "Jane Austen",
-    category: "Romance",
-    isbn: "978-0-14-143951-8",
-    publishedYear: 1813,
-    available: true,
-    coverImage: "/placeholder.jpg",
-    description: "A romantic novel of manners set in Georgian England.",
-  },
-  {
-    id: "5",
-    title: "The Catcher in the Rye",
-    author: "J.D. Salinger",
-    category: "Coming of Age",
-    isbn: "978-0-316-76948-0",
-    publishedYear: 1951,
-    available: false,
-    dueDate: "2024-01-20",
-    coverImage: "/placeholder.jpg",
-    description:
-      "A controversial novel about teenage rebellion and alienation.",
-  },
-  {
-    id: "6",
-    title: "Lord of the Flies",
-    author: "William Golding",
-    category: "Adventure",
-    isbn: "978-0-571-05686-2",
-    publishedYear: 1954,
-    available: true,
-    coverImage: "/placeholder.jpg",
-    description:
-      "A story about a group of British boys stranded on an uninhabited island.",
-  },
-  {
-    id: "7",
-    title: "The Hobbit",
-    author: "J.R.R. Tolkien",
-    category: "Fantasy",
-    isbn: "978-0-547-92822-7",
-    publishedYear: 1937,
-    available: true,
-    coverImage: "/placeholder.jpg",
-    description: "A fantasy novel about the adventures of Bilbo Baggins.",
-  },
-  {
-    id: "8",
-    title: "Brave New World",
-    author: "Aldous Huxley",
-    category: "Science Fiction",
-    isbn: "978-0-06-085052-4",
-    publishedYear: 1932,
-    available: false,
-    dueDate: "2024-02-10",
-    coverImage: "/placeholder.jpg",
-    description: "A dystopian novel set in a futuristic World State.",
-  },
-  {
-    id: "9",
-    title: "The Lord of the Rings",
-    author: "J.R.R. Tolkien",
-    category: "Fantasy",
-    isbn: "978-0-618-64015-7",
-    publishedYear: 1954,
-    available: true,
-    coverImage: "/placeholder.jpg",
-    description: "An epic high fantasy trilogy set in Middle-earth.",
-  },
-  {
-    id: "10",
-    title: "Moby Dick",
-    author: "Herman Melville",
-    category: "Adventure",
-    isbn: "978-1-5010-6115-2",
-    publishedYear: 1851,
-    available: true,
-    coverImage: "/placeholder.jpg",
-    description:
-      "The story of Captain Ahab's obsessive quest for revenge against a white whale.",
-  },
-  {
-    id: "11",
-    title: "War and Peace",
-    author: "Leo Tolstoy",
-    category: "Historical Fiction",
-    isbn: "978-0-14-044793-4",
-    publishedYear: 1869,
-    available: true,
-    coverImage: "/placeholder.jpg",
-    description:
-      "A novel that chronicles the French invasion of Russia and the impact on Tsarist society.",
-  },
-  {
-    id: "12",
-    title: "Crime and Punishment",
-    author: "Fyodor Dostoevsky",
-    category: "Philosophical Fiction",
-    isbn: "978-0-14-044913-6",
-    publishedYear: 1866,
-    available: false,
-    dueDate: "2024-02-05",
-    coverImage: "/placeholder.jpg",
-    description:
-      "A novel about the mental anguish and moral dilemmas of a young man who commits murder.",
-  },
-];
-
+// -------------------- ALL BOOKS WRAPPER --------------------
 const AllBooksWrapper: FC = () => {
-  const [books] = useState(mockBooks);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
   const [sortBy, setSortBy] = useState("title");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
 
-  const categories = useMemo(
-    () => Array.from(new Set(books.map((book) => book.category))),
-    [books],
-  );
+  // 🚀 fetchujeme dáta z API
+  const { data, isLoading, isError } = useBooks({
+    search: searchTerm,
+    page: currentPage,
+    limit: itemsPerPage,
+  });
 
+  const books: Book[] = data?.data ?? [];
+  const totalBooks = data?.total ?? 0;
+  const totalPages = data?.lastPage ?? 1;
+
+  // apply availability + sort lokálne
   const filteredBooks = useMemo(() => {
-    let result = books.filter((book) => {
-      const matchesSearch =
-        book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        book.author.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory =
-        selectedCategory === "all" || book.category === selectedCategory;
-      const matchesAvailability =
-        availabilityFilter === "all" ||
-        (availabilityFilter === "available" && book.available) ||
-        (availabilityFilter === "borrowed" && !book.available);
-      return matchesSearch && matchesCategory && matchesAvailability;
-    });
+    let result = [...books];
 
-    // Sorting
+    const matchesAvailability = (book: Book) =>
+      availabilityFilter === "all" ||
+      (availabilityFilter === "available" && book.available) ||
+      (availabilityFilter === "borrowed" && !book.available);
+
+    result = result.filter(matchesAvailability);
+
     result.sort((a, b) => {
-      if (sortBy === "title") {
-        return a.title.localeCompare(b.title);
-      } else if (sortBy === "author") {
-        return a.author.localeCompare(b.author);
-      } else if (sortBy === "year") {
-        return b.publishedYear - a.publishedYear;
-      }
+      if (sortBy === "title") return a.name.localeCompare(b.name);
+      if (sortBy === "author")
+        return (a.author?.name ?? "").localeCompare(b.author?.name ?? "");
+      if (sortBy === "year")
+        return (b.publishedYear ?? 0) - (a.publishedYear ?? 0);
       return 0;
     });
 
     return result;
-  }, [books, searchTerm, selectedCategory, availabilityFilter, sortBy]);
-
-  // Pagination logic
-  const totalPages = Math.ceil(filteredBooks.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedBooks = filteredBooks.slice(
-    startIndex,
-    startIndex + itemsPerPage,
-  );
+  }, [books, availabilityFilter, sortBy]);
 
   const availableCount = books.filter((book) => book.available).length;
-  const borrowedCount = books.filter((book) => !book.available).length;
+  const borrowedCount = books.filter((book) => book.available === false).length;
 
   const clearFilters = () => {
     setSearchTerm("");
-    setSelectedCategory("all");
     setAvailabilityFilter("all");
     setSortBy("title");
     setCurrentPage(1);
@@ -331,20 +209,18 @@ const AllBooksWrapper: FC = () => {
 
   const activeFiltersCount = [
     searchTerm !== "",
-    selectedCategory !== "all",
     availabilityFilter !== "all",
     sortBy !== "title",
   ].filter(Boolean).length;
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // Scroll to top when page changes
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleItemsPerPageChange = (value: string) => {
     setItemsPerPage(Number(value));
-    setCurrentPage(1); // Reset to first page when changing items per page
+    setCurrentPage(1);
   };
 
   return (
@@ -372,7 +248,7 @@ const AllBooksWrapper: FC = () => {
                   Total Books
                 </div>
                 <div className="text-xl font-bold text-primary">
-                  {books.length}
+                  {totalBooks}
                 </div>
               </div>
               <div className="bg-white dark:bg-background rounded-lg p-3 shadow-sm border">
@@ -461,35 +337,6 @@ const AllBooksWrapper: FC = () => {
                 </div>
               </div>
 
-              {/* Category Filter */}
-              <div>
-                <label
-                  htmlFor="category"
-                  className="text-sm font-medium text-gray-700 dark:text-sky-100 mb-1 block"
-                >
-                  Category
-                </label>
-                <Select
-                  value={selectedCategory}
-                  onValueChange={(value) => {
-                    setSelectedCategory(value);
-                    setCurrentPage(1);
-                  }}
-                >
-                  <SelectTrigger id="category" className="w-full">
-                    <SelectValue placeholder="All Categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
               {/* Availability Filter */}
               <div>
                 <label
@@ -545,43 +392,17 @@ const AllBooksWrapper: FC = () => {
           </div>
         </div>
 
-        {/* Results Count and Items Per Page */}
-        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <p className="text-gray-500">
-            Showing{" "}
-            <span className="font-semibold">
-              {startIndex + 1}-
-              {Math.min(startIndex + itemsPerPage, filteredBooks.length)}
-            </span>{" "}
-            of <span className="font-semibold">{filteredBooks.length}</span>{" "}
-            books
-          </p>
-
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Show:</span>
-            <Select
-              value={itemsPerPage.toString()}
-              onValueChange={handleItemsPerPageChange}
-            >
-              <SelectTrigger className="w-20">
-                <SelectValue placeholder="6" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="6">6</SelectItem>
-                <SelectItem value="12">12</SelectItem>
-                <SelectItem value="24">24</SelectItem>
-                <SelectItem value="48">48</SelectItem>
-              </SelectContent>
-            </Select>
-            <span className="text-sm text-gray-500">per page</span>
+        {/* Results */}
+        {isLoading ? (
+          <div className="text-center py-16">Loading books...</div>
+        ) : isError ? (
+          <div className="text-center py-16 text-red-500">
+            Failed to load books.
           </div>
-        </div>
-
-        {/* Books Grid */}
-        {paginatedBooks.length > 0 ? (
+        ) : filteredBooks.length > 0 ? (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {paginatedBooks.map((book, index) => (
+              {filteredBooks.map((book, index) => (
                 <div
                   key={book.id}
                   className="transform transition-all duration-300 hover:scale-[1.02] animate-scale-in"
@@ -612,17 +433,12 @@ const AllBooksWrapper: FC = () => {
 
                   <div className="flex items-center gap-1">
                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      // Show pages around current page
                       let pageNum;
-                      if (totalPages <= 5) {
-                        pageNum = i + 1;
-                      } else if (currentPage <= 3) {
-                        pageNum = i + 1;
-                      } else if (currentPage >= totalPages - 2) {
+                      if (totalPages <= 5) pageNum = i + 1;
+                      else if (currentPage <= 3) pageNum = i + 1;
+                      else if (currentPage >= totalPages - 2)
                         pageNum = totalPages - 4 + i;
-                      } else {
-                        pageNum = currentPage - 2 + i;
-                      }
+                      else pageNum = currentPage - 2 + i;
 
                       return (
                         <Button

@@ -40,7 +40,7 @@ export const Navigation = () => {
           <Link href="/" className="flex items-center space-x-2">
             <BookOpen className="h-8 w-8 text-primary" />
             <span className="text-xl font-bold text-primary">
-              Školská knižnica
+              SPŠT Knižnica
             </span>
           </Link>
 
