@@ -69,7 +69,7 @@ interface Book {
   bookTags: BookTag[];
 
   // frontend-specific (mock for now, until BE supports)
-  available?: boolean;
+  isAvailable?: boolean;
   dueDate?: string;
   publishedYear?: number;
   coverImage?: string;
@@ -81,7 +81,7 @@ interface BookCardProps {
 }
 
 export const BookCard = ({ book }: BookCardProps) => {
-  const available = book.available ?? true;
+  const isAvailable = book.isAvailable ?? true;
   return (
     <Card className="hover-lift shadow-card group h-full flex flex-col">
       <CardHeader className="pb-4">
@@ -98,14 +98,14 @@ export const BookCard = ({ book }: BookCardProps) => {
             )}
           </div>
           <Badge
-            variant={available ? "default" : "secondary"}
+            variant={isAvailable ? "default" : "secondary"}
             className={
-              available
+              isAvailable
                 ? "bg-green-100 text-green-800 border-green-200"
                 : "bg-amber-100 text-amber-800 border-amber-200"
             }
           >
-            {available ? "Available" : "Borrowed"}
+            {isAvailable ? "isAvailable" : "Borrowed"}
           </Badge>
         </div>
       </CardHeader>
@@ -124,7 +124,7 @@ export const BookCard = ({ book }: BookCardProps) => {
               <span>Published: {book.publishedYear}</span>
             </div>
           )}
-          {!available && book.dueDate && (
+          {!isAvailable && book.dueDate && (
             <div className="flex items-center space-x-2 text-destructive">
               <Clock className="h-4 w-4" />
               <span>Due: {new Date(book.dueDate).toLocaleDateString()}</span>
@@ -180,8 +180,8 @@ const AllBooksWrapper: FC = () => {
 
     const matchesAvailability = (book: Book) =>
       availabilityFilter === "all" ||
-      (availabilityFilter === "available" && book.available) ||
-      (availabilityFilter === "borrowed" && !book.available);
+      (availabilityFilter === "isAvailable" && book.isAvailable) ||
+      (availabilityFilter === "borrowed" && !book.isAvailable);
 
     result = result.filter(matchesAvailability);
 
@@ -197,8 +197,8 @@ const AllBooksWrapper: FC = () => {
     return result;
   }, [books, availabilityFilter, sortBy]);
 
-  const availableCount = books.filter((book) => book.available).length;
-  const borrowedCount = books.filter((book) => book.available === false).length;
+  const isAvailableCount = books.filter((book) => book.isAvailable).length;
+  const borrowedCount = books.filter((book) => book.isAvailable === false).length;
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -253,10 +253,10 @@ const AllBooksWrapper: FC = () => {
               </div>
               <div className="bg-white dark:bg-background rounded-lg p-3 shadow-sm border">
                 <div className="text-sm text-gray-500 dark:text-sky-100">
-                  Available
+                  isAvailable
                 </div>
                 <div className="text-xl font-bold text-green-600">
-                  {availableCount}
+                  {isAvailableCount}
                 </div>
               </div>
               <div className="bg-white dark:bg-background rounded-lg p-3 shadow-sm border">
