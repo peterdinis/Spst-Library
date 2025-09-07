@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -68,7 +69,7 @@ const CategoriesWrapper: FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p>Loading categories...</p>
+        <Loader2 className="animate-spin w-8 h-8" />
       </div>
     );
   }
