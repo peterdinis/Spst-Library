@@ -33,7 +33,6 @@ export default function BookDetail() {
   const { toast } = useToast();
   const [showBorrowDialog, setShowBorrowDialog] = useState(false);
 
-  // použitie hooku na fetch knihy
   const {
     data: book,
     isLoading,
@@ -44,22 +43,22 @@ export default function BookDetail() {
     if (!book) return;
 
     toast({
-      title: "Book borrowed successfully!",
-      description: `${borrowData.name} ${borrowData.lastName} has borrowed "${book.name}" from ${borrowData.fromDate.toLocaleDateString()} to ${borrowData.toDate.toLocaleDateString()}`,
+      title: "Kniha bola úspešne požičaná!",
+      description: `${borrowData.name} ${borrowData.lastName} si požičal/a "${book.name}" od ${borrowData.fromDate.toLocaleDateString()} do ${borrowData.toDate.toLocaleDateString()}`,
     });
 
-    // TODO: API call na backend pre borrow
+    // TODO: API volanie na backend pre borrow
   };
 
   const handleReturn = () => {
     if (!book) return;
 
     toast({
-      title: "Book returned successfully!",
-      description: `Thank you for returning "${book.name}".`,
+      title: "Kniha bola vrátená!",
+      description: `Ďakujeme za vrátenie "${book.name}".`,
     });
 
-    // TODO: API call na backend pre return
+    // TODO: API volanie na backend pre return
   };
 
   if (isLoading) {
@@ -67,7 +66,7 @@ export default function BookDetail() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center animate-fade-in">
           <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-2xl font-bold mb-2">Loading book details...</h2>
+          <h2 className="text-2xl font-bold mb-2">Načítavam detaily knihy...</h2>
         </div>
       </div>
     );
@@ -77,7 +76,7 @@ export default function BookDetail() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="text-destructive">
-          Failed to load book: {(error as Error).message}
+          Nepodarilo sa načítať knihu: {(error as Error).message}
         </p>
       </div>
     );
@@ -86,7 +85,7 @@ export default function BookDetail() {
   if (!book) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Book not found</p>
+        <p className="text-muted-foreground">Kniha nenájdená</p>
       </div>
     );
   }
@@ -94,7 +93,7 @@ export default function BookDetail() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back Button */}
+        {/* Späť */}
         <div className="mb-6 animate-fade-in">
           <Button
             variant="ghost"
@@ -102,14 +101,14 @@ export default function BookDetail() {
             className="flex items-center space-x-2"
           >
             <ArrowLeft className="h-4 w-4" />
-            <span>Back to Books</span>
+            <span>Späť na knihy</span>
           </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
+          {/* Hlavný obsah */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Book Header */}
+            {/* Hlavička knihy */}
             <Card className="shadow-card animate-slide-up">
               <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-4 sm:space-y-0">
@@ -119,7 +118,7 @@ export default function BookDetail() {
                     </CardTitle>
                     <CardDescription className="text-lg flex items-center space-x-2">
                       <User className="h-5 w-5" />
-                      <span>by {book.author?.name}</span>
+                      <span>autor: {book.author?.name}</span>
                     </CardDescription>
 
                     <div className="flex flex-wrap gap-2 mt-4">
@@ -136,14 +135,14 @@ export default function BookDetail() {
                       variant="secondary"
                       className={`text-lg px-4 py-2`}
                     >
-                      Available
+                      K dispozícii
                     </Badge>
                   </div>
                 </div>
               </CardHeader>
             </Card>
 
-            {/* Description */}
+            {/* Popis */}
             <Card
               className="shadow-card animate-slide-up"
               style={{ animationDelay: "0.1s" }}
@@ -151,7 +150,7 @@ export default function BookDetail() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <FileText className="h-5 w-5" />
-                  <span>Description</span>
+                  <span>Popis</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -161,7 +160,7 @@ export default function BookDetail() {
               </CardContent>
             </Card>
 
-            {/* Tags */}
+            {/* Štítky */}
             {book.bookTags && book.bookTags.length > 0 && (
               <Card
                 className="shadow-card animate-slide-up"
@@ -170,7 +169,7 @@ export default function BookDetail() {
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
                     <Hash className="h-5 w-5" />
-                    <span>Tags</span>
+                    <span>Štítky</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -190,12 +189,12 @@ export default function BookDetail() {
             )}
           </div>
 
-          {/* Sidebar */}
+          {/* Bočný panel */}
           <div className="space-y-6">
-            {/* Actions */}
+            {/* Akcie */}
             <Card className="shadow-card animate-scale-in">
               <CardHeader>
-                <CardTitle>Actions</CardTitle>
+                <CardTitle>Akcie</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <Button
@@ -203,11 +202,11 @@ export default function BookDetail() {
                   className="w-full"
                   size="lg"
                 >
-                  Borrow Book
+                  Požičať knihu
                 </Button>
 
                 <Button variant="outline" className="w-full" size="lg">
-                  Add to Wishlist
+                  Pridať do wishlistu
                 </Button>
 
                 <Link
@@ -216,55 +215,55 @@ export default function BookDetail() {
                   )}`}
                 >
                   <Button variant="ghost" className="w-full" size="lg">
-                    More by Author
+                    Viac od autora
                   </Button>
                 </Link>
               </CardContent>
             </Card>
 
-            {/* Book Details */}
+            {/* Detaily knihy */}
             <Card
               className="shadow-card animate-scale-in"
               style={{ animationDelay: "0.1s" }}
             >
               <CardHeader>
-                <CardTitle>Book Details</CardTitle>
+                <CardTitle>Detaily knihy</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Created:</span>
+                    <span className="text-muted-foreground">Vytvorené:</span>
                     <span>{new Date(book.createdAt).toLocaleDateString()}</span>
                   </div>
 
                   <Separator />
 
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Category:</span>
+                    <span className="text-muted-foreground">Kategória:</span>
                     <Badge variant="outline">{book.category?.name}</Badge>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Rating */}
+            {/* Hodnotenia */}
             <Card
               className="shadow-card animate-scale-in"
               style={{ animationDelay: "0.2s" }}
             >
               <CardHeader>
-                <CardTitle>Ratings</CardTitle>
+                <CardTitle>Hodnotenia</CardTitle>
               </CardHeader>
               <CardContent>
                 {book.ratings && book.ratings.length > 0 ? (
                   <div className="flex items-center space-x-2">
                     <Star className="h-5 w-5 fill-secondary text-secondary" />
                     <span className="font-semibold">
-                      {book.ratings.length} reviews
+                      {book.ratings.length} hodnotení
                     </span>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground">No ratings yet</p>
+                  <p className="text-muted-foreground">Zatiaľ žiadne hodnotenia</p>
                 )}
               </CardContent>
             </Card>
@@ -272,7 +271,7 @@ export default function BookDetail() {
         </div>
       </div>
 
-      {/* Borrow Dialog */}
+      {/* Dialóg pre požičanie */}
       <BorrowDialog
         open={showBorrowDialog}
         onOpenChange={setShowBorrowDialog}

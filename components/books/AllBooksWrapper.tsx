@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/card";
 import { useBooks } from "@/hooks/books/useAllBooks";
 
-// -------------------- TYPES --------------------
+// -------------------- TYPY --------------------
 interface Author {
   id: string;
   name: string;
@@ -76,7 +76,7 @@ interface Book {
   coverImage?: string;
 }
 
-// -------------------- BOOK CARD --------------------
+// -------------------- KARTA KNIHY --------------------
 interface BookCardProps {
   book: Book;
 }
@@ -106,7 +106,7 @@ export const BookCard = ({ book }: BookCardProps) => {
                 : "bg-amber-100 text-amber-800 border-amber-200"
             }
           >
-            {isAvailable ? "isAvailable" : "Borrowed"}
+            {isAvailable ? "Dostupná" : "Požičaná"}
           </Badge>
         </div>
       </CardHeader>
@@ -122,13 +122,13 @@ export const BookCard = ({ book }: BookCardProps) => {
           {book.publishedYear && (
             <div className="flex items-center space-x-2">
               <Calendar className="h-4 w-4" />
-              <span>Published: {book.publishedYear}</span>
+              <span>Rok vydania: {book.publishedYear}</span>
             </div>
           )}
           {!isAvailable && book.dueDate && (
             <div className="flex items-center space-x-2 text-destructive">
               <Clock className="h-4 w-4" />
-              <span>Due: {new Date(book.dueDate).toLocaleDateString()}</span>
+              <span>Termín vrátenia: {new Date(book.dueDate).toLocaleDateString()}</span>
             </div>
           )}
         </div>
@@ -147,7 +147,7 @@ export const BookCard = ({ book }: BookCardProps) => {
             className="w-full flex items-center space-x-2"
           >
             <Eye className="h-4 w-4" />
-            <span>View Details</span>
+            <span>Zobraziť detaily</span>
           </Button>
         </Link>
       </CardFooter>
@@ -155,7 +155,7 @@ export const BookCard = ({ book }: BookCardProps) => {
   );
 };
 
-// -------------------- ALL BOOKS WRAPPER --------------------
+// -------------------- OBAL VŠETKÝCH KNIH --------------------
 const AllBooksWrapper: FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
@@ -164,7 +164,6 @@ const AllBooksWrapper: FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(6);
 
-  // 🚀 fetchujeme dáta z API
   const { data, isLoading, isError } = useBooks({
     search: searchTerm,
     page: currentPage,
@@ -175,13 +174,12 @@ const AllBooksWrapper: FC = () => {
   const totalBooks = data?.total ?? 0;
   const totalPages = data?.lastPage ?? 1;
 
-  // apply availability + sort lokálne
   const filteredBooks = useMemo(() => {
     let result = [...books];
 
     const matchesAvailability = (book: Book) =>
       availabilityFilter === "all" ||
-      (availabilityFilter === "isAvailable" && book.isAvailable) ||
+      (availabilityFilter === "available" && book.isAvailable) ||
       (availabilityFilter === "borrowed" && !book.isAvailable);
 
     result = result.filter(matchesAvailability);
@@ -198,7 +196,7 @@ const AllBooksWrapper: FC = () => {
     return result;
   }, [books, availabilityFilter, sortBy]);
 
-  const isAvailableCount = books.filter((book) => book.isAvailable).length;
+  const availableCount = books.filter((book) => book.isAvailable).length;
   const borrowedCount = books.filter((book) => book.isAvailable === false).length;
 
   const clearFilters = () => {
@@ -230,18 +228,18 @@ const AllBooksWrapper: FC = () => {
                 <div className="p-2 bg-primary rounded-lg text-white">
                   <Library className="h-7 w-7" />
                 </div>
-                Book Catalog
+                Knižnica
               </h1>
               <p className="text-gray-500">
-                Browse and borrow books from our collection
+                Prezrite si a požičajte knihy z našej kolekcie
               </p>
             </div>
 
-            {/* Stats */}
+            {/* Štatistiky */}
             <div className="flex flex-wrap gap-3">
               <div className="bg-white dark:bg-background rounded-lg p-3 shadow-sm border">
                 <div className="text-sm text-gray-500 dark:text-sky-100">
-                  Total Books
+                  Celkom kníh
                 </div>
                 <div className="text-xl font-bold text-primary">
                   {totalBooks}
@@ -249,15 +247,15 @@ const AllBooksWrapper: FC = () => {
               </div>
               <div className="bg-white dark:bg-background rounded-lg p-3 shadow-sm border">
                 <div className="text-sm text-gray-500 dark:text-sky-100">
-                  isAvailable
+                  Dostupné
                 </div>
                 <div className="text-xl font-bold text-green-600">
-                  {isAvailableCount}
+                  {availableCount}
                 </div>
               </div>
               <div className="bg-white dark:bg-background rounded-lg p-3 shadow-sm border">
                 <div className="text-sm text-gray-500 dark:text-sky-100">
-                  Borrowed
+                  Požičané
                 </div>
                 <div className="text-xl font-bold text-amber-600">
                   {borrowedCount}
@@ -267,11 +265,11 @@ const AllBooksWrapper: FC = () => {
           </div>
         </div>
 
-        {/* Filters Header */}
+        {/* Filter Header */}
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <h2 className="text-2xl font-semibold text-gray-800 dark:text-sky-100 flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            Explore Our Collection
+            Preskúmajte našu kolekciu
           </h2>
 
           <div className="flex items-center gap-3">
@@ -282,7 +280,7 @@ const AllBooksWrapper: FC = () => {
                 className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
               >
                 <X className="h-4 w-4" />
-                Clear filters ({activeFiltersCount})
+                Vymazať filtre ({activeFiltersCount})
               </Button>
             )}
 
@@ -292,7 +290,7 @@ const AllBooksWrapper: FC = () => {
               className="flex items-center gap-1 md:hidden"
             >
               <Filter className="h-4 w-4" />
-              Filters
+              Filtre
               {activeFiltersCount > 0 && (
                 <Badge variant="secondary" className="ml-1 h-5 w-5 p-0">
                   {activeFiltersCount}
@@ -302,7 +300,7 @@ const AllBooksWrapper: FC = () => {
           </div>
         </div>
 
-        {/* Filters */}
+        {/* Filter Box */}
         <div
           className={`mb-8 transition-all duration-300 ${showFilters ? "block" : "hidden md:block"}`}
         >
@@ -314,7 +312,7 @@ const AllBooksWrapper: FC = () => {
                   htmlFor="search"
                   className="text-sm font-medium text-gray-700 dark:text-sky-100 mb-1 block"
                 >
-                  Search
+                  Hľadať
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -322,7 +320,7 @@ const AllBooksWrapper: FC = () => {
                   </div>
                   <Input
                     id="search"
-                    placeholder="Search books or authors..."
+                    placeholder="Hľadať knihy alebo autorov..."
                     value={searchTerm}
                     onChange={(e) => {
                       setSearchTerm(e.target.value);
@@ -333,13 +331,13 @@ const AllBooksWrapper: FC = () => {
                 </div>
               </div>
 
-              {/* Availability Filter */}
+              {/* Dostupnosť */}
               <div>
                 <label
                   htmlFor="availability"
                   className="text-sm font-medium text-gray-700 dark:text-sky-100 mb-1 block"
                 >
-                  Availability
+                  Dostupnosť
                 </label>
                 <Select
                   value={availabilityFilter}
@@ -349,23 +347,23 @@ const AllBooksWrapper: FC = () => {
                   }}
                 >
                   <SelectTrigger id="availability" className="w-full">
-                    <SelectValue placeholder="All Books" />
+                    <SelectValue placeholder="Všetky knihy" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Books</SelectItem>
-                    <SelectItem value="available">Available Only</SelectItem>
-                    <SelectItem value="borrowed">Borrowed Only</SelectItem>
+                    <SelectItem value="all">Všetky knihy</SelectItem>
+                    <SelectItem value="available">Iba dostupné</SelectItem>
+                    <SelectItem value="borrowed">Iba požičané</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Sort Filter */}
+              {/* Zoradiť */}
               <div>
                 <label
                   htmlFor="sort"
                   className="text-sm font-medium text-gray-700 dark:text-sky-100 mb-1 block"
                 >
-                  Sort By
+                  Zoradiť podľa
                 </label>
                 <Select
                   value={sortBy}
@@ -375,12 +373,12 @@ const AllBooksWrapper: FC = () => {
                   }}
                 >
                   <SelectTrigger id="sort" className="w-full">
-                    <SelectValue placeholder="Sort by" />
+                    <SelectValue placeholder="Zoradiť podľa" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="title">Title</SelectItem>
-                    <SelectItem value="author">Author</SelectItem>
-                    <SelectItem value="year">Publication Year</SelectItem>
+                    <SelectItem value="title">Názov</SelectItem>
+                    <SelectItem value="author">Autor</SelectItem>
+                    <SelectItem value="year">Rok vydania</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -388,14 +386,14 @@ const AllBooksWrapper: FC = () => {
           </div>
         </div>
 
-        {/* Results */}
+        {/* Výsledky */}
         {isLoading ? (
           <div className="text-center py-16">
             <Loader2 className="animate-spin w-8 h-8" />
           </div>
         ) : isError ? (
           <div className="text-center py-16 text-red-500">
-            Failed to load books.
+            Nepodarilo sa načítať knihy.
           </div>
         ) : filteredBooks.length > 0 ? (
           <>
@@ -411,11 +409,11 @@ const AllBooksWrapper: FC = () => {
               ))}
             </div>
 
-            {/* Pagination */}
+            {/* Stránkovanie */}
             {totalPages > 1 && (
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-stone-900 p-4 rounded-lg border border-gray-200">
                 <div className="text-sm text-gray-500 dark:text-sky-100">
-                  Page {currentPage} of {totalPages}
+                  Strana {currentPage} z {totalPages}
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -426,7 +424,7 @@ const AllBooksWrapper: FC = () => {
                     disabled={currentPage === 1}
                   >
                     <ChevronLeft className="h-4 w-4 mr-1" />
-                    Previous
+                    Predchádzajúca
                   </Button>
 
                   <div className="flex items-center gap-1">
@@ -474,7 +472,7 @@ const AllBooksWrapper: FC = () => {
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                   >
-                    Next
+                    Ďalšia
                     <ChevronRight className="h-4 w-4 ml-1" />
                   </Button>
                 </div>
@@ -487,14 +485,14 @@ const AllBooksWrapper: FC = () => {
               <Search className="h-10 w-10 text-gray-400" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No books found
+              Žiadne knihy nenájdené
             </h3>
             <p className="text-gray-500 max-w-md mx-auto">
-              Try adjusting your search or filters. We couldn't find any books
-              matching your criteria.
+              Skúste upraviť vyhľadávanie alebo filtre. Nenašli sme žiadne knihy
+              vyhovujúce vašim kritériám.
             </p>
             <Button onClick={clearFilters} variant="outline" className="mt-4">
-              Clear all filters
+              Vymazať všetky filtre
             </Button>
           </div>
         )}
