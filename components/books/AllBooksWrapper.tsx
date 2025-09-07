@@ -15,6 +15,7 @@ import {
   Eye,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { Input } from "../ui/input";
 import {
@@ -394,7 +395,9 @@ const AllBooksWrapper: FC = () => {
 
         {/* Results */}
         {isLoading ? (
-          <div className="text-center py-16">Loading books...</div>
+          <div className="text-center py-16">
+            <Loader2 className="animate-spin w-8 h-8" />
+          </div>
         ) : isError ? (
           <div className="text-center py-16 text-red-500">
             Failed to load books.
