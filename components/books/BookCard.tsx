@@ -1,12 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  BookOpen,
-  User,
-  Calendar,
-  Eye,
-} from "lucide-react";
+import { BookOpen, User, Calendar, Eye } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "@/components/ui/button";
 import {

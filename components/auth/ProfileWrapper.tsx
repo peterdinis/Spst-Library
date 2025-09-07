@@ -1,19 +1,25 @@
-"use client"
+"use client";
 
 import { FC, useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  User, 
-  Mail, 
-  GraduationCap, 
-  BookOpen, 
-  Clock, 
+import {
+  User,
+  Mail,
+  GraduationCap,
+  BookOpen,
+  Clock,
   TrendingUp,
   Calendar,
   Award,
-  Settings
+  Settings,
 } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
@@ -31,7 +37,7 @@ const mockUser = {
   overdue: 0,
   favoriteGenre: "Science Fiction",
   readingStreak: 12,
-  avatar: "/api/placeholder/100/100"
+  avatar: "/api/placeholder/100/100",
 };
 
 // Mock borrowed books
@@ -45,8 +51,9 @@ const mockBorrowedBooks = [
     publishedYear: 1949,
     available: false,
     dueDate: "2024-01-15",
-    description: "A dystopian social science fiction novel about totalitarian control.",
-    borrowedDate: "2024-01-01"
+    description:
+      "A dystopian social science fiction novel about totalitarian control.",
+    borrowedDate: "2024-01-01",
   },
   {
     id: "2",
@@ -57,8 +64,9 @@ const mockBorrowedBooks = [
     publishedYear: 1951,
     available: false,
     dueDate: "2024-01-20",
-    description: "A controversial novel about teenage rebellion and alienation.",
-    borrowedDate: "2024-01-06"
+    description:
+      "A controversial novel about teenage rebellion and alienation.",
+    borrowedDate: "2024-01-06",
   },
   {
     id: "3",
@@ -70,8 +78,8 @@ const mockBorrowedBooks = [
     available: false,
     dueDate: "2024-01-25",
     description: "Epic science fiction novel set in a distant future.",
-    borrowedDate: "2024-01-11"
-  }
+    borrowedDate: "2024-01-11",
+  },
 ];
 
 // Mock reading history
@@ -82,7 +90,7 @@ const mockHistory = [
     author: "Harper Lee",
     borrowedDate: "2023-11-15",
     returnedDate: "2023-11-29",
-    rating: 5
+    rating: 5,
   },
   {
     id: "hist-2",
@@ -90,7 +98,7 @@ const mockHistory = [
     author: "F. Scott Fitzgerald",
     borrowedDate: "2023-12-01",
     returnedDate: "2023-12-14",
-    rating: 4
+    rating: 4,
   },
   {
     id: "hist-3",
@@ -98,8 +106,8 @@ const mockHistory = [
     author: "Jane Austen",
     borrowedDate: "2023-12-16",
     returnedDate: "2023-12-30",
-    rating: 5
-  }
+    rating: 5,
+  },
 ];
 
 const ProfileWrapper: FC = () => {
@@ -108,7 +116,7 @@ const ProfileWrapper: FC = () => {
   const { toast } = useToast();
 
   const handleReturnBook = (bookId: string) => {
-    setBorrowedBooks(books => books.filter(book => book.id !== bookId));
+    setBorrowedBooks((books) => books.filter((book) => book.id !== bookId));
     toast({
       title: "Book returned successfully!",
       description: "Thank you for returning the book on time.",
@@ -116,12 +124,17 @@ const ProfileWrapper: FC = () => {
   };
 
   const handleRenewBook = (bookId: string) => {
-    setBorrowedBooks(books => 
-      books.map(book => 
-        book.id === bookId 
-          ? { ...book, dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() }
-          : book
-      )
+    setBorrowedBooks((books) =>
+      books.map((book) =>
+        book.id === bookId
+          ? {
+              ...book,
+              dueDate: new Date(
+                Date.now() + 14 * 24 * 60 * 60 * 1000,
+              ).toISOString(),
+            }
+          : book,
+      ),
     );
     toast({
       title: "Book renewed successfully!",
@@ -129,8 +142,10 @@ const ProfileWrapper: FC = () => {
     });
   };
 
-  const overdueBooks = borrowedBooks.filter(book => new Date(book.dueDate) < new Date());
-  const upcomingDue = borrowedBooks.filter(book => {
+  const overdueBooks = borrowedBooks.filter(
+    (book) => new Date(book.dueDate) < new Date(),
+  );
+  const upcomingDue = borrowedBooks.filter((book) => {
     const dueDate = new Date(book.dueDate);
     const threeDaysFromNow = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
     return dueDate <= threeDaysFromNow && dueDate >= new Date();
@@ -145,9 +160,12 @@ const ProfileWrapper: FC = () => {
             <CardHeader>
               <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
                 <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                  {user.name.split(' ').map(n => n[0]).join('')}
+                  {user.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
                 </div>
-                
+
                 <div className="flex-1">
                   <CardTitle className="text-2xl mb-2">{user.name}</CardTitle>
                   <CardDescription className="space-y-1">
@@ -157,7 +175,9 @@ const ProfileWrapper: FC = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <GraduationCap className="h-4 w-4" />
-                      <span>{user.grade} • {user.role}</span>
+                      <span>
+                        {user.grade} • {user.role}
+                      </span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Calendar className="h-4 w-4" />
@@ -180,31 +200,45 @@ const ProfileWrapper: FC = () => {
           <Card className="text-center hover-lift shadow-card">
             <CardContent className="p-4">
               <BookOpen className="h-8 w-8 mx-auto mb-2 text-primary" />
-              <div className="text-2xl font-bold text-foreground">{user.currentlyBorrowed}</div>
-              <div className="text-sm text-muted-foreground">Currently Borrowed</div>
+              <div className="text-2xl font-bold text-foreground">
+                {user.currentlyBorrowed}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Currently Borrowed
+              </div>
             </CardContent>
           </Card>
-          
+
           <Card className="text-center hover-lift shadow-card">
             <CardContent className="p-4">
               <TrendingUp className="h-8 w-8 mx-auto mb-2 text-success" />
-              <div className="text-2xl font-bold text-foreground">{user.totalBorrowed}</div>
-              <div className="text-sm text-muted-foreground">Total Books Read</div>
+              <div className="text-2xl font-bold text-foreground">
+                {user.totalBorrowed}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Total Books Read
+              </div>
             </CardContent>
           </Card>
-          
+
           <Card className="text-center hover-lift shadow-card">
             <CardContent className="p-4">
               <Clock className="h-8 w-8 mx-auto mb-2 text-secondary" />
-              <div className="text-2xl font-bold text-foreground">{user.readingStreak}</div>
-              <div className="text-sm text-muted-foreground">Day Reading Streak</div>
+              <div className="text-2xl font-bold text-foreground">
+                {user.readingStreak}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Day Reading Streak
+              </div>
             </CardContent>
           </Card>
-          
+
           <Card className="text-center hover-lift shadow-card">
             <CardContent className="p-4">
               <Award className="h-8 w-8 mx-auto mb-2 text-accent" />
-              <div className="text-2xl font-bold text-foreground">{user.overdue}</div>
+              <div className="text-2xl font-bold text-foreground">
+                {user.overdue}
+              </div>
               <div className="text-sm text-muted-foreground">Overdue Books</div>
             </CardContent>
           </Card>
@@ -221,12 +255,13 @@ const ProfileWrapper: FC = () => {
                     Overdue Books ({overdueBooks.length})
                   </CardTitle>
                   <CardDescription>
-                    Please return these books as soon as possible to avoid late fees.
+                    Please return these books as soon as possible to avoid late
+                    fees.
                   </CardDescription>
                 </CardHeader>
               </Card>
             )}
-            
+
             {upcomingDue.length > 0 && (
               <Card className="border-secondary bg-secondary/5">
                 <CardHeader>
@@ -256,11 +291,11 @@ const ProfileWrapper: FC = () => {
               <h2 className="text-2xl font-bold">Currently Borrowed Books</h2>
               <Badge variant="outline">{borrowedBooks.length} books</Badge>
             </div>
-            
+
             {borrowedBooks.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {borrowedBooks.map((book, index) => (
-                  <div 
+                  <div
                     key={book.id}
                     className="animate-scale-in"
                     style={{ animationDelay: `${index * 0.1}s` }}
@@ -277,10 +312,16 @@ const ProfileWrapper: FC = () => {
                               <span className="text-sm">{book.author}</span>
                             </div>
                           </div>
-                          <Badge 
-                            variant={new Date(book.dueDate) < new Date() ? "destructive" : "secondary"}
+                          <Badge
+                            variant={
+                              new Date(book.dueDate) < new Date()
+                                ? "destructive"
+                                : "secondary"
+                            }
                           >
-                            {new Date(book.dueDate) < new Date() ? "Overdue" : "Borrowed"}
+                            {new Date(book.dueDate) < new Date()
+                              ? "Overdue"
+                              : "Borrowed"}
                           </Badge>
                         </div>
                       </CardHeader>
@@ -293,14 +334,19 @@ const ProfileWrapper: FC = () => {
                           </div>
                           <div className="flex items-center space-x-2">
                             <Calendar className="h-4 w-4" />
-                            <span>Borrowed: {new Date(book.borrowedDate).toLocaleDateString()}</span>
+                            <span>
+                              Borrowed:{" "}
+                              {new Date(book.borrowedDate).toLocaleDateString()}
+                            </span>
                           </div>
                           <div className="flex items-center space-x-2">
                             <Clock className="h-4 w-4" />
-                            <span>Due: {new Date(book.dueDate).toLocaleDateString()}</span>
+                            <span>
+                              Due: {new Date(book.dueDate).toLocaleDateString()}
+                            </span>
                           </div>
                         </div>
-                        
+
                         {book.description && (
                           <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
                             {book.description}
@@ -309,14 +355,14 @@ const ProfileWrapper: FC = () => {
                       </CardContent>
 
                       <div className="p-6 pt-0 space-y-2">
-                        <Button 
+                        <Button
                           onClick={() => handleReturnBook(book.id)}
                           className="w-full"
                           variant="default"
                         >
                           Return Book
                         </Button>
-                        <Button 
+                        <Button
                           onClick={() => handleRenewBook(book.id)}
                           className="w-full"
                           variant="outline"
@@ -331,7 +377,9 @@ const ProfileWrapper: FC = () => {
             ) : (
               <div className="text-center py-12 animate-fade-in">
                 <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mb-2">No books currently borrowed</h3>
+                <h3 className="text-xl font-semibold mb-2">
+                  No books currently borrowed
+                </h3>
                 <p className="text-muted-foreground mb-4">
                   Browse our collection to find your next great read!
                 </p>
@@ -346,12 +394,14 @@ const ProfileWrapper: FC = () => {
           <TabsContent value="history" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold">Reading History</h2>
-              <Badge variant="outline">{mockHistory.length} books completed</Badge>
+              <Badge variant="outline">
+                {mockHistory.length} books completed
+              </Badge>
             </div>
-            
+
             <div className="space-y-4">
               {mockHistory.map((book, index) => (
-                <Card 
+                <Card
                   key={book.id}
                   className="hover-lift shadow-card animate-scale-in"
                   style={{ animationDelay: `${index * 0.1}s` }}
@@ -360,17 +410,25 @@ const ProfileWrapper: FC = () => {
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg">{book.title}</h3>
-                        <p className="text-muted-foreground">by {book.author}</p>
+                        <p className="text-muted-foreground">
+                          by {book.author}
+                        </p>
                         <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
-                          <span>Borrowed: {new Date(book.borrowedDate).toLocaleDateString()}</span>
-                          <span>Returned: {new Date(book.returnedDate).toLocaleDateString()}</span>
+                          <span>
+                            Borrowed:{" "}
+                            {new Date(book.borrowedDate).toLocaleDateString()}
+                          </span>
+                          <span>
+                            Returned:{" "}
+                            {new Date(book.returnedDate).toLocaleDateString()}
+                          </span>
                         </div>
                       </div>
                       <div className="flex items-center space-x-1">
                         {[...Array(5)].map((_, i) => (
-                          <span 
-                            key={i} 
-                            className={`text-lg ${i < book.rating ? 'text-secondary' : 'text-muted'}`}
+                          <span
+                            key={i}
+                            className={`text-lg ${i < book.rating ? "text-secondary" : "text-muted"}`}
                           >
                             ★
                           </span>
@@ -386,6 +444,6 @@ const ProfileWrapper: FC = () => {
       </div>
     </div>
   );
-}
+};
 
-export default ProfileWrapper
+export default ProfileWrapper;

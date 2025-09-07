@@ -2,7 +2,7 @@ import CreateBookForm from "@/components/books/CreateBookForm";
 import { NextPage } from "next";
 
 const CreateBookPage: NextPage = () => {
-    return <CreateBookForm />
-}
+  return <CreateBookForm />;
+};
 
-export default CreateBookPage
+export default CreateBookPage;

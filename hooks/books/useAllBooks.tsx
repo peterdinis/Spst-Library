@@ -42,6 +42,6 @@ export function useBooks(params: QueryBooksDto) {
   return useQuery({
     queryKey: ["books", params],
     queryFn: () => fetchBooks(params),
-    staleTime: Infinity
+    staleTime: Infinity,
   });
 }
