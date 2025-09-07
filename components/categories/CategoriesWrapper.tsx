@@ -22,14 +22,14 @@ const CategoriesWrapper: FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const itemsPerPage = 8;
 
-  // fetch categories via hook
+  // načítanie kategórií cez hook
   const { data, isLoading, error } = useCategories(
     currentPage,
     itemsPerPage,
     searchQuery || undefined,
   );
 
-  // derived values
+  // odvodené hodnoty
   const categories = data?.data ?? [];
   const totalPages = data?.meta.totalPages ?? 0;
   const totalBooks = categories.reduce((sum, cat) => sum + cat.books.length, 0);
@@ -37,7 +37,7 @@ const CategoriesWrapper: FC = () => {
     (sum, cat) =>
       sum +
       cat.books.filter(
-        (book: any) => book.available !== false, // prispôsob podla backendu
+        (book: any) => book.available !== false, // prispôsob podľa backendu
       ).length,
     0,
   );
@@ -47,7 +47,7 @@ const CategoriesWrapper: FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Animation variants
+  // animačné varianty
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -78,7 +78,7 @@ const CategoriesWrapper: FC = () => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p className="text-red-500">
-          Failed to load categories: {(error as Error).message}
+          Nepodarilo sa načítať kategórie: {(error as Error).message}
         </p>
       </div>
     );
@@ -87,7 +87,7 @@ const CategoriesWrapper: FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
+        {/* Hlavička */}
         <motion.div
           className="mb-8"
           initial={{ opacity: 0, y: -20 }}
@@ -95,18 +95,18 @@ const CategoriesWrapper: FC = () => {
           transition={{ duration: 0.5 }}
         >
           <h1 className="text-3xl font-bold text-foreground mb-2">
-            Book Categories
+            Kategórie kníh
           </h1>
           <p className="text-muted-foreground mb-6">
-            Explore our diverse collection organized by genre and subject
+            Preskúmajte našu rozmanitú zbierku podľa žánru a tém
           </p>
 
-          {/* Search Bar */}
+          {/* Vyhľadávací panel */}
           <div className="relative mb-6">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <input
               type="text"
-              placeholder="Search categories..."
+              placeholder="Hľadať kategórie..."
               className="pl-10 pr-4 py-2 w-full max-w-md border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
               value={searchQuery}
               onChange={(e) => {
@@ -116,7 +116,7 @@ const CategoriesWrapper: FC = () => {
             />
           </div>
 
-          {/* Stats */}
+          {/* Štatistiky */}
           <motion.div
             className="bg-card p-6 rounded-lg shadow-card mb-6"
             variants={statsVariants}
@@ -131,7 +131,7 @@ const CategoriesWrapper: FC = () => {
                 <div className="text-2xl font-bold text-foreground">
                   {totalBooks}
                 </div>
-                <div className="text-sm text-muted-foreground">Total Books</div>
+                <div className="text-sm text-muted-foreground">Celkový počet kníh</div>
               </motion.div>
               <motion.div className="text-center" whileHover={{ scale: 1.05 }}>
                 <div className="flex items-center justify-center mb-2">
@@ -141,7 +141,7 @@ const CategoriesWrapper: FC = () => {
                   {totalAvailable}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Available Now
+                  Dostupné teraz
                 </div>
               </motion.div>
               <motion.div className="text-center" whileHover={{ scale: 1.05 }}>
@@ -151,13 +151,13 @@ const CategoriesWrapper: FC = () => {
                 <div className="text-2xl font-bold text-foreground">
                   {data?.meta.total ?? 0}
                 </div>
-                <div className="text-sm text-muted-foreground">Categories</div>
+                <div className="text-sm text-muted-foreground">Kategórie</div>
               </motion.div>
             </div>
           </motion.div>
         </motion.div>
 
-        {/* Categories Grid */}
+        {/* Mriežka kategórií */}
         <AnimatePresence mode="wait">
           <motion.div
             key={`page-${currentPage}-${searchQuery}`}
@@ -177,7 +177,7 @@ const CategoriesWrapper: FC = () => {
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between mb-2">
                       <div className="text-2xl">📚</div>
-                      <Badge>{category.books.length} books</Badge>
+                      <Badge>{category.books.length} kníh</Badge>
                     </div>
                     <CardTitle className="text-lg font-semibold group-hover:text-primary transition-smooth">
                       {category.name}
@@ -186,12 +186,12 @@ const CategoriesWrapper: FC = () => {
 
                   <CardContent className="space-y-4">
                     <p className="text-sm text-muted-foreground line-clamp-3">
-                      {category.description ?? "No description available."}
+                      {category.description ?? "Popis nie je k dispozícii."}
                     </p>
 
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-muted-foreground">
-                        {category.books.length} total
+                        {category.books.length} celkom
                       </span>
                       <Link
                         href={`/books?category=${encodeURIComponent(
@@ -199,7 +199,7 @@ const CategoriesWrapper: FC = () => {
                         )}`}
                       >
                         <Button variant="outline" size="sm">
-                          Browse
+                          Prezrieť
                         </Button>
                       </Link>
                     </div>
@@ -210,7 +210,7 @@ const CategoriesWrapper: FC = () => {
           </motion.div>
         </AnimatePresence>
 
-        {/* Pagination */}
+        {/* Stránkovanie */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center space-x-2 mb-8">
             <Button
