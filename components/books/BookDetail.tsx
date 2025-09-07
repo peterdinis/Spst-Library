@@ -33,11 +33,7 @@ export default function BookDetail() {
   const { toast } = useToast();
   const [showBorrowDialog, setShowBorrowDialog] = useState(false);
 
-  const {
-    data: book,
-    isLoading,
-    error,
-  } = useBook(Number(id));
+  const { data: book, isLoading, error } = useBook(Number(id));
 
   const handleBorrow = (borrowData: BorrowData) => {
     if (!book) return;
@@ -66,7 +62,9 @@ export default function BookDetail() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center animate-fade-in">
           <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-2xl font-bold mb-2">Načítavam detaily knihy...</h2>
+          <h2 className="text-2xl font-bold mb-2">
+            Načítavam detaily knihy...
+          </h2>
         </div>
       </div>
     );
@@ -131,10 +129,7 @@ export default function BookDetail() {
                   </div>
 
                   <div className="text-right">
-                    <Badge
-                      variant="secondary"
-                      className={`text-lg px-4 py-2`}
-                    >
+                    <Badge variant="secondary" className={`text-lg px-4 py-2`}>
                       K dispozícii
                     </Badge>
                   </div>
@@ -263,7 +258,9 @@ export default function BookDetail() {
                     </span>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground">Zatiaľ žiadne hodnotenia</p>
+                  <p className="text-muted-foreground">
+                    Zatiaľ žiadne hodnotenia
+                  </p>
                 )}
               </CardContent>
             </Card>

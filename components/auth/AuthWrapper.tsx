@@ -1,12 +1,25 @@
-"use client"
+"use client";
 
 import { FC, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { BookOpen, Mail, Lock, User, GraduationCap, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/useToast";
@@ -20,7 +33,7 @@ const AuthWrapper: FC = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     // Mock authentication
     setTimeout(() => {
       setIsLoading(false);
@@ -35,7 +48,7 @@ const AuthWrapper: FC = () => {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     // Mock registration
     setTimeout(() => {
       setIsLoading(false);
@@ -52,7 +65,10 @@ const AuthWrapper: FC = () => {
       <div className="w-full max-w-md animate-scale-in">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2 text-white hover:opacity-80 transition-smooth">
+          <Link
+            href="/"
+            className="inline-flex items-center space-x-2 text-white hover:opacity-80 transition-smooth"
+          >
             <BookOpen className="h-10 w-10" />
             <span className="text-2xl font-bold">LibraryHub</span>
           </Link>
@@ -72,7 +88,9 @@ const AuthWrapper: FC = () => {
             <TabsContent value="login">
               <form onSubmit={handleLogin}>
                 <CardContent className="space-y-4">
-                  <CardTitle className="text-2xl text-center">Welcome Back</CardTitle>
+                  <CardTitle className="text-2xl text-center">
+                    Welcome Back
+                  </CardTitle>
                   <CardDescription className="text-center">
                     Sign in to your LibraryHub account
                   </CardDescription>
@@ -112,7 +130,7 @@ const AuthWrapper: FC = () => {
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Signing in..." : "Sign In"}
                   </Button>
-                  
+
                   <p className="text-sm text-center text-muted-foreground">
                     Demo credentials: any email/password will work
                   </p>
@@ -124,7 +142,9 @@ const AuthWrapper: FC = () => {
             <TabsContent value="register">
               <form onSubmit={handleRegister}>
                 <CardContent className="space-y-4">
-                  <CardTitle className="text-2xl text-center">Create Account</CardTitle>
+                  <CardTitle className="text-2xl text-center">
+                    Create Account
+                  </CardTitle>
                   <CardDescription className="text-center">
                     Join LibraryHub to start borrowing books
                   </CardDescription>
@@ -215,9 +235,10 @@ const AuthWrapper: FC = () => {
                   <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? "Creating account..." : "Create Account"}
                   </Button>
-                  
+
                   <p className="text-xs text-center text-muted-foreground">
-                    By creating an account, you agree to our Terms of Service and Privacy Policy
+                    By creating an account, you agree to our Terms of Service
+                    and Privacy Policy
                   </p>
                 </CardFooter>
               </form>
@@ -227,13 +248,16 @@ const AuthWrapper: FC = () => {
 
         {/* Back to Home */}
         <div className="text-center mt-6">
-          <Link href="/" className="text-white/80 hover:text-white text-sm transition-smooth">
+          <Link
+            href="/"
+            className="text-white/80 hover:text-white text-sm transition-smooth"
+          >
             ← Back to LibraryHub
           </Link>
         </div>
       </div>
     </div>
   );
-}
+};
 
-export default AuthWrapper
+export default AuthWrapper;

@@ -22,7 +22,11 @@ export interface CategoryResponse {
   };
 }
 
-export function useCategories(page: number = 1, limit: number = 10, search?: string) {
+export function useCategories(
+  page: number = 1,
+  limit: number = 10,
+  search?: string,
+) {
   return useQuery<CategoryResponse>({
     queryKey: ["categories", { page, limit, search }],
     queryFn: async () => {
@@ -32,7 +36,9 @@ export function useCategories(page: number = 1, limit: number = 10, search?: str
         ...(search ? { search } : {}),
       });
 
-      const res = await fetch(`http://localhost:5000/categories?${params.toString()}`);
+      const res = await fetch(
+        `http://localhost:5000/categories?${params.toString()}`,
+      );
       if (!res.ok) {
         throw new Error("Failed to fetch categories");
       }

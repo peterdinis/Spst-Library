@@ -26,7 +26,7 @@ const CategoriesWrapper: FC = () => {
   const { data, isLoading, error } = useCategories(
     currentPage,
     itemsPerPage,
-    searchQuery || undefined
+    searchQuery || undefined,
   );
 
   // derived values
@@ -37,9 +37,9 @@ const CategoriesWrapper: FC = () => {
     (sum, cat) =>
       sum +
       cat.books.filter(
-        (book: any) => book.available !== false // prispôsob podla backendu
+        (book: any) => book.available !== false, // prispôsob podla backendu
       ).length,
-    0
+    0,
   );
 
   const handlePageChange = (page: number) => {
@@ -195,7 +195,7 @@ const CategoriesWrapper: FC = () => {
                       </span>
                       <Link
                         href={`/books?category=${encodeURIComponent(
-                          category.name
+                          category.name,
                         )}`}
                       >
                         <Button variant="outline" size="sm">

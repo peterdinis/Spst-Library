@@ -128,7 +128,9 @@ export const BookCard = ({ book }: BookCardProps) => {
           {!isAvailable && book.dueDate && (
             <div className="flex items-center space-x-2 text-destructive">
               <Clock className="h-4 w-4" />
-              <span>Termín vrátenia: {new Date(book.dueDate).toLocaleDateString()}</span>
+              <span>
+                Termín vrátenia: {new Date(book.dueDate).toLocaleDateString()}
+              </span>
             </div>
           )}
         </div>
@@ -197,7 +199,9 @@ const AllBooksWrapper: FC = () => {
   }, [books, availabilityFilter, sortBy]);
 
   const availableCount = books.filter((book) => book.isAvailable).length;
-  const borrowedCount = books.filter((book) => book.isAvailable === false).length;
+  const borrowedCount = books.filter(
+    (book) => book.isAvailable === false,
+  ).length;
 
   const clearFilters = () => {
     setSearchTerm("");
