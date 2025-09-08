@@ -1,11 +1,12 @@
+import { Book } from "./bookTypes";
+
 export interface Category {
   id: number;
   name: string;
-  description: string;
-  books: {
-    id: number;
-    name: string;
-  }[];
+  description?: string | null;
+  books: Book[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CategoryResponse {

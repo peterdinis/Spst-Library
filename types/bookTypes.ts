@@ -1,12 +1,25 @@
+import { Author } from "./authorTypes";
+import { BookTag } from "./bookTagTypes";
+import { Category } from "./categoryTypes";
+import { OrderItem } from "./orderTypes";
+import { Rating } from "./ratingTypes";
+
 export interface Book {
-  id: string;
+  id: number;
   name: string;
-  description: string;
+  description?: string | null;
+  year?: number | null;
+  isAvailable: boolean;
+  isNew: boolean;
+  categoryId?: number | null;
+  category?: Category | null;
+  authorId: number;
+  author: Author;
+  bookTags: BookTag[];
+  ratings: Rating[];
+  orderItems: OrderItem[];
   createdAt: string;
-  author: any;
-  ratings: any[];
-  category: any;
-  bookTags: any[];
+  updatedAt: string;
 }
 
 export interface BooksResponse {
