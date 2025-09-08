@@ -11,12 +11,14 @@ export interface Book {
   bookTags: any[];
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 async function fetchBook(id: number): Promise<Book> {
   if (!id || id < 1) {
     throw new Error("Invalid book ID");
   }
 
-  const res = await fetch(`http://localhost:5000/books/${id}`);
+  const res = await fetch(`${API_BASE_URL}/books/${id}`);
   if (!res.ok) {
     throw new Error(`Failed to fetch book with id ${id}`);
   }

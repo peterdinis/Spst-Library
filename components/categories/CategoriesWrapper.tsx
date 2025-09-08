@@ -131,7 +131,9 @@ const CategoriesWrapper: FC = () => {
                 <div className="text-2xl font-bold text-foreground">
                   {totalBooks}
                 </div>
-                <div className="text-sm text-muted-foreground">Celkový počet kníh</div>
+                <div className="text-sm text-muted-foreground">
+                  Celkový počet kníh
+                </div>
               </motion.div>
               <motion.div className="text-center" whileHover={{ scale: 1.05 }}>
                 <div className="flex items-center justify-center mb-2">
