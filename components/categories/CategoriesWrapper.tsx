@@ -21,8 +21,7 @@ const CategoriesWrapper: FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const itemsPerPage = 8;
-
-  // načítanie kategórií cez hook
+  
   const { data, isLoading, error } = useCategories(
     currentPage,
     itemsPerPage,
