@@ -199,7 +199,7 @@ const AuthorsWrapper: FC = () => {
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
-                  <Award className="h-8 w-8 text-secondary" />
+                  <Award className="h-8 w-8 text-green-500" />
                 </div>
                 <div className="text-2xl font-bold text-foreground">
                   {totalAvailable}
@@ -210,7 +210,7 @@ const AuthorsWrapper: FC = () => {
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
-                  <Search className="h-8 w-8 text-accent" />
+                  <Search className="h-8 w-8 text-foreground" />
                 </div>
                 <div className="text-2xl font-bold text-foreground">
                   {Array.from(new Set(authors.flatMap((a) => a.genres))).length}
