@@ -13,9 +13,7 @@ import {
   BookOpen,
   User,
   ArrowLeft,
-  Clock,
   Star,
-  Users,
   FileText,
   Hash,
 } from "lucide-react";

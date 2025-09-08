@@ -1,15 +1,5 @@
+import { Book } from "@/types/bookTypes";
 import { useQuery } from "@tanstack/react-query";
-
-export interface Book {
-  id: string;
-  name: string;
-  description: string;
-  createdAt: string;
-  author: any;
-  ratings: any[];
-  category: any;
-  bookTags: any[];
-}
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 

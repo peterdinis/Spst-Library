@@ -1,32 +1,10 @@
+import { BooksResponse } from "@/types/bookTypes";
+import { QueryTypeDto } from "@/types/globalTypes";
 import { useQuery } from "@tanstack/react-query";
-
-export interface QueryBooksDto {
-  search?: string;
-  page?: number;
-  limit?: number;
-}
-
-interface Book {
-  id: string;
-  name: string;
-  description: string;
-  createdAt: string;
-  author: any;
-  ratings: any[];
-  category: any;
-  bookTags: any[];
-}
-
-interface BooksResponse {
-  data: Book[];
-  total: number;
-  page: number;
-  lastPage: number;
-}
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-async function fetchBooks(params: QueryBooksDto): Promise<BooksResponse> {
+async function fetchBooks(params: QueryTypeDto): Promise<BooksResponse> {
   const query = new URLSearchParams();
 
   if (params.search) query.append("search", params.search);
@@ -40,7 +18,7 @@ async function fetchBooks(params: QueryBooksDto): Promise<BooksResponse> {
   return res.json();
 }
 
-export function useBooks(params: QueryBooksDto) {
+export function useBooks(params: QueryTypeDto) {
   return useQuery({
     queryKey: ["books", params],
     queryFn: () => fetchBooks(params),
