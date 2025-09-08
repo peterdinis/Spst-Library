@@ -31,7 +31,7 @@ const fetchAuthors = async (params: QueryAuthorParams): Promise<AuthorsResponse>
     search: params.search || '',
   });
 
-  const res = await fetch(`/api/authors?${query.toString()}`);
+  const res = await fetch(`http://localhost:5000/authors?${query.toString()}`);
   if (!res.ok) {
     throw new Error('Failed to fetch authors');
   }
