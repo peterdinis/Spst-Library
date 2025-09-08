@@ -22,6 +22,8 @@ export interface CategoryResponse {
   };
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 export function useCategories(
   page: number = 1,
   limit: number = 10,
@@ -36,9 +38,7 @@ export function useCategories(
         ...(search ? { search } : {}),
       });
 
-      const res = await fetch(
-        `http://localhost:5000/categories?${params.toString()}`,
-      );
+      const res = await fetch(`${API_BASE_URL}/categories?${params.toString()}`);
       if (!res.ok) {
         throw new Error("Failed to fetch categories");
       }
