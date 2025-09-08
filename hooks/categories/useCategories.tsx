@@ -1,26 +1,7 @@
 "use client";
 
+import { CategoryResponse } from "@/types/categoryTypes";
 import { useQuery } from "@tanstack/react-query";
-
-export interface Category {
-  id: number;
-  name: string;
-  description: string;
-  books: {
-    id: number;
-    name: string;
-  }[];
-}
-
-export interface CategoryResponse {
-  data: Category[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
