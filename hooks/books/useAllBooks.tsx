@@ -24,6 +24,8 @@ interface BooksResponse {
   lastPage: number;
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 async function fetchBooks(params: QueryBooksDto): Promise<BooksResponse> {
   const query = new URLSearchParams();
 
@@ -31,7 +33,7 @@ async function fetchBooks(params: QueryBooksDto): Promise<BooksResponse> {
   if (params.page) query.append("page", params.page.toString());
   if (params.limit) query.append("limit", params.limit.toString());
 
-  const res = await fetch(`http://localhost:5000/books?${query.toString()}`);
+  const res = await fetch(`${API_BASE_URL}/books?${query.toString()}`);
   if (!res.ok) {
     throw new Error("Failed to fetch books");
   }
