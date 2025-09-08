@@ -38,7 +38,9 @@ export function useCategories(
         ...(search ? { search } : {}),
       });
 
-      const res = await fetch(`${API_BASE_URL}/categories?${params.toString()}`);
+      const res = await fetch(
+        `${API_BASE_URL}/categories?${params.toString()}`,
+      );
       if (!res.ok) {
         throw new Error("Failed to fetch categories");
       }
