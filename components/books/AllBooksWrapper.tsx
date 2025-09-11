@@ -172,7 +172,10 @@ const AllBooksWrapper: FC = () => {
 
   const { data: categories, isLoading: isCategoriesLoading } = useNotFilterCategories();
 
-  const books: Book[] = data?.data ?? [];
+
+  console.log("Categories")
+  
+  const books = data?.data ?? [];
   const totalBooks = data?.total ?? 0;
   const totalPages = data?.lastPage ?? 1;
 
