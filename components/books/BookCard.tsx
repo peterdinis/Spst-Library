@@ -11,23 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-interface Book {
-  id: number;
-  name: string;
-  description?: string;
-  year?: number;
-  isAvailable: boolean;
-  isNew: boolean;
-  category?: {
-    id: number;
-    name: string;
-  } | null;
-  author: {
-    id: number;
-    name: string;
-  };
-}
+import { Book } from "@/types/bookTypes";
 
 interface BookCardProps {
   book: Book;
@@ -71,7 +55,7 @@ export const BookCard = ({ book }: BookCardProps) => {
           {book.year && (
             <div className="flex items-center space-x-2">
               <Calendar className="h-4 w-4" />
-              <span>Published: {book.year}</span>
+              <span>Publikované: {book.year}</span>
             </div>
           )}
         </div>
@@ -90,7 +74,7 @@ export const BookCard = ({ book }: BookCardProps) => {
             className="w-full flex items-center space-x-2"
           >
             <Eye className="h-4 w-4" />
-            <span>View Details</span>
+            <span>Zobraz Detail</span>
           </Button>
         </Link>
       </CardFooter>
