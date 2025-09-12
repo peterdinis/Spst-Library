@@ -5,228 +5,118 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, BookOpen, Calendar, Award } from "lucide-react";
+import { Search, BookOpen, Calendar, Award, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useAllAuthors } from "@/hooks/authors/useAllAuthors";
+import { Author } from "@/types/authorTypes";
 
-interface Author {
-  id: string;
-  name: string;
-  biography: string;
-  birthYear: number;
-  nationality: string;
-  genres: string[];
+interface AuthorWithCounts extends Author {
   bookCount: number;
   availableBooks: number;
+  genres: string[];
   popularWorks: string[];
   awards: string[];
-  imageUrl?: string;
 }
 
-const mockAuthors: Author[] = [
-  {
-    id: "1",
-    name: "Harper Lee",
-    biography:
-      "Harper Lee was an American novelist best known for her 1960 novel To Kill a Mockingbird.",
-    birthYear: 1926,
-    nationality: "American",
-    genres: ["Classic Literature", "Fiction"],
-    bookCount: 2,
-    availableBooks: 1,
-    popularWorks: ["To Kill a Mockingbird", "Go Set a Watchman"],
-    awards: ["Pulitzer Prize", "Presidential Medal of Freedom"],
-  },
-  {
-    id: "2",
-    name: "George Orwell",
-    biography:
-      "Eric Blair, known by his pen name George Orwell, was an English novelist and essayist.",
-    birthYear: 1903,
-    nationality: "British",
-    genres: ["Science Fiction", "Political Fiction", "Dystopian"],
-    bookCount: 4,
-    availableBooks: 2,
-    popularWorks: ["1984", "Animal Farm", "Homage to Catalonia"],
-    awards: ["Prometheus Hall of Fame Award"],
-  },
-  {
-    id: "3",
-    name: "F. Scott Fitzgerald",
-    biography:
-      "Francis Scott Key Fitzgerald was an American novelist and short story writer.",
-    birthYear: 1896,
-    nationality: "American",
-    genres: ["Classic Literature", "Modernist"],
-    bookCount: 3,
-    availableBooks: 2,
-    popularWorks: [
-      "The Great Gatsby",
-      "Tender Is the Night",
-      "This Side of Paradise",
-    ],
-    awards: ["American Academy of Arts and Letters"],
-  },
-  {
-    id: "4",
-    name: "Jane Austen",
-    biography:
-      "Jane Austen was an English novelist known primarily for her six major novels.",
-    birthYear: 1775,
-    nationality: "British",
-    genres: ["Romance", "Classic Literature", "Regency"],
-    bookCount: 6,
-    availableBooks: 4,
-    popularWorks: ["Pride and Prejudice", "Sense and Sensibility", "Emma"],
-    awards: ["Literary Hall of Fame"],
-  },
-  {
-    id: "5",
-    name: "J.D. Salinger",
-    biography:
-      "Jerome David Salinger was an American writer known for his novel The Catcher in the Rye.",
-    birthYear: 1919,
-    nationality: "American",
-    genres: ["Coming of Age", "Literary Fiction"],
-    bookCount: 2,
-    availableBooks: 0,
-    popularWorks: ["The Catcher in the Rye", "Nine Stories"],
-    awards: ["National Book Award nominee"],
-  },
-  {
-    id: "6",
-    name: "William Golding",
-    biography:
-      "Sir William Gerald Golding was a British novelist and playwright.",
-    birthYear: 1911,
-    nationality: "British",
-    genres: ["Adventure", "Allegory", "Fiction"],
-    bookCount: 3,
-    availableBooks: 2,
-    popularWorks: ["Lord of the Flies", "The Inheritors", "Pincher Martin"],
-    awards: ["Nobel Prize in Literature", "Booker Prize"],
-  },
-  {
-    id: "7",
-    name: "Agatha Christie",
-    biography:
-      "Dame Agatha Mary Clarissa Christie was an English writer known for her detective novels.",
-    birthYear: 1890,
-    nationality: "British",
-    genres: ["Mystery", "Crime", "Detective Fiction"],
-    bookCount: 12,
-    availableBooks: 8,
-    popularWorks: [
-      "Murder on the Orient Express",
-      "The Murder of Roger Ackroyd",
-      "And Then There Were None",
-    ],
-    awards: ["Grand Master Award", "Order of the British Empire"],
-  },
-  {
-    id: "8",
-    name: "Mark Twain",
-    biography:
-      "Samuel Langhorne Clemens, known by his pen name Mark Twain, was an American writer and humorist.",
-    birthYear: 1835,
-    nationality: "American",
-    genres: ["Adventure", "Satire", "American Literature"],
-    bookCount: 5,
-    availableBooks: 4,
-    popularWorks: [
-      "The Adventures of Tom Sawyer",
-      "Adventures of Huckleberry Finn",
-      "The Prince and the Pauper",
-    ],
-    awards: ["American Academy of Arts and Letters"],
-  },
-];
-
 const AuthorsWrapper: FC = () => {
-  const [authors] = useState(mockAuthors);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const { data, isLoading, error } = useAllAuthors({
+    search: searchTerm,
+    page: 1,
+    limit: 50,
+  });
+
+  const authors: Author[] = data?.data || [];
+
+  const authorsWithCounts: AuthorWithCounts[] = useMemo(() => {
+    return authors.map((author) => ({
+      ...author,
+      bookCount: author.books.length,
+      availableBooks: author.books.filter((b) => b.isAvailable).length,
+      genres: author.litPeriod ? [author.litPeriod] : [],
+      popularWorks: author.books.slice(0, 3).map((b) => b.name),
+      awards: [],
+    }));
+  }, [authors]);
+
   const filteredAuthors = useMemo(() => {
-    return authors.filter(
+    return authorsWithCounts.filter(
       (author) =>
         author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        author.nationality.toLowerCase().includes(searchTerm.toLowerCase()) ||
         author.genres.some((genre) =>
-          genre.toLowerCase().includes(searchTerm.toLowerCase()),
-        ),
+          genre.toLowerCase().includes(searchTerm.toLowerCase())
+        )
     );
-  }, [authors, searchTerm]);
+  }, [authorsWithCounts, searchTerm]);
 
-  const totalBooks = authors.reduce((sum, author) => sum + author.bookCount, 0);
-  const totalAvailable = authors.reduce(
-    (sum, author) => sum + author.availableBooks,
-    0,
-  );
+  const totalBooks = authorsWithCounts.reduce((sum, author) => sum + author.bookCount, 0);
+  const totalAvailable = authorsWithCounts.reduce((sum, author) => sum + author.availableBooks, 0);
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-12">
+        <Loader2 className="animate-spin w-8 h-8" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12 text-red-500">
+        Chyba pri načítavaní autorov: {error.message}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="mb-8 animate-fade-in">
-          <h1 className="text-3xl font-bold text-foreground mb-2">
-            Authors Collection
-          </h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Zbierka autorov</h1>
           <p className="text-muted-foreground mb-6">
-            Discover the brilliant minds behind your favorite books
+            Objavte skvelé mysle stojace za vašimi obľúbenými knihami
           </p>
 
-          {/* Stats */}
           <div className="bg-card p-6 rounded-lg shadow-card mb-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <BookOpen className="h-8 w-8 text-primary" />
                 </div>
-                <div className="text-2xl font-bold text-foreground">
-                  {authors.length}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Featured Authors
-                </div>
+                <div className="text-2xl font-bold text-foreground">{authors.length}</div>
+                <div className="text-sm text-muted-foreground">Zobrazení autori</div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <Calendar className="h-8 w-8 text-success" />
                 </div>
-                <div className="text-2xl font-bold text-foreground">
-                  {totalBooks}
-                </div>
-                <div className="text-sm text-muted-foreground">Total Works</div>
+                <div className="text-2xl font-bold text-foreground">{totalBooks}</div>
+                <div className="text-sm text-muted-foreground">Spolu diel</div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
-                  <Award className="h-8 w-8 text-secondary" />
+                  <Award className="h-8 w-8 text-green-500" />
                 </div>
-                <div className="text-2xl font-bold text-foreground">
-                  {totalAvailable}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Available Now
-                </div>
+                <div className="text-2xl font-bold text-foreground">{totalAvailable}</div>
+                <div className="text-sm text-muted-foreground">Dostupné teraz</div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
-                  <Search className="h-8 w-8 text-accent" />
+                  <Search className="h-8 w-8 text-foreground" />
                 </div>
                 <div className="text-2xl font-bold text-foreground">
-                  {Array.from(new Set(authors.flatMap((a) => a.genres))).length}
+                  {Array.from(new Set(authorsWithCounts.flatMap((a) => a.genres))).length}
                 </div>
-                <div className="text-sm text-muted-foreground">
-                  Genres Covered
-                </div>
+                <div className="text-sm text-muted-foreground">Pokryté žánre</div>
               </div>
             </div>
           </div>
 
-          {/* Search */}
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search authors, genres, or nationality..."
+              placeholder="Hľadajte autorov alebo žánre..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -234,7 +124,6 @@ const AuthorsWrapper: FC = () => {
           </div>
         </div>
 
-        {/* Authors Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAuthors.map((author, index) => (
             <Card
@@ -249,28 +138,21 @@ const AuthorsWrapper: FC = () => {
                       {author.name}
                     </CardTitle>
                     <div className="text-sm text-muted-foreground mt-1">
-                      {author.nationality} • Born {author.birthYear}
+                      Narodený {author.bornDate} •{" "}
+                      {author.deathDate ? `Zomrel ${author.deathDate}` : "Žije"}
                     </div>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className="bg-primary/10 text-primary"
-                  >
-                    {author.availableBooks}/{author.bookCount} available
+                  <Badge variant="outline" className="bg-primary/10 text-primary">
+                    {author.availableBooks}/{author.bookCount} dostupných
                   </Badge>
                 </div>
               </CardHeader>
 
               <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground line-clamp-3">
-                  {author.biography}
-                </p>
+                <p className="text-sm text-muted-foreground line-clamp-3">{author.bio}</p>
 
-                {/* Genres */}
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-foreground">
-                    Genres:
-                  </div>
+                  <div className="text-sm font-medium text-foreground">Žánre:</div>
                   <div className="flex flex-wrap gap-1">
                     {author.genres.map((genre, idx) => (
                       <Badge key={idx} variant="secondary" className="text-xs">
@@ -280,13 +162,10 @@ const AuthorsWrapper: FC = () => {
                   </div>
                 </div>
 
-                {/* Popular Works */}
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-foreground">
-                    Popular Works:
-                  </div>
+                  <div className="text-sm font-medium text-foreground">Populárne diela:</div>
                   <div className="space-y-1">
-                    {author.popularWorks.slice(0, 3).map((work, idx) => (
+                    {author.popularWorks.map((work, idx) => (
                       <div
                         key={idx}
                         className="text-xs text-muted-foreground flex items-center"
@@ -298,32 +177,10 @@ const AuthorsWrapper: FC = () => {
                   </div>
                 </div>
 
-                {/* Awards */}
-                {author.awards.length > 0 && (
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium text-foreground">
-                      Awards:
-                    </div>
-                    <div className="space-y-1">
-                      {author.awards.slice(0, 2).map((award, idx) => (
-                        <div
-                          key={idx}
-                          className="text-xs text-muted-foreground flex items-center"
-                        >
-                          <Award className="h-3 w-3 mr-1 flex-shrink-0" />
-                          <span className="line-clamp-1">{award}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 <div className="pt-2">
-                  <Link
-                    href={`/books?author=${encodeURIComponent(author.name)}`}
-                  >
+                  <Link href={`/authors/${author.id}`}>
                     <Button variant="outline" size="sm" className="w-full">
-                      View Books by {author.name.split(" ")[0]}
+                      Zobraziť detail o autorovi
                     </Button>
                   </Link>
                 </div>
@@ -335,28 +192,25 @@ const AuthorsWrapper: FC = () => {
         {filteredAuthors.length === 0 && (
           <div className="text-center py-12 animate-fade-in">
             <p className="text-muted-foreground text-lg">
-              No authors found matching your search.
+              Nenašli sa žiadni autori zodpovedajúci vášmu hľadaniu.
             </p>
-            <p className="text-muted-foreground">
-              Try a different search term.
-            </p>
+            <p className="text-muted-foreground">Skúste iný hľadaný výraz.</p>
           </div>
         )}
 
-        {/* Call to Action */}
         <div className="mt-12 text-center animate-fade-in">
           <div className="bg-gradient-secondary p-8 rounded-lg text-white">
-            <h2 className="text-2xl font-bold mb-2">Suggest a New Author</h2>
+            <h2 className="text-2xl font-bold mb-2">Navrhnite nového autora</h2>
             <p className="mb-4 opacity-90">
-              Don't see your favorite author? Let us know who you'd like to see
-              in our collection
+              Nevidíte svojho obľúbeného autora? Dajte nám vedieť, koho by ste
+              radi videli v našej zbierke
             </p>
             <Button
               variant="outline"
               size="lg"
               className="bg-white text-secondary hover:bg-gray-50"
             >
-              Submit Suggestion
+              Odoslať návrh
             </Button>
           </div>
         </div>

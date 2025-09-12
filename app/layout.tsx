@@ -39,13 +39,6 @@ export const metadata: Metadata = {
       "Navštívte oficiálnu knižnicu Strednej priemyselnej školy technickej v Bardejove. Prezrite si dostupné knihy, spravujte výpožičky a objavujte nové tituly.",
     siteName: "SPŠT Knižnica",
   },
-  twitter: {
-    card: "summary_large_image",
-    site: "@spst_kniznica",
-    title: "SPŠT Knižnica | Bardejov",
-    description:
-      "Oficiálna knižnica Strednej priemyselnej školy technickej v Bardejove. Prezrite si dostupné knihy, spravujte výpožičky a objavujte nové tituly.",
-  },
 };
 
 export default function RootLayout({
