@@ -85,7 +85,6 @@ const AuthorDetail: FC = () => {
       className="max-w-4xl mx-auto px-4 py-8"
     >
       <Link href="/authors">Naspäť na zoznam spisovateľov</Link>
-      {/* Úvodný card */}
       <Card className="mb-8 shadow-md mt-4">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-foreground">
@@ -113,8 +112,7 @@ const AuthorDetail: FC = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Nadpis */}
+      
       <motion.h2
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
