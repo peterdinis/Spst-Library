@@ -1,5 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+
 export interface QueryAuthorParams {
   search?: string;
   page?: number;
@@ -10,7 +13,6 @@ interface Author {
   id: string;
   name: string;
   createdAt: string;
-  // pridaj ďalšie polia podľa modelu
 }
 
 interface AuthorsResponse {
@@ -30,8 +32,7 @@ const fetchAuthors = async (params: QueryAuthorParams): Promise<AuthorsResponse>
     limit: params.limit?.toString() || '10',
     search: params.search || '',
   });
-
-  const res = await fetch(`http://localhost:5000/authors?${query.toString()}`);
+  const res = await fetch(`${API_BASE_URL}/authors?${query.toString()}`);
   if (!res.ok) {
     throw new Error('Failed to fetch authors');
   }

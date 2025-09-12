@@ -178,9 +178,9 @@ const AuthorsWrapper: FC = () => {
                 </div>
 
                 <div className="pt-2">
-                  <Link href={`/books?author=${encodeURIComponent(author.name)}`}>
+                  <Link href={`/authors/${author.id}`}>
                     <Button variant="outline" size="sm" className="w-full">
-                      Zobraziť knihy autora {author.name.split(" ")[0]}
+                      Zobraziť detail o autorovi
                     </Button>
                   </Link>
                 </div>

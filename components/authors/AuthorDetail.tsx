@@ -2,12 +2,39 @@
 
 import { FC } from "react";
 import { useParams } from "next/navigation";
+import { motion, Variants } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, BookOpen } from "lucide-react";
 import Link from "next/link";
 import { useAuthor } from "@/hooks/authors/useAuthorDetail";
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 80,
+      damping: 12,
+    },
+  },
+};
+
+const listVariants = {
+  hidden: { opacity: 1 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.12 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 },
+};
 
 const AuthorDetail: FC = () => {
   const params = useParams();
@@ -25,26 +52,41 @@ const AuthorDetail: FC = () => {
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh] text-center text-red-500">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex flex-col items-center justify-center h-[60vh] text-center text-red-500"
+      >
         <p className="font-semibold">Nepodarilo sa načítať autora.</p>
         <p className="text-sm text-muted-foreground">
           {(error as Error).message}
         </p>
-      </div>
+      </motion.div>
     );
   }
 
   if (!author) {
     return (
-      <div className="flex items-center justify-center h-[60vh]">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex items-center justify-center h-[60vh]"
+      >
         <p className="text-muted-foreground">Autor neexistuje.</p>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <Card className="mb-8 shadow-md">
+    <motion.div
+      initial="hidden"
+      animate="show"
+      variants={containerVariants}
+      className="max-w-4xl mx-auto px-4 py-8"
+    >
+      <Link href="/authors">Naspäť na zoznam spisovateľov</Link>
+      {/* Úvodný card */}
+      <Card className="mb-8 shadow-md mt-4">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-foreground">
             {author.name}
@@ -72,45 +114,67 @@ const AuthorDetail: FC = () => {
         </CardContent>
       </Card>
 
-      <h2 className="text-xl font-semibold mb-4">Knihy autora</h2>
+      {/* Nadpis */}
+      <motion.h2
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="text-xl font-semibold mb-4"
+      >
+        Knihy autora
+      </motion.h2>
 
       {author.books.length === 0 ? (
-        <p className="text-muted-foreground">Tento autor zatiaľ nemá žiadne knihy.</p>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-muted-foreground"
+        >
+          Tento autor zatiaľ nemá žiadne knihy.
+        </motion.p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <motion.div
+          variants={listVariants}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
           {author.books.map((book) => (
-            <Card key={book.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg font-semibold">
-                  <BookOpen className="w-5 h-5 text-primary" />
-                  {book.name}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground line-clamp-3">
-                  {book.description || "Bez popisu"}
-                </p>
-                <div className="flex justify-between items-center">
-                  <Badge
-                    variant={book.isAvailable ? "default" : "secondary"}
-                    className={
-                      book.isAvailable ? "bg-green-500/20 text-green-700" : ""
-                    }
-                  >
-                    {book.isAvailable ? "Dostupná" : "Nedostupná"}
-                  </Badge>
-                  <Link href={`/books/${book.id}`}>
-                    <Button variant="outline" size="sm">
-                      Detail
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
+            <motion.div key={book.id} variants={itemVariants}>
+              <Card className="hover:shadow-lg transition-shadow hover:scale-[1.02] duration-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg font-semibold">
+                    <BookOpen className="w-5 h-5 text-primary" />
+                    {book.name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <p className="text-sm text-muted-foreground line-clamp-3">
+                    {book.description || "Bez popisu"}
+                  </p>
+                  <div className="flex justify-between items-center">
+                    <Badge
+                      variant={book.isAvailable ? "default" : "secondary"}
+                      className={
+                        book.isAvailable ? "bg-green-500/20 text-green-700" : ""
+                      }
+                    >
+                      {book.isAvailable ? "Dostupná" : "Nedostupná"}
+                    </Badge>
+                    <Link href={`/books/${book.id}`}>
+                      <Button variant="outline" size="sm">
+                        Detail
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 
