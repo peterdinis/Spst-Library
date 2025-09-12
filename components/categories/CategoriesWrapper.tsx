@@ -16,24 +16,25 @@ import {
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useCategories } from "@/hooks/categories/useCategories";
+import { ITEMS_PER_PAGE } from "@/constants/applicationConstants";
+import { Category } from "@/types/categoryTypes";
 
 const CategoriesWrapper: FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const itemsPerPage = 8;
   
   const { data, isLoading, error } = useCategories(
     currentPage,
-    itemsPerPage,
+    ITEMS_PER_PAGE,
     searchQuery || undefined,
   );
 
   // odvodené hodnoty
   const categories = data?.data ?? [];
   const totalPages = data?.meta.totalPages ?? 0;
-  const totalBooks = categories.reduce((sum, cat) => sum + cat.books.length, 0);
+  const totalBooks = categories.reduce((sum: number, cat: Category) => sum + cat.books.length, 0);
   const totalAvailable = categories.reduce(
-    (sum, cat) =>
+    (sum: number, cat: Category) =>
       sum +
       cat.books.filter(
         (book: any) => book.available !== false, // prispôsob podľa backendu
@@ -147,7 +148,7 @@ const CategoriesWrapper: FC = () => {
               </motion.div>
               <motion.div className="text-center" whileHover={{ scale: 1.05 }}>
                 <div className="flex items-center justify-center mb-2">
-                  <TrendingUp className="h-8 w-8 text-secondary" />
+                  <TrendingUp className="h-8 w-8 text-blue-400" />
                 </div>
                 <div className="text-2xl font-bold text-foreground">
                   {data?.meta.total ?? 0}
@@ -168,7 +169,7 @@ const CategoriesWrapper: FC = () => {
             animate="visible"
             exit="hidden"
           >
-            {categories.map((category) => (
+            {categories.map((category: Category) => (
               <motion.div
                 key={category.id}
                 variants={itemVariants}

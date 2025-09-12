@@ -1,18 +1,12 @@
 "use client";
 
 import { FC, useMemo, useState } from "react";
-import Link from "next/link";
 import {
   Filter,
   Search,
-  BookOpen,
   X,
   Sparkles,
   Library,
-  User,
-  Calendar,
-  Clock,
-  Eye,
   ChevronLeft,
   ChevronRight,
   Loader2,
@@ -27,152 +21,31 @@ import {
 } from "../ui/select";
 import { Badge } from "../ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { useBooks } from "@/hooks/books/useAllBooks";
+import { useNotFilterCategories } from "@/hooks/categories/useNotFilteredCategories";
+import { Book } from "@/types/bookTypes";
+import { Category } from "@/types/categoryTypes";
+import { BookCard } from "./BookCard";
+import { ITEMS_PER_PAGE } from "@/constants/applicationConstants";
 
-// -------------------- TYPY --------------------
-interface Author {
-  id: string;
-  name: string;
-}
-
-interface Category {
-  id: string;
-  name: string;
-}
-
-interface Rating {
-  id: string;
-  score: number;
-}
-
-interface BookTag {
-  id: string;
-  name: string;
-}
-
-interface Book {
-  id: string;
-  name: string; // backend field
-  description?: string;
-  createdAt: string;
-
-  // relations
-  author: Author;
-  category: Category;
-  ratings: Rating[];
-  bookTags: BookTag[];
-
-  // frontend-specific (mock for now, until BE supports)
-  isAvailable?: boolean;
-  dueDate?: string;
-  publishedYear?: number;
-  coverImage?: string;
-}
-
-// -------------------- KARTA KNIHY --------------------
-interface BookCardProps {
-  book: Book;
-}
-
-export const BookCard = ({ book }: BookCardProps) => {
-  const isAvailable = book.isAvailable ?? true;
-  return (
-    <Card className="hover-lift shadow-card group h-full flex flex-col">
-      <CardHeader className="pb-4">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg font-semibold text-foreground group-hover:text-primary transition-smooth line-clamp-2">
-              {book.name}
-            </CardTitle>
-            {book.author && (
-              <div className="flex items-center space-x-1 mt-2 text-muted-foreground">
-                <User className="h-4 w-4" />
-                <span className="text-sm">{book.author.name}</span>
-              </div>
-            )}
-          </div>
-          <Badge
-            variant={isAvailable ? "default" : "secondary"}
-            className={
-              isAvailable
-                ? "bg-green-100 text-green-800 border-green-200"
-                : "bg-amber-100 text-amber-800 border-amber-200"
-            }
-          >
-            {isAvailable ? "Dostupná" : "Požičaná"}
-          </Badge>
-        </div>
-      </CardHeader>
-
-      <CardContent className="pb-4 flex-grow">
-        <div className="space-y-2 text-sm text-muted-foreground">
-          {book.category && (
-            <div className="flex items-center space-x-2">
-              <BookOpen className="h-4 w-4" />
-              <span>{book.category.name}</span>
-            </div>
-          )}
-          {book.publishedYear && (
-            <div className="flex items-center space-x-2">
-              <Calendar className="h-4 w-4" />
-              <span>Rok vydania: {book.publishedYear}</span>
-            </div>
-          )}
-          {!isAvailable && book.dueDate && (
-            <div className="flex items-center space-x-2 text-destructive">
-              <Clock className="h-4 w-4" />
-              <span>
-                Termín vrátenia: {new Date(book.dueDate).toLocaleDateString()}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {book.description && (
-          <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
-            {book.description}
-          </p>
-        )}
-      </CardContent>
-
-      <CardFooter>
-        <Link href={`/books/${book.id}`} className="w-full">
-          <Button
-            variant="default"
-            className="w-full flex items-center space-x-2"
-          >
-            <Eye className="h-4 w-4" />
-            <span>Zobraziť detaily</span>
-          </Button>
-        </Link>
-      </CardFooter>
-    </Card>
-  );
-};
-
-// -------------------- OBAL VŠETKÝCH KNIH --------------------
 const AllBooksWrapper: FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [sortBy, setSortBy] = useState("title");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
 
   const { data, isLoading, isError } = useBooks({
     search: searchTerm,
     page: currentPage,
-    limit: itemsPerPage,
+    limit: ITEMS_PER_PAGE,
   });
 
-  const books: Book[] = data?.data ?? [];
+  const { data: categories, isLoading: isCategoriesLoading } =
+    useNotFilterCategories();
+
+  const books = data?.data ?? [];
   const totalBooks = data?.total ?? 0;
   const totalPages = data?.lastPage ?? 1;
 
@@ -184,28 +57,29 @@ const AllBooksWrapper: FC = () => {
       (availabilityFilter === "available" && book.isAvailable) ||
       (availabilityFilter === "borrowed" && !book.isAvailable);
 
-    result = result.filter(matchesAvailability);
+    const matchesCategory = (book: Book) =>
+      categoryFilter === "all" || book.category?.id === Number(categoryFilter);
+
+    result = result.filter(matchesAvailability).filter(matchesCategory);
 
     result.sort((a, b) => {
       if (sortBy === "title") return a.name.localeCompare(b.name);
       if (sortBy === "author")
         return (a.author?.name ?? "").localeCompare(b.author?.name ?? "");
-      if (sortBy === "year")
-        return (b.publishedYear ?? 0) - (a.publishedYear ?? 0);
+      if (sortBy === "year") return (b.year ?? 0) - (a.year ?? 0);
       return 0;
     });
 
     return result;
-  }, [books, availabilityFilter, sortBy]);
+  }, [books, availabilityFilter, categoryFilter, sortBy]);
 
   const availableCount = books.filter((book) => book.isAvailable).length;
-  const borrowedCount = books.filter(
-    (book) => book.isAvailable === false,
-  ).length;
+  const borrowedCount = books.filter((book) => !book.isAvailable).length;
 
   const clearFilters = () => {
     setSearchTerm("");
     setAvailabilityFilter("all");
+    setCategoryFilter("all");
     setSortBy("title");
     setCurrentPage(1);
   };
@@ -213,6 +87,7 @@ const AllBooksWrapper: FC = () => {
   const activeFiltersCount = [
     searchTerm !== "",
     availabilityFilter !== "all",
+    categoryFilter !== "all",
     sortBy !== "title",
   ].filter(Boolean).length;
 
@@ -245,9 +120,7 @@ const AllBooksWrapper: FC = () => {
                 <div className="text-sm text-gray-500 dark:text-sky-100">
                   Celkom kníh
                 </div>
-                <div className="text-xl font-bold text-primary">
-                  {totalBooks}
-                </div>
+                <div className="text-xl font-bold text-primary">{totalBooks}</div>
               </div>
               <div className="bg-white dark:bg-background rounded-lg p-3 shadow-sm border">
                 <div className="text-sm text-gray-500 dark:text-sky-100">
@@ -258,12 +131,8 @@ const AllBooksWrapper: FC = () => {
                 </div>
               </div>
               <div className="bg-white dark:bg-background rounded-lg p-3 shadow-sm border">
-                <div className="text-sm text-gray-500 dark:text-sky-100">
-                  Požičané
-                </div>
-                <div className="text-xl font-bold text-amber-600">
-                  {borrowedCount}
-                </div>
+                <div className="text-sm text-gray-500 dark:text-sky-100">Požičané</div>
+                <div className="text-xl font-bold text-amber-600">{borrowedCount}</div>
               </div>
             </div>
           </div>
@@ -306,10 +175,12 @@ const AllBooksWrapper: FC = () => {
 
         {/* Filter Box */}
         <div
-          className={`mb-8 transition-all duration-300 ${showFilters ? "block" : "hidden md:block"}`}
+          className={`mb-8 transition-all duration-300 ${
+            showFilters ? "block" : "hidden md:block"
+          }`}
         >
           <div className="bg-white dark:bg-stone-950 p-6 rounded-xl shadow-sm border border-gray-100">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
               {/* Search */}
               <div className="lg:col-span-2">
                 <label
@@ -357,6 +228,36 @@ const AllBooksWrapper: FC = () => {
                     <SelectItem value="all">Všetky knihy</SelectItem>
                     <SelectItem value="available">Iba dostupné</SelectItem>
                     <SelectItem value="borrowed">Iba požičané</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Kategória */}
+              <div>
+                <label
+                  htmlFor="category"
+                  className="text-sm font-medium text-gray-700 dark:text-sky-100 mb-1 block"
+                >
+                  Kategória
+                </label>
+                <Select
+                  value={categoryFilter}
+                  onValueChange={(value) => {
+                    setCategoryFilter(value);
+                    setCurrentPage(1);
+                  }}
+                  disabled={isCategoriesLoading}
+                >
+                  <SelectTrigger id="category" className="w-full">
+                    <SelectValue placeholder="Všetky kategórie" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Všetky kategórie</SelectItem>
+                    {categories?.map((cat: Category) => (
+                      <SelectItem key={cat.id} value={cat.id.toString()}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -486,18 +387,14 @@ const AllBooksWrapper: FC = () => {
         ) : (
           <div className="text-center py-16 animate-fade-in bg-white rounded-xl shadow-sm border border-gray-100">
             <div className="mx-auto w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-              <Search className="h-10 w-10 text-gray-400" />
+              <Search className="w-12 h-12 text-gray-400" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Žiadne knihy nenájdené
+            <h3 className="text-lg font-semibold text-gray-900">
+              Žiadne knihy sa nenašli
             </h3>
-            <p className="text-gray-500 max-w-md mx-auto">
-              Skúste upraviť vyhľadávanie alebo filtre. Nenašli sme žiadne knihy
-              vyhovujúce vašim kritériám.
+            <p className="text-sm text-gray-500">
+              Skúste upraviť filtre alebo vyhľadávanie.
             </p>
-            <Button onClick={clearFilters} variant="outline" className="mt-4">
-              Vymazať všetky filtre
-            </Button>
           </div>
         )}
       </div>

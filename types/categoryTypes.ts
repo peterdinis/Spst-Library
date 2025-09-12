@@ -9,7 +9,9 @@ export interface Category {
   updatedAt: string;
 }
 
-export interface CategoryResponse {
+export type CategoryListResponse = Category[];
+
+export interface CategoryPaginatedResponse {
   data: Category[];
   meta: {
     total: number;
