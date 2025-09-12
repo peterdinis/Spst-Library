@@ -39,7 +39,7 @@ export const BookCard = ({ book }: BookCardProps) => {
                 : "bg-amber-100 text-amber-800 border-amber-200"
             }
           >
-            {book.isAvailable ? "Available" : "Borrowed"}
+            {book.isAvailable ? "Dostupná" : "Požičaná"}
           </Badge>
         </div>
       </CardHeader>
@@ -74,7 +74,7 @@ export const BookCard = ({ book }: BookCardProps) => {
             className="w-full flex items-center space-x-2"
           >
             <Eye className="h-4 w-4" />
-            <span>Zobraz Detail</span>
+            <span>Detail knihy</span>
           </Button>
         </Link>
       </CardFooter>
