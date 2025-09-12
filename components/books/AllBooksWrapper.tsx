@@ -26,6 +26,7 @@ import { useNotFilterCategories } from "@/hooks/categories/useNotFilteredCategor
 import { Book } from "@/types/bookTypes";
 import { Category } from "@/types/categoryTypes";
 import { BookCard } from "./BookCard";
+import { ITEMS_PER_PAGE } from "@/constants/applicationConstants";
 
 const AllBooksWrapper: FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -34,12 +35,11 @@ const AllBooksWrapper: FC = () => {
   const [sortBy, setSortBy] = useState("title");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(6);
 
   const { data, isLoading, isError } = useBooks({
     search: searchTerm,
     page: currentPage,
-    limit: itemsPerPage,
+    limit: ITEMS_PER_PAGE,
   });
 
   const { data: categories, isLoading: isCategoriesLoading } =

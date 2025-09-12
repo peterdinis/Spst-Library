@@ -1,12 +1,12 @@
 "use client";
 
-import { CategoryResponse } from "@/types/categoryTypes";
+import { CategoryListResponse } from "@/types/categoryTypes";
 import { useQuery } from "@tanstack/react-query";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export function useNotFilterCategories() {
-  return useQuery<CategoryResponse>({
+  return useQuery<CategoryListResponse>({
     queryKey: ["filteredCategories"],
     queryFn: async () => {
       const res = await fetch(
