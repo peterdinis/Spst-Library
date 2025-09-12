@@ -5,26 +5,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, BookOpen, Calendar, Award } from "lucide-react";
+import { Search, BookOpen, Calendar, Award, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useAllAuthors } from "@/hooks/authors/useAllAuthors";
+import { Author } from "@/types/authorTypes";
 
-interface Book {
-  id: number;
-  title: string;
-  available: boolean;
-}
-
-interface Author {
-  id: number;
-  name: string;
-  bio?: string | null;
-  books: Book[];
-  litPeriod: string;
-  bornDate: string;
-  deathDate?: string | null;
-  createdAt: string;
-  updatedAt: string;
+interface AuthorWithCounts extends Author {
+  bookCount: number;
+  availableBooks: number;
+  genres: string[];
+  popularWorks: string[];
+  awards: string[];
 }
 
 const AuthorsWrapper: FC = () => {
@@ -36,21 +27,20 @@ const AuthorsWrapper: FC = () => {
     limit: 50,
   });
 
-  const authors: any = data?.data || [];
+  const authors: Author[] = data?.data || [];
 
-  const authorsWithCounts = useMemo(() => {
+  const authorsWithCounts: AuthorWithCounts[] = useMemo(() => {
     return authors.map((author) => ({
       ...author,
       bookCount: author.books.length,
-      availableBooks: author.books.filter((b) => b.available).length,
-      genres: author.litPeriod ? [author.litPeriod] : [], // convert litPeriod to array for display
-      popularWorks: author.books.slice(0, 3).map((b) => b.title),
-      awards: [], // adjust if you have awards
+      availableBooks: author.books.filter((b) => b.isAvailable).length,
+      genres: author.litPeriod ? [author.litPeriod] : [],
+      popularWorks: author.books.slice(0, 3).map((b) => b.name),
+      awards: [],
     }));
   }, [authors]);
 
   const filteredAuthors = useMemo(() => {
-    if (!authorsWithCounts) return [];
     return authorsWithCounts.filter(
       (author) =>
         author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -64,13 +54,17 @@ const AuthorsWrapper: FC = () => {
   const totalAvailable = authorsWithCounts.reduce((sum, author) => sum + author.availableBooks, 0);
 
   if (isLoading) {
-    return <div className="text-center py-12">Loading authors...</div>;
+    return (
+      <div className="text-center py-12">
+        <Loader2 className="animate-spin w-8 h-8" />
+      </div>
+    );
   }
 
   if (error) {
     return (
       <div className="text-center py-12 text-red-500">
-        Error fetching authors: {error.message}
+        Chyba pri načítavaní autorov: {error.message}
       </div>
     );
   }
@@ -78,14 +72,12 @@ const AuthorsWrapper: FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header & Stats */}
         <div className="mb-8 animate-fade-in">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Authors Collection</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Zbierka autorov</h1>
           <p className="text-muted-foreground mb-6">
-            Discover the brilliant minds behind your favorite books
+            Objavte skvelé mysle stojace za vašimi obľúbenými knihami
           </p>
 
-          {/* Stats */}
           <div className="bg-card p-6 rounded-lg shadow-card mb-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="text-center">
@@ -93,21 +85,21 @@ const AuthorsWrapper: FC = () => {
                   <BookOpen className="h-8 w-8 text-primary" />
                 </div>
                 <div className="text-2xl font-bold text-foreground">{authors.length}</div>
-                <div className="text-sm text-muted-foreground">Featured Authors</div>
+                <div className="text-sm text-muted-foreground">Zobrazení autori</div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <Calendar className="h-8 w-8 text-success" />
                 </div>
                 <div className="text-2xl font-bold text-foreground">{totalBooks}</div>
-                <div className="text-sm text-muted-foreground">Total Works</div>
+                <div className="text-sm text-muted-foreground">Spolu diel</div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <Award className="h-8 w-8 text-green-500" />
                 </div>
                 <div className="text-2xl font-bold text-foreground">{totalAvailable}</div>
-                <div className="text-sm text-muted-foreground">Available Now</div>
+                <div className="text-sm text-muted-foreground">Dostupné teraz</div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
@@ -116,16 +108,15 @@ const AuthorsWrapper: FC = () => {
                 <div className="text-2xl font-bold text-foreground">
                   {Array.from(new Set(authorsWithCounts.flatMap((a) => a.genres))).length}
                 </div>
-                <div className="text-sm text-muted-foreground">Genres Covered</div>
+                <div className="text-sm text-muted-foreground">Pokryté žánre</div>
               </div>
             </div>
           </div>
 
-          {/* Search */}
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search authors or genres..."
+              placeholder="Hľadajte autorov alebo žánre..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -133,10 +124,13 @@ const AuthorsWrapper: FC = () => {
           </div>
         </div>
 
-        {/* Authors Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredAuthors.map((author, index) => (
-            <Card key={author.id} className="hover-lift shadow-card group animate-scale-in" style={{ animationDelay: `${index * 0.1}s` }}>
+            <Card
+              key={author.id}
+              className="hover-lift shadow-card group animate-scale-in"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
               <CardHeader className="pb-4">
                 <div className="flex items-start justify-between mb-2">
                   <div>
@@ -144,11 +138,12 @@ const AuthorsWrapper: FC = () => {
                       {author.name}
                     </CardTitle>
                     <div className="text-sm text-muted-foreground mt-1">
-                      Born {author.bornDate} • {author.deathDate ? `Died ${author.deathDate}` : "Alive"}
+                      Narodený {author.bornDate} •{" "}
+                      {author.deathDate ? `Zomrel ${author.deathDate}` : "Žije"}
                     </div>
                   </div>
                   <Badge variant="outline" className="bg-primary/10 text-primary">
-                    {author.availableBooks}/{author.bookCount} available
+                    {author.availableBooks}/{author.bookCount} dostupných
                   </Badge>
                 </div>
               </CardHeader>
@@ -156,22 +151,25 @@ const AuthorsWrapper: FC = () => {
               <CardContent className="space-y-4">
                 <p className="text-sm text-muted-foreground line-clamp-3">{author.bio}</p>
 
-                {/* Genres */}
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-foreground">Genres:</div>
+                  <div className="text-sm font-medium text-foreground">Žánre:</div>
                   <div className="flex flex-wrap gap-1">
                     {author.genres.map((genre, idx) => (
-                      <Badge key={idx} variant="secondary" className="text-xs">{genre}</Badge>
+                      <Badge key={idx} variant="secondary" className="text-xs">
+                        {genre}
+                      </Badge>
                     ))}
                   </div>
                 </div>
 
-                {/* Popular Works */}
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-foreground">Popular Works:</div>
+                  <div className="text-sm font-medium text-foreground">Populárne diela:</div>
                   <div className="space-y-1">
                     {author.popularWorks.map((work, idx) => (
-                      <div key={idx} className="text-xs text-muted-foreground flex items-center">
+                      <div
+                        key={idx}
+                        className="text-xs text-muted-foreground flex items-center"
+                      >
                         <BookOpen className="h-3 w-3 mr-1 flex-shrink-0" />
                         <span className="line-clamp-1">{work}</span>
                       </div>
@@ -182,7 +180,7 @@ const AuthorsWrapper: FC = () => {
                 <div className="pt-2">
                   <Link href={`/books?author=${encodeURIComponent(author.name)}`}>
                     <Button variant="outline" size="sm" className="w-full">
-                      View Books by {author.name.split(" ")[0]}
+                      Zobraziť knihy autora {author.name.split(" ")[0]}
                     </Button>
                   </Link>
                 </div>
@@ -193,18 +191,26 @@ const AuthorsWrapper: FC = () => {
 
         {filteredAuthors.length === 0 && (
           <div className="text-center py-12 animate-fade-in">
-            <p className="text-muted-foreground text-lg">No authors found matching your search.</p>
-            <p className="text-muted-foreground">Try a different search term.</p>
+            <p className="text-muted-foreground text-lg">
+              Nenašli sa žiadni autori zodpovedajúci vášmu hľadaniu.
+            </p>
+            <p className="text-muted-foreground">Skúste iný hľadaný výraz.</p>
           </div>
         )}
 
-        {/* Call to Action */}
         <div className="mt-12 text-center animate-fade-in">
           <div className="bg-gradient-secondary p-8 rounded-lg text-white">
-            <h2 className="text-2xl font-bold mb-2">Suggest a New Author</h2>
-            <p className="mb-4 opacity-90">Don't see your favorite author? Let us know who you'd like to see in our collection</p>
-            <Button variant="outline" size="lg" className="bg-white text-secondary hover:bg-gray-50">
-              Submit Suggestion
+            <h2 className="text-2xl font-bold mb-2">Navrhnite nového autora</h2>
+            <p className="mb-4 opacity-90">
+              Nevidíte svojho obľúbeného autora? Dajte nám vedieť, koho by ste
+              radi videli v našej zbierke
+            </p>
+            <Button
+              variant="outline"
+              size="lg"
+              className="bg-white text-secondary hover:bg-gray-50"
+            >
+              Odoslať návrh
             </Button>
           </div>
         </div>
