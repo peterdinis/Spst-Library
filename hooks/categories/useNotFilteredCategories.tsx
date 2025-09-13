@@ -9,9 +9,7 @@ export function useNotFilterCategories() {
   return useQuery<CategoryListResponse>({
     queryKey: ["filteredCategories"],
     queryFn: async () => {
-      const res = await fetch(
-        `${API_BASE_URL}/categories/all`,
-      );
+      const res = await fetch(`${API_BASE_URL}/categories/all`);
       if (!res.ok) {
         throw new Error("Failed to fetch categories");
       }

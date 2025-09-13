@@ -9,14 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  BookOpen,
-  User,
-  ArrowLeft,
-  Star,
-  FileText,
-  Hash,
-} from "lucide-react";
+import { BookOpen, User, ArrowLeft, Star, FileText, Hash } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useToast } from "@/hooks/useToast";
 import { BorrowData, BorrowDialog } from "../borrow/BorrowDialog";

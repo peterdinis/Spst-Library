@@ -2,7 +2,7 @@ import AuthorDetail from "@/components/authors/AuthorDetail";
 import { NextPage } from "next";
 
 const AuthorDetailPage: NextPage = () => {
-    return <AuthorDetail />
-}
+  return <AuthorDetail />;
+};
 
-export default AuthorDetailPage
+export default AuthorDetailPage;

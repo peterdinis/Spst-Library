@@ -7,7 +7,7 @@ export interface RegisterDto {
   name: string;
   email: string;
   password: string;
-  role: 'STUDENT' | 'TEACHER';
+  role: "STUDENT" | "TEACHER";
 }
 
 export interface Tokens {

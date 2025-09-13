@@ -96,7 +96,9 @@ const AuthorDetail: FC = () => {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-sm text-foreground leading-relaxed">{author.bio}</p>
+          <p className="text-sm text-foreground leading-relaxed">
+            {author.bio}
+          </p>
 
           {author.litPeriod && (
             <div className="flex items-center gap-2">
@@ -112,7 +114,7 @@ const AuthorDetail: FC = () => {
           </div>
         </CardContent>
       </Card>
-      
+
       <motion.h2
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}

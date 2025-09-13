@@ -45,13 +45,19 @@ const AuthorsWrapper: FC = () => {
       (author) =>
         author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         author.genres.some((genre) =>
-          genre.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+          genre.toLowerCase().includes(searchTerm.toLowerCase()),
+        ),
     );
   }, [authorsWithCounts, searchTerm]);
 
-  const totalBooks = authorsWithCounts.reduce((sum, author) => sum + author.bookCount, 0);
-  const totalAvailable = authorsWithCounts.reduce((sum, author) => sum + author.availableBooks, 0);
+  const totalBooks = authorsWithCounts.reduce(
+    (sum, author) => sum + author.bookCount,
+    0,
+  );
+  const totalAvailable = authorsWithCounts.reduce(
+    (sum, author) => sum + author.availableBooks,
+    0,
+  );
 
   if (isLoading) {
     return (
@@ -73,7 +79,9 @@ const AuthorsWrapper: FC = () => {
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8 animate-fade-in">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Zbierka autorov</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">
+            Zbierka autorov
+          </h1>
           <p className="text-muted-foreground mb-6">
             Objavte skvelé mysle stojace za vašimi obľúbenými knihami
           </p>
@@ -84,31 +92,47 @@ const AuthorsWrapper: FC = () => {
                 <div className="flex items-center justify-center mb-2">
                   <BookOpen className="h-8 w-8 text-primary" />
                 </div>
-                <div className="text-2xl font-bold text-foreground">{authors.length}</div>
-                <div className="text-sm text-muted-foreground">Zobrazení autori</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {authors.length}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Zobrazení autori
+                </div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <Calendar className="h-8 w-8 text-success" />
                 </div>
-                <div className="text-2xl font-bold text-foreground">{totalBooks}</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {totalBooks}
+                </div>
                 <div className="text-sm text-muted-foreground">Spolu diel</div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <Award className="h-8 w-8 text-green-500" />
                 </div>
-                <div className="text-2xl font-bold text-foreground">{totalAvailable}</div>
-                <div className="text-sm text-muted-foreground">Dostupné teraz</div>
+                <div className="text-2xl font-bold text-foreground">
+                  {totalAvailable}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Dostupné teraz
+                </div>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <Search className="h-8 w-8 text-foreground" />
                 </div>
                 <div className="text-2xl font-bold text-foreground">
-                  {Array.from(new Set(authorsWithCounts.flatMap((a) => a.genres))).length}
+                  {
+                    Array.from(
+                      new Set(authorsWithCounts.flatMap((a) => a.genres)),
+                    ).length
+                  }
                 </div>
-                <div className="text-sm text-muted-foreground">Pokryté žánre</div>
+                <div className="text-sm text-muted-foreground">
+                  Pokryté žánre
+                </div>
               </div>
             </div>
           </div>
@@ -142,17 +166,24 @@ const AuthorsWrapper: FC = () => {
                       {author.deathDate ? `Zomrel ${author.deathDate}` : "Žije"}
                     </div>
                   </div>
-                  <Badge variant="outline" className="bg-primary/10 text-primary">
+                  <Badge
+                    variant="outline"
+                    className="bg-primary/10 text-primary"
+                  >
                     {author.availableBooks}/{author.bookCount} dostupných
                   </Badge>
                 </div>
               </CardHeader>
 
               <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground line-clamp-3">{author.bio}</p>
+                <p className="text-sm text-muted-foreground line-clamp-3">
+                  {author.bio}
+                </p>
 
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-foreground">Žánre:</div>
+                  <div className="text-sm font-medium text-foreground">
+                    Žánre:
+                  </div>
                   <div className="flex flex-wrap gap-1">
                     {author.genres.map((genre, idx) => (
                       <Badge key={idx} variant="secondary" className="text-xs">
@@ -163,7 +194,9 @@ const AuthorsWrapper: FC = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <div className="text-sm font-medium text-foreground">Populárne diela:</div>
+                  <div className="text-sm font-medium text-foreground">
+                    Populárne diela:
+                  </div>
                   <div className="space-y-1">
                     {author.popularWorks.map((work, idx) => (
                       <div

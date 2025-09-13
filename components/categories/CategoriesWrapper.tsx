@@ -22,7 +22,7 @@ import { Category } from "@/types/categoryTypes";
 const CategoriesWrapper: FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   const { data, isLoading, error } = useCategories(
     currentPage,
     ITEMS_PER_PAGE,
@@ -32,7 +32,10 @@ const CategoriesWrapper: FC = () => {
   // odvodené hodnoty
   const categories = data?.data ?? [];
   const totalPages = data?.meta.totalPages ?? 0;
-  const totalBooks = categories.reduce((sum: number, cat: Category) => sum + cat.books.length, 0);
+  const totalBooks = categories.reduce(
+    (sum: number, cat: Category) => sum + cat.books.length,
+    0,
+  );
   const totalAvailable = categories.reduce(
     (sum: number, cat: Category) =>
       sum +
