@@ -120,7 +120,9 @@ const AllBooksWrapper: FC = () => {
                 <div className="text-sm text-gray-500 dark:text-sky-100">
                   Celkom kníh
                 </div>
-                <div className="text-xl font-bold text-primary">{totalBooks}</div>
+                <div className="text-xl font-bold text-primary">
+                  {totalBooks}
+                </div>
               </div>
               <div className="bg-white dark:bg-background rounded-lg p-3 shadow-sm border">
                 <div className="text-sm text-gray-500 dark:text-sky-100">
@@ -131,8 +133,12 @@ const AllBooksWrapper: FC = () => {
                 </div>
               </div>
               <div className="bg-white dark:bg-background rounded-lg p-3 shadow-sm border">
-                <div className="text-sm text-gray-500 dark:text-sky-100">Požičané</div>
-                <div className="text-xl font-bold text-amber-600">{borrowedCount}</div>
+                <div className="text-sm text-gray-500 dark:text-sky-100">
+                  Požičané
+                </div>
+                <div className="text-xl font-bold text-amber-600">
+                  {borrowedCount}
+                </div>
               </div>
             </div>
           </div>
