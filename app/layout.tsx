@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { Ubuntu } from "next/font/google";
 import "./globals.css";
-import { Navigation } from "@/components/shared/Navigation";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import TransitionProvider from "@/components/providers/TransitionProvider";
 import ScrollToTop from "@/components/shared/ScrollToTop";
 import QueryProvider from "@/components/providers/QueryProvider";
+import Navigation from "@/components/shared/Navigation";
 
 const ubuntu = Ubuntu({
   weight: "700",
@@ -54,6 +54,7 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
+          storageKey="spst-key"
         >
           <TransitionProvider>
             <QueryProvider>
