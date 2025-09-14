@@ -82,13 +82,13 @@ const Navigation = () => {
                   className="flex items-center space-x-1"
                 >
                   <LogOut className="h-4 w-4" />
-                  <span>Logout</span>
+                  <span>Odhlásenie</span>
                 </Button>
               </>
             ) : (
               <Link href="/auth">
                 <Button variant="default" size="sm">
-                  Login / Register
+                  Prihlásenie / Registrácia
                 </Button>
               </Link>
             )}
@@ -149,13 +149,13 @@ const Navigation = () => {
                       className="w-full flex items-center justify-center space-x-1"
                     >
                       <LogOut className="h-4 w-4" />
-                      <span>Logout</span>
+                      <span>Odhlásenie</span>
                     </Button>
                   </>
                 ) : (
                   <Link href="/auth" onClick={() => setIsOpen(false)}>
                     <Button variant="default" size="sm" className="w-full">
-                      Login / Register
+                      Prihlásenie / Registrácia
                     </Button>
                   </Link>
                 )}
