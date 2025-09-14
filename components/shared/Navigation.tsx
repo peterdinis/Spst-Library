@@ -15,14 +15,17 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ModeToggle } from "./ModeToggle";
+import { useProfileWithAuth } from "@/hooks/auth/useProfile";
 
-export const Navigation = () => {
-  const navigation = useRouter();
+const Navigation = () => {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState({ name: "John Student", role: "student" });
+
+  const { data: user, isAuthenticated } = useProfileWithAuth();
 
   const handleLogout = () => {
-    // TODO
+    localStorage.removeItem("access_token");
+    router.push("/auth");
   };
 
   const navItems = [
@@ -50,8 +53,7 @@ export const Navigation = () => {
               <Link
                 key={to}
                 href={to}
-                className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-smooth hover:bg-muted text-muted-foreground hover:text-foreground
-                  }`}
+                className="flex items-center space-x-1 px-3 py-2 rounded-lg transition-smooth hover:bg-muted text-muted-foreground hover:text-foreground"
               >
                 <Icon className="h-4 w-4" />
                 <span>{label}</span>
@@ -61,7 +63,7 @@ export const Navigation = () => {
 
           {/* User Menu */}
           <div className="hidden lg:flex items-center space-x-4">
-            {user ? (
+            {isAuthenticated && user ? (
               <>
                 <Link href="/profile">
                   <Button
@@ -86,7 +88,7 @@ export const Navigation = () => {
             ) : (
               <Link href="/auth">
                 <Button variant="default" size="sm">
-                  Login
+                  Login / Register
                 </Button>
               </Link>
             )}
@@ -118,15 +120,14 @@ export const Navigation = () => {
                   key={to}
                   href={to}
                   onClick={() => setIsOpen(false)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-smooth text-muted-foreground hover:text-foreground hover:bg-muted
-                  `}
+                  className="flex items-center space-x-2 px-3 py-2 rounded-lg transition-smooth text-muted-foreground hover:text-foreground hover:bg-muted"
                 >
                   <Icon className="h-4 w-4" />
                   <span>{label}</span>
                 </Link>
               ))}
               <div className="pt-4 border-t space-y-2">
-                {user ? (
+                {isAuthenticated && user ? (
                   <>
                     <Link href="/profile" onClick={() => setIsOpen(false)}>
                       <Button
@@ -141,7 +142,10 @@ export const Navigation = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={handleLogout}
+                      onClick={() => {
+                        handleLogout();
+                        setIsOpen(false);
+                      }}
                       className="w-full flex items-center justify-center space-x-1"
                     >
                       <LogOut className="h-4 w-4" />
@@ -151,7 +155,7 @@ export const Navigation = () => {
                 ) : (
                   <Link href="/auth" onClick={() => setIsOpen(false)}>
                     <Button variant="default" size="sm" className="w-full">
-                      Login
+                      Login / Register
                     </Button>
                   </Link>
                 )}
@@ -163,3 +167,5 @@ export const Navigation = () => {
     </nav>
   );
 };
+
+export default Navigation;

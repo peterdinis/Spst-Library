@@ -20,27 +20,14 @@ import {
   Calendar,
   Award,
   Settings,
+  Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useProfile } from "@/hooks/auth/useProfile";
 
-// Mock user data
-const mockUser = {
-  id: "user-1",
-  name: "John Student",
-  email: "john.student@school.edu",
-  role: "student",
-  grade: "11th Grade",
-  memberSince: "September 2023",
-  totalBorrowed: 47,
-  currentlyBorrowed: 3,
-  overdue: 0,
-  favoriteGenre: "Science Fiction",
-  readingStreak: 12,
-  avatar: "/api/placeholder/100/100",
-};
-
-// Mock borrowed books
 const mockBorrowedBooks = [
   {
     id: "1",
@@ -110,10 +97,21 @@ const mockHistory = [
   },
 ];
 
+// Mock stats (this would also come from API)
+const mockStats = {
+  totalBorrowed: 47,
+  currentlyBorrowed: 3,
+  overdue: 0,
+  readingStreak: 12,
+  memberSince: "September 2023",
+};
+
 const ProfileWrapper: FC = () => {
   const [borrowedBooks, setBorrowedBooks] = useState(mockBorrowedBooks);
-  const [user] = useState(mockUser);
   const { toast } = useToast();
+
+  // Use the profile hook
+  const { data: user, isLoading, error, refetch, isError } = useProfile();
 
   const handleReturnBook = (bookId: string) => {
     setBorrowedBooks((books) => books.filter((book) => book.id !== bookId));
@@ -151,6 +149,53 @@ const ProfileWrapper: FC = () => {
     return dueDate <= threeDaysFromNow && dueDate >= new Date();
   });
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+          <p className="text-muted-foreground">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (isError || !user) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <Card className="max-w-md w-full">
+          <CardHeader>
+            <div className="flex items-center space-x-2">
+              <AlertCircle className="h-5 w-5 text-destructive" />
+              <CardTitle>Unable to load profile</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Alert variant="destructive">
+              <AlertDescription>
+                {error?.message || "Failed to load user profile"}
+              </AlertDescription>
+            </Alert>
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => refetch()}
+                variant="outline"
+                className="flex-1"
+              >
+                Try Again
+              </Button>
+              <Button asChild className="flex-1">
+                <a href="/login">Go to Login</a>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -175,13 +220,17 @@ const ProfileWrapper: FC = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <GraduationCap className="h-4 w-4" />
-                      <span>
-                        {user.grade} • {user.role}
-                      </span>
+                      <span>{user.role.name}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Calendar className="h-4 w-4" />
-                      <span>Member since {user.memberSince}</span>
+                      <span>
+                        Member since{" "}
+                        {new Date(user.createdAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                        })}
+                      </span>
                     </div>
                   </CardDescription>
                 </div>
@@ -201,7 +250,7 @@ const ProfileWrapper: FC = () => {
             <CardContent className="p-4">
               <BookOpen className="h-8 w-8 mx-auto mb-2 text-primary" />
               <div className="text-2xl font-bold text-foreground">
-                {user.currentlyBorrowed}
+                {mockStats.currentlyBorrowed}
               </div>
               <div className="text-sm text-muted-foreground">
                 Currently Borrowed
@@ -213,7 +262,7 @@ const ProfileWrapper: FC = () => {
             <CardContent className="p-4">
               <TrendingUp className="h-8 w-8 mx-auto mb-2 text-success" />
               <div className="text-2xl font-bold text-foreground">
-                {user.totalBorrowed}
+                {mockStats.totalBorrowed}
               </div>
               <div className="text-sm text-muted-foreground">
                 Total Books Read
@@ -225,7 +274,7 @@ const ProfileWrapper: FC = () => {
             <CardContent className="p-4">
               <Clock className="h-8 w-8 mx-auto mb-2 text-secondary" />
               <div className="text-2xl font-bold text-foreground">
-                {user.readingStreak}
+                {mockStats.readingStreak}
               </div>
               <div className="text-sm text-muted-foreground">
                 Day Reading Streak
@@ -237,7 +286,7 @@ const ProfileWrapper: FC = () => {
             <CardContent className="p-4">
               <Award className="h-8 w-8 mx-auto mb-2 text-accent" />
               <div className="text-2xl font-bold text-foreground">
-                {user.overdue}
+                {mockStats.overdue}
               </div>
               <div className="text-sm text-muted-foreground">Overdue Books</div>
             </CardContent>
