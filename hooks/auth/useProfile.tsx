@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useQuery, UseQueryOptions } from '@tanstack/react-query';
+import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 
 export interface UserProfile {
   id: number;
@@ -20,24 +20,27 @@ export interface ProfileError {
 
 // API function
 const fetchUserProfile = async (): Promise<UserProfile> => {
-  const token = localStorage.getItem('access_token');
-  
+  const token = localStorage.getItem("access_token");
+
   if (!token) {
-    throw new Error('No access token found');
+    throw new Error("No access token found");
   }
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/profile`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/profile`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
     },
-  });
+  );
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     const error: ProfileError = {
-      message: errorData.message || 'Failed to fetch profile',
+      message: errorData.message || "Failed to fetch profile",
       statusCode: response.status,
     };
     throw error;
@@ -48,16 +51,16 @@ const fetchUserProfile = async (): Promise<UserProfile> => {
 
 // Query key factory
 export const profileQueryKeys = {
-  all: ['profile'] as const,
-  user: () => [...profileQueryKeys.all, 'user'] as const,
+  all: ["profile"] as const,
+  user: () => [...profileQueryKeys.all, "user"] as const,
 };
 
 // Hook
 export const useProfile = (
   options?: Omit<
     UseQueryOptions<UserProfile, ProfileError, UserProfile, string[]>,
-    'queryKey' | 'queryFn'
-  >
+    "queryKey" | "queryFn"
+  >,
 ) => {
   return useQuery({
     queryKey: ["userProfile"],
@@ -85,7 +88,8 @@ export const useProfileWithAuth = () => {
   return {
     ...query,
     isAuthenticated: !query.error || query.data !== undefined,
-    isAuthError: query.error?.statusCode === 401 || query.error?.statusCode === 403,
+    isAuthError:
+      query.error?.statusCode === 401 || query.error?.statusCode === 403,
   };
 };
 
@@ -102,7 +106,7 @@ export const useAuthenticatedProfile = () => {
   }
 
   if (query.error?.statusCode === 401) {
-    throw new Error('User not authenticated');
+    throw new Error("User not authenticated");
   }
 
   return {

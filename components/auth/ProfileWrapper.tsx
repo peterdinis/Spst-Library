@@ -109,15 +109,9 @@ const mockStats = {
 const ProfileWrapper: FC = () => {
   const [borrowedBooks, setBorrowedBooks] = useState(mockBorrowedBooks);
   const { toast } = useToast();
-  
+
   // Use the profile hook
-  const { 
-    data: user, 
-    isLoading, 
-    error, 
-    refetch,
-    isError 
-  } = useProfile();
+  const { data: user, isLoading, error, refetch, isError } = useProfile();
 
   const handleReturnBook = (bookId: string) => {
     setBorrowedBooks((books) => books.filter((book) => book.id !== bookId));
@@ -185,7 +179,11 @@ const ProfileWrapper: FC = () => {
               </AlertDescription>
             </Alert>
             <div className="flex space-x-2">
-              <Button onClick={() => refetch()} variant="outline" className="flex-1">
+              <Button
+                onClick={() => refetch()}
+                variant="outline"
+                className="flex-1"
+              >
                 Try Again
               </Button>
               <Button asChild className="flex-1">
@@ -222,16 +220,17 @@ const ProfileWrapper: FC = () => {
                     </div>
                     <div className="flex items-center space-x-2">
                       <GraduationCap className="h-4 w-4" />
-                      <span>
-                        {user.role.name}
-                      </span>
+                      <span>{user.role.name}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Calendar className="h-4 w-4" />
-                      <span>Member since {new Date(user.createdAt).toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'long' 
-                      })}</span>
+                      <span>
+                        Member since{" "}
+                        {new Date(user.createdAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                        })}
+                      </span>
                     </div>
                   </CardDescription>
                 </div>

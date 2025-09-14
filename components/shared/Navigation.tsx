@@ -21,7 +21,7 @@ const Navigation = () => {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
-  const {data: user, isAuthenticated} = useProfileWithAuth();
+  const { data: user, isAuthenticated } = useProfileWithAuth();
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
@@ -102,7 +102,11 @@ const Navigation = () => {
               size="sm"
               onClick={() => setIsOpen(!isOpen)}
             >
-              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {isOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
             </Button>
           </div>
         </div>
@@ -164,5 +168,4 @@ const Navigation = () => {
   );
 };
 
-
-export default Navigation
+export default Navigation;
