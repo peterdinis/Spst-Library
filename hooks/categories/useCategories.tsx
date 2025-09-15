@@ -1,16 +1,14 @@
 "use client";
 
-import { CategoryResponse } from "@/types/categoryTypes";
+import { API_BASE_URL } from "@/constants/applicationConstants";
 import { useQuery } from "@tanstack/react-query";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export function useCategories(
   page: number = 1,
   limit: number = 10,
   search?: string,
 ) {
-  return useQuery<CategoryResponse>({
+  return useQuery({
     queryKey: ["categories", { page, limit, search }],
     queryFn: async () => {
       const params = new URLSearchParams({

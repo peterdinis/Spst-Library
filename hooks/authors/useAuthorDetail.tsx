@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Author } from "@/types/authorTypes";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+import { API_BASE_URL } from "@/constants/applicationConstants";
 
 async function fetchAuthor(id: number): Promise<Author> {
   const res = await fetch(`${API_BASE_URL}/authors/${id}`);
