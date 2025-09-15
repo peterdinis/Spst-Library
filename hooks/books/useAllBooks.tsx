@@ -1,8 +1,7 @@
+import { API_BASE_URL } from "@/constants/applicationConstants";
 import { BooksResponse } from "@/types/bookTypes";
 import { QueryTypeDto } from "@/types/globalTypes";
 import { useQuery } from "@tanstack/react-query";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 async function fetchBooks(params: QueryTypeDto): Promise<BooksResponse> {
   const query = new URLSearchParams();

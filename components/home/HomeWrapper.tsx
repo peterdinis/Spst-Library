@@ -22,7 +22,7 @@ const Hero: FC = () => {
   return (
     <motion.div
       variants={homepageVariants}
-      initial="hidden"
+      initial={false}
       animate="visible"
       className="relative z-0 container mx-auto px-4 py-8 sm:py-12 md:py-16 lg:py-20 xl:px-0"
     >
