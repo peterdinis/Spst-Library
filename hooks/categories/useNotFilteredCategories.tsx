@@ -1,9 +1,8 @@
 "use client";
 
+import { API_BASE_URL } from "@/constants/applicationConstants";
 import { CategoryListResponse } from "@/types/categoryTypes";
 import { useQuery } from "@tanstack/react-query";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export function useNotFilterCategories() {
   return useQuery<CategoryListResponse>({

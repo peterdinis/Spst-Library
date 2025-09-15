@@ -1,7 +1,6 @@
+import { API_BASE_URL } from "@/constants/applicationConstants";
 import { Book } from "@/types/bookTypes";
 import { useQuery } from "@tanstack/react-query";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 async function fetchBook(id: number): Promise<Book> {
   if (!id || id < 1) {

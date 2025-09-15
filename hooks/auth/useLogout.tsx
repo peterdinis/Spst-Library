@@ -1,6 +1,5 @@
+import { API_BASE_URL } from "@/constants/applicationConstants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export const useLogout = () => {
   const queryClient = useQueryClient();
