@@ -13,11 +13,11 @@ import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
 const schema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z.string().min(1, "Meno je povinné"),
   bio: z.string().optional(),
-  litPeriod: z.string().min(1, "Literary period is required"),
-  authorImage: z.string().url("Must be a valid URL"),
-  bornDate: z.string().min(1, "Birth date is required"),
+  litPeriod: z.string().min(1, "Literárne obdobie je povinné"),
+  authorImage: z.string().url("Musí byť platná URL adresa"),
+  bornDate: z.string().min(1, "Dátum narodenia je povinný"),
   deathDate: z.string().optional(),
 });
 
@@ -34,7 +34,7 @@ export const CreateAuthorForm: FC = () => {
     try {
       await mutateAsync(values);
       form.reset();
-      alert("Author created successfully!");
+      alert("Autor bol úspešne vytvorený!");
     } catch (err: any) {
       alert(err.message);
     }
@@ -54,15 +54,15 @@ export const CreateAuthorForm: FC = () => {
       onSubmit={form.handleSubmit(onSubmit)}
       className="mx-auto w-full max-w-xl p-4 sm:p-6 bg-card rounded-xl shadow-md space-y-6"
     >
-      <h2 className="text-2xl font-bold text-center">Create Author</h2>
+      <h2 className="text-2xl font-bold text-center">Vytvoriť autora</h2>
 
       {[
-        { name: "name", label: "Name" },
-        { name: "bio", label: "Biography", textarea: true },
-        { name: "litPeriod", label: "Literary Period" },
-        { name: "authorImage", label: "Author Image URL" },
-        { name: "bornDate", label: "Birth Date (YYYY-MM-DD)" },
-        { name: "deathDate", label: "Death Date (optional)" },
+        { name: "name", label: "Meno" },
+        { name: "bio", label: "Biografia", textarea: true },
+        { name: "litPeriod", label: "Literárne obdobie" },
+        { name: "authorImage", label: "URL obrázka autora" },
+        { name: "bornDate", label: "Dátum narodenia (RRRR-MM-DD)" },
+        { name: "deathDate", label: "Dátum úmrtia (nepovinné)" },
       ].map(({ name, label, textarea }) => (
         <motion.div key={name} {...fieldAnim}>
           <Label htmlFor={name} className="font-medium">
@@ -102,10 +102,10 @@ export const CreateAuthorForm: FC = () => {
           {isPending ? (
             <>
               <Loader2 className="animate-spin w-5 h-5 mr-2" />
-              Creating...
+              Vytváram...
             </>
           ) : (
-            "Create Author"
+            "Vytvoriť autora"
           )}
         </Button>
       </motion.div>
