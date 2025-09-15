@@ -81,11 +81,11 @@ const ProfileWrapper: FC = () => {
           ? {
               ...book,
               dueDate: new Date(
-                Date.now() + 14 * 24 * 60 * 60 * 1000
+                Date.now() + 14 * 24 * 60 * 60 * 1000,
               ).toISOString(),
             }
-          : book
-      )
+          : book,
+      ),
     );
     toast({
       title: "Kniha bola predĺžená!",
@@ -94,7 +94,7 @@ const ProfileWrapper: FC = () => {
   };
 
   const overdueBooks = borrowedBooks.filter(
-    (book) => new Date(book.dueDate) < new Date()
+    (book) => new Date(book.dueDate) < new Date(),
   );
   const upcomingDue = borrowedBooks.filter((book) => {
     const dueDate = new Date(book.dueDate);
@@ -182,7 +182,9 @@ const ProfileWrapper: FC = () => {
             <div className="text-2xl font-bold text-foreground">
               {mockStats.currentlyBorrowed}
             </div>
-            <div className="text-sm text-muted-foreground">Aktuálne požičané</div>
+            <div className="text-sm text-muted-foreground">
+              Aktuálne požičané
+            </div>
           </CardContent>
         </Card>
 
@@ -202,7 +204,9 @@ const ProfileWrapper: FC = () => {
             <div className="text-2xl font-bold text-foreground">
               {mockStats.overdue}
             </div>
-            <div className="text-sm text-muted-foreground">Požičky po termíne</div>
+            <div className="text-sm text-muted-foreground">
+              Požičky po termíne
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -218,7 +222,8 @@ const ProfileWrapper: FC = () => {
                   Požičky po termíne ({overdueBooks.length})
                 </CardTitle>
                 <CardDescription>
-                  Prosím vráťte tieto knihy čo najskôr, aby ste sa vyhli poplatkom za oneskorenie.
+                  Prosím vráťte tieto knihy čo najskôr, aby ste sa vyhli
+                  poplatkom za oneskorenie.
                 </CardDescription>
               </CardHeader>
             </Card>
@@ -257,9 +262,15 @@ const ProfileWrapper: FC = () => {
                   </div>
                 </div>
                 <Badge
-                  variant={new Date(book.dueDate) < new Date() ? "destructive" : "secondary"}
+                  variant={
+                    new Date(book.dueDate) < new Date()
+                      ? "destructive"
+                      : "secondary"
+                  }
                 >
-                  {new Date(book.dueDate) < new Date() ? "Po termíne" : "Požičané"}
+                  {new Date(book.dueDate) < new Date()
+                    ? "Po termíne"
+                    : "Požičané"}
                 </Badge>
               </CardHeader>
 
@@ -271,11 +282,16 @@ const ProfileWrapper: FC = () => {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Calendar className="h-4 w-4" />
-                    <span>Požičané: {new Date(book.borrowedDate).toLocaleDateString()}</span>
+                    <span>
+                      Požičané:{" "}
+                      {new Date(book.borrowedDate).toLocaleDateString()}
+                    </span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Clock className="h-4 w-4" />
-                    <span>Termín: {new Date(book.dueDate).toLocaleDateString()}</span>
+                    <span>
+                      Termín: {new Date(book.dueDate).toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
                 {book.description && (
@@ -307,7 +323,9 @@ const ProfileWrapper: FC = () => {
       ) : (
         <div className="text-center py-12">
           <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-          <h3 className="text-xl font-semibold mb-2">Žiadne aktuálne požičané knihy</h3>
+          <h3 className="text-xl font-semibold mb-2">
+            Žiadne aktuálne požičané knihy
+          </h3>
           <p className="text-muted-foreground mb-4">
             Prezrite si našu knižnicu a nájdite si svoju ďalšiu knihu!
           </p>

@@ -82,7 +82,6 @@ const AuthWrapper: FC = () => {
     });
   };
 
-
   const handleRegister = (data: RegisterFormInputs) => {
     if (data.registerPassword !== data.confirmPassword) {
       toast({
