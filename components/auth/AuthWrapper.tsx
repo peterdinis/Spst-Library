@@ -62,7 +62,10 @@ const AuthWrapper: FC = () => {
 
   const handleLogin = (data: LoginFormInputs) => {
     loginMutation.mutate(data, {
-      onSuccess: () => {
+      onSuccess: (res: { access_token: string; refresh_token: string }) => {
+        // Save the access token
+        localStorage.setItem("token", res.access_token);
+
         toast({
           title: "Prihlásenie úspešné!",
           description: "Vitaj späť v Školskej knižnici.",
@@ -78,6 +81,7 @@ const AuthWrapper: FC = () => {
       },
     });
   };
+
 
   const handleRegister = (data: RegisterFormInputs) => {
     if (data.registerPassword !== data.confirmPassword) {
