@@ -2,7 +2,7 @@ import CreateCategoryForm from "@/components/categories/CreateCategoryForm";
 import { NextPage } from "next";
 
 const CreateCategoryPage: NextPage = () => {
-    return <CreateCategoryForm />
-}
+  return <CreateCategoryForm />;
+};
 
-export default CreateCategoryPage
+export default CreateCategoryPage;
