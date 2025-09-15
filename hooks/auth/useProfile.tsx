@@ -20,7 +20,7 @@ export interface ProfileError {
 
 // API function
 const fetchUserProfile = async (): Promise<UserProfile> => {
-  const token = localStorage.getItem("access_token");
+  const token = localStorage.getItem("token");
 
   if (!token) {
     throw new Error("No access token found");
@@ -62,11 +62,14 @@ export const useProfile = (
     "queryKey" | "queryFn"
   >,
 ) => {
+  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+
   return useQuery({
     queryKey: ["userProfile"],
     queryFn: fetchUserProfile,
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+    enabled: !!token,
     retry: (failureCount, error) => {
       // Don't retry on authentication errors
       if (error?.statusCode === 401 || error?.statusCode === 403) {
