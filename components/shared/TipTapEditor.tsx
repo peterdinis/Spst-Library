@@ -108,7 +108,9 @@ export const TipTapEditor: FC<TipTapEditorProps> = ({ value, onChange }) => {
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 2 }).run()
+          }
         >
           H2
         </Button>
@@ -116,7 +118,9 @@ export const TipTapEditor: FC<TipTapEditorProps> = ({ value, onChange }) => {
           type="button"
           variant="outline"
           size="sm"
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
         >
           H3
         </Button>
