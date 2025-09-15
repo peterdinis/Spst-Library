@@ -1,7 +1,7 @@
 import { NextPage } from "next";
 
 const CreateAuthorPage: NextPage = () => {
-    return <></>
-}
+  return <></>;
+};
 
-export default CreateAuthorPage
+export default CreateAuthorPage;

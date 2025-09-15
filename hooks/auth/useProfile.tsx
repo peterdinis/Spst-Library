@@ -62,7 +62,8 @@ export const useProfile = (
     "queryKey" | "queryFn"
   >,
 ) => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
   return useQuery({
     queryKey: ["userProfile"],
