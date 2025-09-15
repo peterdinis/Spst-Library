@@ -36,6 +36,7 @@ interface TipTapEditorProps {
 
 export const TipTapEditor: FC<TipTapEditorProps> = ({ value, onChange }) => {
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit.configure({}),
       Bold,
