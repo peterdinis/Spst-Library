@@ -1,7 +1,7 @@
 "use client";
 
 import { FC } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -14,13 +14,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   CreateCategoryDto,
   useCreateCategory,
 } from "@/hooks/categories/useCreateCategory";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
+import { TipTapEditor } from "../shared/TipTapEditor";
 
 const schema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -62,6 +62,7 @@ const CreateCategoryForm: FC = () => {
           onSubmit={form.handleSubmit(onSubmit)}
           className="mx-auto mt-4 max-w-md space-y-6 p-4 rounded-lg border bg-card shadow"
         >
+          {/* Category Name */}
           <FormField
             control={form.control}
             name="name"
@@ -76,16 +77,17 @@ const CreateCategoryForm: FC = () => {
             )}
           />
 
-          <FormField
+          {/* Description with TipTap */}
+          <Controller
             control={form.control}
             name="description"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Description (optional)</FormLabel>
                 <FormControl>
-                  <Textarea
-                    placeholder="Fictional books about future science..."
-                    {...field}
+                  <TipTapEditor
+                    value={field.value || ""}
+                    onChange={field.onChange}
                   />
                 </FormControl>
                 <FormMessage />
@@ -93,17 +95,8 @@ const CreateCategoryForm: FC = () => {
             )}
           />
 
-          <Button
-            type="submit"
-            size="lg"
-            className="w-full"
-            disabled={isPending}
-          >
-            {isPending ? (
-              <Loader2 className="animate-spin w-8 h-8" />
-            ) : (
-              "Create Category"
-            )}
+          <Button type="submit" size="lg" className="w-full" disabled={isPending}>
+            {isPending ? <Loader2 className="animate-spin w-8 h-8" /> : "Create Category"}
           </Button>
         </form>
       </Form>
