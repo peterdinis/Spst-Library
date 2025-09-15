@@ -22,11 +22,13 @@ const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const { data: user, isAuthenticated } = useProfileWithAuth();
+  const [loggedIn, setLoggedIn] = useState(isAuthenticated);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    router.push("/auth");
-  };
+  localStorage.removeItem("token");
+  setLoggedIn(false);
+  router.push("/auth");
+};
 
   const navItems = [
     { to: "/", label: "Domov", icon: BookOpen },
@@ -63,7 +65,7 @@ const Navigation = () => {
 
           {/* User Menu */}
           <div className="hidden lg:flex items-center space-x-4">
-            {isAuthenticated && user ? (
+            {loggedIn && user ? (
               <>
                 <Link href="/profile">
                   <Button

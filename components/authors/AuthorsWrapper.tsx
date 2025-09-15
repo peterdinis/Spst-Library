@@ -232,7 +232,7 @@ const AuthorsWrapper: FC = () => {
         )}
 
         <div className="mt-12 text-center animate-fade-in">
-          <div className="bg-gradient-secondary p-8 rounded-lg text-white">
+          <div className="bg-gradient-secondary p-8 rounded-lg text-black dark:text-white">
             <h2 className="text-2xl font-bold mb-2">Navrhnite nového autora</h2>
             <p className="mb-4 opacity-90">
               Nevidíte svojho obľúbeného autora? Dajte nám vedieť, koho by ste
@@ -241,7 +241,7 @@ const AuthorsWrapper: FC = () => {
             <Button
               variant="outline"
               size="lg"
-              className="bg-white text-secondary hover:bg-gray-50"
+              className="bg-white dark:bg-stone-600 hover:bg-gray-50"
             >
               Odoslať návrh
             </Button>
