@@ -25,10 +25,10 @@ const Navigation = () => {
   const [loggedIn, setLoggedIn] = useState(isAuthenticated);
 
   const handleLogout = () => {
-  localStorage.removeItem("token");
-  setLoggedIn(false);
-  router.push("/auth");
-};
+    localStorage.removeItem("token");
+    setLoggedIn(false);
+    router.push("/auth");
+  };
 
   const navItems = [
     { to: "/", label: "Domov", icon: BookOpen },
