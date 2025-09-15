@@ -18,7 +18,6 @@ import {
   Clock,
   Calendar,
   Award,
-  Settings,
   Loader2,
   AlertCircle,
 } from "lucide-react";
@@ -171,10 +170,6 @@ const ProfileWrapper: FC = () => {
                 </div>
               </CardDescription>
             </div>
-            <Button variant="outline" size="sm" className="self-start">
-              <Settings className="h-4 w-4 mr-2" />
-              Upraviť profil
-            </Button>
           </div>
         </CardHeader>
       </Card>
