@@ -24,7 +24,7 @@ const Navigation = () => {
   const { data: user, isAuthenticated } = useProfileWithAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem("access_token");
+    localStorage.removeItem("token");
     router.push("/auth");
   };
 
