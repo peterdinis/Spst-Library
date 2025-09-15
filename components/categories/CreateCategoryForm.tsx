@@ -52,10 +52,12 @@ const CreateCategoryForm: FC = () => {
     };
 
     return (
-        <Form {...form}>
+        <div className="mt-16">
+            <h2 className="text-center text-5xl font-bold">Nová kategoria</h2>
+            <Form {...form}>
             <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="mx-auto max-w-md space-y-6 p-4 rounded-lg border bg-card shadow"
+                className="mx-auto mt-4 max-w-md space-y-6 p-4 rounded-lg border bg-card shadow"
             >
                 <FormField
                     control={form.control}
@@ -93,6 +95,7 @@ const CreateCategoryForm: FC = () => {
                 </Button>
             </form>
         </Form>
+        </div>
     );
 };
 

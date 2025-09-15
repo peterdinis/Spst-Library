@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "@/constants/applicationConstants";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export interface CreateCategoryDto {
@@ -6,7 +7,7 @@ export interface CreateCategoryDto {
 }
 
 async function createCategory(data: CreateCategoryDto) {
-  const res = await fetch("/categories", {
+  const res = await fetch(`${API_BASE_URL}/categories`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
@@ -25,7 +26,6 @@ export function useCreateCategory() {
   return useMutation({
     mutationFn: createCategory,
     onSuccess: () => {
-      // ✅ invalidate any list queries so they refresh
       qc.invalidateQueries({ queryKey: ["categories"] });
     },
   });
