@@ -33,76 +33,47 @@ const mockBorrowedBooks = [
     id: "1",
     title: "1984",
     author: "George Orwell",
-    category: "Science Fiction",
+    category: "Sci-fi",
     isbn: "978-0-452-28423-4",
     publishedYear: 1949,
     available: false,
     dueDate: "2024-01-15",
     description:
-      "A dystopian social science fiction novel about totalitarian control.",
+      "Dystopický román o totalitnej kontrole spoločnosti.",
     borrowedDate: "2024-01-01",
   },
   {
     id: "2",
-    title: "The Catcher in the Rye",
+    title: "Kto chytá v žite",
     author: "J.D. Salinger",
-    category: "Coming of Age",
+    category: "Príbeh dospievania",
     isbn: "978-0-316-76948-0",
     publishedYear: 1951,
     available: false,
     dueDate: "2024-01-20",
     description:
-      "A controversial novel about teenage rebellion and alienation.",
+      "Kontroverzný román o rebelii a odcudzení dospievajúcich.",
     borrowedDate: "2024-01-06",
   },
   {
     id: "3",
-    title: "Dune",
+    title: "Duna",
     author: "Frank Herbert",
-    category: "Science Fiction",
+    category: "Sci-fi",
     isbn: "978-0-441-17271-9",
     publishedYear: 1965,
     available: false,
     dueDate: "2024-01-25",
-    description: "Epic science fiction novel set in a distant future.",
+    description: "Epický sci-fi román odohrávajúci sa v budúcnosti.",
     borrowedDate: "2024-01-11",
   },
 ];
 
-// Mock reading history
-const mockHistory = [
-  {
-    id: "hist-1",
-    title: "To Kill a Mockingbird",
-    author: "Harper Lee",
-    borrowedDate: "2023-11-15",
-    returnedDate: "2023-11-29",
-    rating: 5,
-  },
-  {
-    id: "hist-2",
-    title: "The Great Gatsby",
-    author: "F. Scott Fitzgerald",
-    borrowedDate: "2023-12-01",
-    returnedDate: "2023-12-14",
-    rating: 4,
-  },
-  {
-    id: "hist-3",
-    title: "Pride and Prejudice",
-    author: "Jane Austen",
-    borrowedDate: "2023-12-16",
-    returnedDate: "2023-12-30",
-    rating: 5,
-  },
-];
-
-// Mock stats (this would also come from API)
+// Mock štatistiky
 const mockStats = {
   totalBorrowed: 47,
   currentlyBorrowed: 3,
   overdue: 0,
-  readingStreak: 12,
   memberSince: "September 2023",
 };
 
@@ -110,14 +81,13 @@ const ProfileWrapper: FC = () => {
   const [borrowedBooks, setBorrowedBooks] = useState(mockBorrowedBooks);
   const { toast } = useToast();
 
-  // Use the profile hook
   const { data: user, isLoading, error, refetch, isError } = useProfile();
 
   const handleReturnBook = (bookId: string) => {
     setBorrowedBooks((books) => books.filter((book) => book.id !== bookId));
     toast({
-      title: "Book returned successfully!",
-      description: "Thank you for returning the book on time.",
+      title: "Kniha bola vrátená!",
+      description: "Ďakujeme, že ste knihu vrátili načas.",
     });
   };
 
@@ -135,8 +105,8 @@ const ProfileWrapper: FC = () => {
       ),
     );
     toast({
-      title: "Book renewed successfully!",
-      description: "Your borrowing period has been extended by 2 weeks.",
+      title: "Kniha bola predĺžená!",
+      description: "Doba výpožičky bola predĺžená o 2 týždne.",
     });
   };
 
@@ -149,19 +119,17 @@ const ProfileWrapper: FC = () => {
     return dueDate <= threeDaysFromNow && dueDate >= new Date();
   });
 
-  // Loading state
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center space-y-4">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <p className="text-muted-foreground">Loading your profile...</p>
+          <p className="text-muted-foreground">Načítavam váš profil...</p>
         </div>
       </div>
     );
   }
 
-  // Error state
   if (isError || !user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
@@ -169,13 +137,13 @@ const ProfileWrapper: FC = () => {
           <CardHeader>
             <div className="flex items-center space-x-2">
               <AlertCircle className="h-5 w-5 text-destructive" />
-              <CardTitle>Unable to load profile</CardTitle>
+              <CardTitle>Nepodarilo sa načítať profil</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert variant="destructive">
               <AlertDescription>
-                {error?.message || "Failed to load user profile"}
+                {error?.message || "Nepodarilo sa načítať váš profil"}
               </AlertDescription>
             </Alert>
             <div className="flex space-x-2">
@@ -184,10 +152,10 @@ const ProfileWrapper: FC = () => {
                 variant="outline"
                 className="flex-1"
               >
-                Try Again
+                Skúsiť znova
               </Button>
               <Button asChild className="flex-1">
-                <a href="/login">Go to Login</a>
+                <a href="/login">Prejsť na prihlásenie</a>
               </Button>
             </div>
           </CardContent>
@@ -199,18 +167,11 @@ const ProfileWrapper: FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Profile Header */}
+        {/* Profil */}
         <div className="mb-8 animate-fade-in">
           <Card className="shadow-card">
             <CardHeader>
               <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
-                <div className="w-20 h-20 bg-gradient-primary rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                  {user.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-                </div>
-
                 <div className="flex-1">
                   <CardTitle className="text-2xl mb-2">{user.name}</CardTitle>
                   <CardDescription className="space-y-1">
@@ -225,8 +186,8 @@ const ProfileWrapper: FC = () => {
                     <div className="flex items-center space-x-2">
                       <Calendar className="h-4 w-4" />
                       <span>
-                        Member since{" "}
-                        {new Date(user.createdAt).toLocaleDateString("en-US", {
+                        Člen od{" "}
+                        {new Date(user.createdAt).toLocaleDateString("sk-SK", {
                           year: "numeric",
                           month: "long",
                         })}
@@ -237,15 +198,15 @@ const ProfileWrapper: FC = () => {
 
                 <Button variant="outline" size="sm" className="self-start">
                   <Settings className="h-4 w-4 mr-2" />
-                  Edit Profile
+                  Upraviť profil
                 </Button>
               </div>
             </CardHeader>
           </Card>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 animate-slide-up">
+        {/* Štatistiky */}
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8 animate-slide-up">
           <Card className="text-center hover-lift shadow-card">
             <CardContent className="p-4">
               <BookOpen className="h-8 w-8 mx-auto mb-2 text-primary" />
@@ -253,7 +214,7 @@ const ProfileWrapper: FC = () => {
                 {mockStats.currentlyBorrowed}
               </div>
               <div className="text-sm text-muted-foreground">
-                Currently Borrowed
+                Aktuálne požičané
               </div>
             </CardContent>
           </Card>
@@ -265,35 +226,23 @@ const ProfileWrapper: FC = () => {
                 {mockStats.totalBorrowed}
               </div>
               <div className="text-sm text-muted-foreground">
-                Total Books Read
+                Prečítané knihy
               </div>
             </CardContent>
           </Card>
 
           <Card className="text-center hover-lift shadow-card">
             <CardContent className="p-4">
-              <Clock className="h-8 w-8 mx-auto mb-2 text-secondary" />
-              <div className="text-2xl font-bold text-foreground">
-                {mockStats.readingStreak}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Day Reading Streak
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center hover-lift shadow-card">
-            <CardContent className="p-4">
-              <Award className="h-8 w-8 mx-auto mb-2 text-accent" />
+              <Award className="h-8 w-8 mx-auto mb-2" />
               <div className="text-2xl font-bold text-foreground">
                 {mockStats.overdue}
               </div>
-              <div className="text-sm text-muted-foreground">Overdue Books</div>
+              <div className="text-sm text-muted-foreground">Požičky po termíne</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Alerts */}
+        {/* Upozornenia */}
         {(overdueBooks.length > 0 || upcomingDue.length > 0) && (
           <div className="mb-8 space-y-4 animate-fade-in">
             {overdueBooks.length > 0 && (
@@ -301,11 +250,10 @@ const ProfileWrapper: FC = () => {
                 <CardHeader>
                   <CardTitle className="text-destructive flex items-center">
                     <Clock className="h-5 w-5 mr-2" />
-                    Overdue Books ({overdueBooks.length})
+                    Požičky po termíne ({overdueBooks.length})
                   </CardTitle>
                   <CardDescription>
-                    Please return these books as soon as possible to avoid late
-                    fees.
+                    Prosím vráťte tieto knihy čo najskôr, aby ste sa vyhli poplatkom za oneskorenie.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -316,10 +264,10 @@ const ProfileWrapper: FC = () => {
                 <CardHeader>
                   <CardTitle className="text-secondary flex items-center">
                     <Calendar className="h-5 w-5 mr-2" />
-                    Due Soon ({upcomingDue.length})
+                    Termín blízko ({upcomingDue.length})
                   </CardTitle>
                   <CardDescription>
-                    These books are due within the next 3 days.
+                    Tieto knihy budú splatné do 3 dní.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -327,18 +275,17 @@ const ProfileWrapper: FC = () => {
           </div>
         )}
 
-        {/* Main Content Tabs */}
+        {/* Karty obsahu */}
         <Tabs defaultValue="borrowed" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2 max-w-md">
-            <TabsTrigger value="borrowed">Currently Borrowed</TabsTrigger>
-            <TabsTrigger value="history">Reading History</TabsTrigger>
+            <TabsTrigger value="borrowed">Aktuálne požičané</TabsTrigger>
+            <TabsTrigger value="history">História čítania</TabsTrigger>
           </TabsList>
 
-          {/* Currently Borrowed */}
           <TabsContent value="borrowed" className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Currently Borrowed Books</h2>
-              <Badge variant="outline">{borrowedBooks.length} books</Badge>
+              <h2 className="text-2xl font-bold">Aktuálne požičané knihy</h2>
+              <Badge variant="outline">{borrowedBooks.length} knihy</Badge>
             </div>
 
             {borrowedBooks.length > 0 ? (
@@ -369,8 +316,8 @@ const ProfileWrapper: FC = () => {
                             }
                           >
                             {new Date(book.dueDate) < new Date()
-                              ? "Overdue"
-                              : "Borrowed"}
+                              ? "Po termíne"
+                              : "Požičané"}
                           </Badge>
                         </div>
                       </CardHeader>
@@ -384,14 +331,14 @@ const ProfileWrapper: FC = () => {
                           <div className="flex items-center space-x-2">
                             <Calendar className="h-4 w-4" />
                             <span>
-                              Borrowed:{" "}
+                              Požičané:{" "}
                               {new Date(book.borrowedDate).toLocaleDateString()}
                             </span>
                           </div>
                           <div className="flex items-center space-x-2">
                             <Clock className="h-4 w-4" />
                             <span>
-                              Due: {new Date(book.dueDate).toLocaleDateString()}
+                              Termín: {new Date(book.dueDate).toLocaleDateString()}
                             </span>
                           </div>
                         </div>
@@ -409,14 +356,14 @@ const ProfileWrapper: FC = () => {
                           className="w-full"
                           variant="default"
                         >
-                          Return Book
+                          Vrátiť knihu
                         </Button>
                         <Button
                           onClick={() => handleRenewBook(book.id)}
                           className="w-full"
                           variant="outline"
                         >
-                          Renew (14 days)
+                          Predĺžiť (14 dní)
                         </Button>
                       </div>
                     </Card>
@@ -427,67 +374,16 @@ const ProfileWrapper: FC = () => {
               <div className="text-center py-12 animate-fade-in">
                 <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-xl font-semibold mb-2">
-                  No books currently borrowed
+                  Žiadne aktuálne požičané knihy
                 </h3>
                 <p className="text-muted-foreground mb-4">
-                  Browse our collection to find your next great read!
+                  Prezrite si našu knižnicu a nájdite si svoju ďalšiu knihu!
                 </p>
                 <Button asChild>
-                  <a href="/books">Browse Books</a>
+                  <a href="/books">Prehľadať knihy</a>
                 </Button>
               </div>
             )}
-          </TabsContent>
-
-          {/* Reading History */}
-          <TabsContent value="history" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold">Reading History</h2>
-              <Badge variant="outline">
-                {mockHistory.length} books completed
-              </Badge>
-            </div>
-
-            <div className="space-y-4">
-              {mockHistory.map((book, index) => (
-                <Card
-                  key={book.id}
-                  className="hover-lift shadow-card animate-scale-in"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <h3 className="font-semibold text-lg">{book.title}</h3>
-                        <p className="text-muted-foreground">
-                          by {book.author}
-                        </p>
-                        <div className="flex items-center space-x-4 mt-2 text-sm text-muted-foreground">
-                          <span>
-                            Borrowed:{" "}
-                            {new Date(book.borrowedDate).toLocaleDateString()}
-                          </span>
-                          <span>
-                            Returned:{" "}
-                            {new Date(book.returnedDate).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        {[...Array(5)].map((_, i) => (
-                          <span
-                            key={i}
-                            className={`text-lg ${i < book.rating ? "text-secondary" : "text-muted"}`}
-                          >
-                            ★
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
           </TabsContent>
         </Tabs>
       </div>
