@@ -6,6 +6,7 @@ import TransitionProvider from "@/components/providers/TransitionProvider";
 import ScrollToTop from "@/components/shared/ScrollToTop";
 import QueryProvider from "@/components/providers/QueryProvider";
 import Navigation from "@/components/shared/Navigation";
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 const ubuntu = Ubuntu({
   weight: "700",
@@ -58,9 +59,11 @@ export default function RootLayout({
         >
           <TransitionProvider>
             <QueryProvider>
-              <Navigation />
+              <NuqsAdapter>
+                <Navigation />
               {children}
               <ScrollToTop />
+              </NuqsAdapter>
             </QueryProvider>
           </TransitionProvider>
         </ThemeProvider>

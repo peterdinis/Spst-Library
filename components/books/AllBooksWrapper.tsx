@@ -27,15 +27,16 @@ import { Book } from "@/types/bookTypes";
 import { Category } from "@/types/categoryTypes";
 import { BookCard } from "./BookCard";
 import { ITEMS_PER_PAGE } from "@/constants/applicationConstants";
+import { useQueryState } from "nuqs";
 
 const AllBooksWrapper: FC = () => {
-  const [searchTerm, setSearchTerm] = useState("");
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [sortBy, setSortBy] = useState("title");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-
+  const [authorQuery, setAuthorQuery] = useQueryState("author");
+  const [searchTerm, setSearchTerm] = useState(authorQuery ?? "");
   const { data, isLoading, isError } = useBooks({
     search: searchTerm,
     page: currentPage,
@@ -82,6 +83,7 @@ const AllBooksWrapper: FC = () => {
     setCategoryFilter("all");
     setSortBy("title");
     setCurrentPage(1);
+    setAuthorQuery(null)
   };
 
   const activeFiltersCount = [

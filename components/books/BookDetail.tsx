@@ -17,13 +17,14 @@ import Link from "next/link";
 import { Separator } from "../ui/separator";
 import { useState } from "react";
 import { useBook } from "@/hooks/books/useBookDetail";
+import { useQueryState } from "nuqs";
 
 export default function BookDetail() {
   const { id } = useParams();
   const router = useRouter();
   const { toast } = useToast();
   const [showBorrowDialog, setShowBorrowDialog] = useState(false);
-
+  const [, setAuthorQuery] = useQueryState("author");
   const { data: book, isLoading, error } = useBook(Number(id));
 
   const handleBorrow = (borrowData: BorrowData) => {
@@ -190,16 +191,16 @@ export default function BookDetail() {
                 >
                   Požičať knihu
                 </Button>
-
-                <Link
-                  href={`/books?author=${encodeURIComponent(
-                    book.author?.name ?? "",
-                  )}`}
-                >
-                  <Button variant="ghost" className="w-full" size="lg">
+                <Button
+                  onClick={() => {
+                    setAuthorQuery(book.author?.name ?? "");
+                    router.push("/books");
+                  }}
+                  variant="ghost" 
+                  className="w-full" 
+                  size="lg">
                     Viac od autora
-                  </Button>
-                </Link>
+                </Button>
               </CardContent>
             </Card>
 
