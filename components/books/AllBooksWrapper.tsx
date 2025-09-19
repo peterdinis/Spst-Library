@@ -27,6 +27,7 @@ import { Book } from "@/types/bookTypes";
 import { Category } from "@/types/categoryTypes";
 import { BookCard } from "./BookCard";
 import { ITEMS_PER_PAGE } from "@/constants/applicationConstants";
+import { useDebounce } from "@/hooks/shared/useDebounce";
 
 const AllBooksWrapper: FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,9 +36,10 @@ const AllBooksWrapper: FC = () => {
   const [sortBy, setSortBy] = useState("title");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const debouncedSearch = useDebounce(searchTerm, 400);
 
   const { data, isLoading, isError } = useBooks({
-    search: searchTerm,
+    search: debouncedSearch,
     page: currentPage,
     limit: ITEMS_PER_PAGE,
   });

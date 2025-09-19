@@ -57,7 +57,9 @@ export const CreateAuthorForm: FC = () => {
         <Label htmlFor="name">Meno</Label>
         <Input id="name" {...form.register("name")} />
         {form.formState.errors.name && (
-          <p className="text-red-500 text-sm mt-1">{form.formState.errors.name.message}</p>
+          <p className="text-red-500 text-sm mt-1">
+            {form.formState.errors.name.message}
+          </p>
         )}
       </motion.div>
 
@@ -72,7 +74,9 @@ export const CreateAuthorForm: FC = () => {
           )}
         />
         {form.formState.errors.bio && (
-          <p className="text-red-500 text-sm mt-1">{form.formState.errors.bio.message}</p>
+          <p className="text-red-500 text-sm mt-1">
+            {form.formState.errors.bio.message}
+          </p>
         )}
       </motion.div>
 
@@ -88,14 +92,21 @@ export const CreateAuthorForm: FC = () => {
           <Input id={name} {...form.register(name as keyof FormValues)} />
           {form.formState.errors[name as keyof FormValues] && (
             <p className="text-red-500 text-sm mt-1">
-              {form.formState.errors[name as keyof FormValues]?.message as string}
+              {
+                form.formState.errors[name as keyof FormValues]
+                  ?.message as string
+              }
             </p>
           )}
         </motion.div>
       ))}
 
       <motion.div {...fieldAnim}>
-        <Button type="submit" disabled={isPending} className="w-full flex justify-center items-center">
+        <Button
+          type="submit"
+          disabled={isPending}
+          className="w-full flex justify-center items-center"
+        >
           {isPending ? (
             <>
               <Loader2 className="animate-spin w-5 h-5 mr-2" />
