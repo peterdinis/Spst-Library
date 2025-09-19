@@ -5,10 +5,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, BookOpen, Calendar, Award, Loader2 } from "lucide-react";
+import { Search, BookOpen, Calendar, Award, Loader2, Send } from "lucide-react";
 import Link from "next/link";
 import { useAllAuthors } from "@/hooks/authors/useAllAuthors";
 import { Author } from "@/types/authorTypes";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Textarea } from "../ui/textarea";
+import { useCreateAuthorSuggestion } from "@/hooks/author-suggestion/useCreateAuthorSuggestion";
+import { useForm } from "react-hook-form";
+import { FormValues, schema } from "./authorSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useToast } from "@/hooks/useToast";
 
 interface AuthorWithCounts extends Author {
   bookCount: number;
@@ -25,6 +40,22 @@ const AuthorsWrapper: FC = () => {
     search: searchTerm,
     page: 1,
     limit: 50,
+  });
+
+  const { toast } = useToast()
+  const [suggestName, setSuggestName] = useState("");
+  const [suggestNote, setSuggestNote] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
+
+  const { mutate: createSuggestion, isPending } = useCreateAuthorSuggestion();
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
   });
 
   const authors: Author[] = data?.data || [];
@@ -58,6 +89,20 @@ const AuthorsWrapper: FC = () => {
     (sum, author) => sum + author.availableBooks,
     0,
   );
+
+  const onSubmit = (values: FormValues) => {
+    createSuggestion(values, {
+      onSuccess: () => {
+        reset();
+        toast({
+          title: "Nový typ na spisovateľa/ku bol pridaný",
+          duration: 2000,
+          className: "bg-green-800 text-white font-bold text-base"
+        })
+        setOpenDialog(false);
+      },
+    });
+  };
 
   if (isLoading) {
     return (
@@ -231,20 +276,97 @@ const AuthorsWrapper: FC = () => {
           </div>
         )}
 
-        <div className="mt-12 text-center animate-fade-in">
+        <div className="mt-12 text-center">
           <div className="bg-gradient-secondary p-8 rounded-lg text-black dark:text-white">
             <h2 className="text-2xl font-bold mb-2">Navrhnite nového autora</h2>
             <p className="mb-4 opacity-90">
-              Nevidíte svojho obľúbeného autora? Dajte nám vedieť, koho by ste
-              radi videli v našej zbierke
+              Nevidíte svojho obľúbeného autora? Pošlite nám návrh.
             </p>
-            <Button
-              variant="outline"
-              size="lg"
-              className="bg-white dark:bg-stone-600 hover:bg-gray-50"
-            >
-              Odoslať návrh
-            </Button>
+
+            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="bg-white dark:bg-stone-600 hover:bg-gray-50"
+                >
+                  Odoslať návrh
+                </Button>
+              </DialogTrigger>
+
+              <DialogContent className="sm:max-w-lg">
+                <DialogHeader>
+                  <DialogTitle>Odoslať návrh autora</DialogTitle>
+                </DialogHeader>
+
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                  <div>
+                    <Input placeholder="Meno autora*" {...register("name")} />
+                    {errors.name && (
+                      <p className="text-sm text-red-500 mt-1">
+                        {errors.name.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Input
+                      placeholder="Literárne obdobie*"
+                      {...register("litPeriod")}
+                    />
+                    {errors.litPeriod && (
+                      <p className="text-sm text-red-500 mt-1">
+                        {errors.litPeriod.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Input type="date" {...register("bornDate")} />
+                    {errors.bornDate && (
+                      <p className="text-sm text-red-500 mt-1">
+                        {errors.bornDate.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <Input
+                    type="date"
+                    placeholder="Dátum úmrtia"
+                    {...register("deathDate")}
+                  />
+                  <Input
+                    placeholder="URL obrázku"
+                    {...register("authorImage")}
+                  />
+                  <Textarea
+                    placeholder="Stručný životopis"
+                    {...register("bio")}
+                  />
+                  <Input
+                    placeholder="Vaše meno (ak nie ste prihlásený)"
+                    {...register("suggestedByName")}
+                  />
+
+                  <DialogFooter>
+                    <Button
+                      type="submit"
+                      disabled={isPending}
+                      className="w-full"
+                    >
+                      {isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Odosielam...
+                        </>
+                      ) : (
+                        "Odoslať návrh"
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>
