@@ -95,8 +95,17 @@ const CreateCategoryForm: FC = () => {
             )}
           />
 
-          <Button type="submit" size="lg" className="w-full" disabled={isPending}>
-            {isPending ? <Loader2 className="animate-spin w-8 h-8" /> : "Create Category"}
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full"
+            disabled={isPending}
+          >
+            {isPending ? (
+              <Loader2 className="animate-spin w-8 h-8" />
+            ) : (
+              "Create Category"
+            )}
           </Button>
         </form>
       </Form>
