@@ -191,10 +191,6 @@ export default function BookDetail() {
                   Požičať knihu
                 </Button>
 
-                <Button variant="outline" className="w-full" size="lg">
-                  Pridať do wishlistu
-                </Button>
-
                 <Link
                   href={`/books?author=${encodeURIComponent(
                     book.author?.name ?? "",
