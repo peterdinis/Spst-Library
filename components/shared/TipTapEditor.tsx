@@ -14,7 +14,16 @@ import Blockquote from "@tiptap/extension-blockquote";
 import CodeBlock from "@tiptap/extension-code-block";
 import Image from "@tiptap/extension-image";
 import HorizontalRule from "@tiptap/extension-horizontal-rule";
-import History from "@tiptap/extension-history";
+
+// ⭐ NEW extensions
+import Underline from "@tiptap/extension-underline";
+import Strike from "@tiptap/extension-strike";
+import Highlight from "@tiptap/extension-highlight";
+import TextAlign from "@tiptap/extension-text-align";
+import Color from "@tiptap/extension-color";
+import TaskList from "@tiptap/extension-task-list";
+import TaskItem from "@tiptap/extension-task-item";
+
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -27,6 +36,10 @@ import {
   Code,
   ImageIcon,
   Minus,
+  Underline as UnderlineIcon,
+  Strikethrough,
+  CheckSquare,
+  Highlighter,
 } from "lucide-react";
 
 interface TipTapEditorProps {
@@ -38,26 +51,33 @@ export const TipTapEditor: FC<TipTapEditorProps> = ({ value, onChange }) => {
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
-      StarterKit.configure({}),
+      StarterKit.configure({
+        // Disable built-in history if you add custom History
+        // history: false,
+      }),
       Bold,
       Italic,
       Heading.configure({ levels: [1, 2, 3] }),
       BulletList,
       OrderedList,
       ListItem,
-      Link.configure({
-        openOnClick: false,
-      }),
+      Link.configure({ openOnClick: false }),
       Blockquote,
       CodeBlock,
       Image,
       HorizontalRule,
-      History,
+
+      // ⭐ New goodies
+      Underline,
+      Strike,
+      Highlight.configure({ multicolor: true }),
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      Color.configure({ types: ["textStyle"] }),
+      TaskList,
+      TaskItem,
     ],
     content: value,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
-    },
+    onUpdate: ({ editor }) => onChange(editor.getHTML()),
     editorProps: {
       attributes: {
         class:
@@ -66,7 +86,6 @@ export const TipTapEditor: FC<TipTapEditorProps> = ({ value, onChange }) => {
     },
   });
 
-  // Sync external value (reset, etc.)
   useEffect(() => {
     if (editor && value !== editor.getHTML()) {
       editor.commands.setContent(value);
@@ -76,19 +95,19 @@ export const TipTapEditor: FC<TipTapEditorProps> = ({ value, onChange }) => {
   if (!editor) return null;
 
   const setLink = () => {
-    const url = prompt("Vlož URL");
+    const url = prompt("Enter URL");
     if (url) editor.chain().focus().setLink({ href: url }).run();
   };
 
   const addImage = () => {
-    const url = prompt("Vlož URL obrázka");
+    const url = prompt("Enter image URL");
     if (url) editor.chain().focus().setImage({ src: url }).run();
   };
 
   return (
     <div className="space-y-2">
-      {/* Toolbar */}
       <div className="flex flex-wrap gap-2 bg-muted p-2 rounded-md border">
+        {/* Text styles */}
         <Button
           type="button"
           variant={editor.isActive("bold") ? "default" : "outline"}
@@ -107,11 +126,29 @@ export const TipTapEditor: FC<TipTapEditorProps> = ({ value, onChange }) => {
         </Button>
         <Button
           type="button"
+          variant={editor.isActive("underline") ? "default" : "outline"}
+          size="sm"
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+        >
+          <UnderlineIcon className="w-4 h-4" />
+        </Button>
+        <Button
+          type="button"
+          variant={editor.isActive("strike") ? "default" : "outline"}
+          size="sm"
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+        >
+          <Strikethrough className="w-4 h-4" />
+        </Button>
+
+        <Separator orientation="vertical" className="h-6" />
+
+        {/* Headings */}
+        <Button
+          type="button"
           variant="outline"
           size="sm"
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 2 }).run()
-          }
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
         >
           H2
         </Button>
@@ -119,13 +156,14 @@ export const TipTapEditor: FC<TipTapEditorProps> = ({ value, onChange }) => {
           type="button"
           variant="outline"
           size="sm"
-          onClick={() =>
-            editor.chain().focus().toggleHeading({ level: 3 }).run()
-          }
+          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
         >
           H3
         </Button>
+
         <Separator orientation="vertical" className="h-6" />
+
+        {/* Lists */}
         <Button
           type="button"
           variant="outline"
@@ -142,7 +180,18 @@ export const TipTapEditor: FC<TipTapEditorProps> = ({ value, onChange }) => {
         >
           <ListOrdered className="w-4 h-4" />
         </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => editor.chain().focus().toggleTaskList().run()}
+        >
+          <CheckSquare className="w-4 h-4" />
+        </Button>
+
         <Separator orientation="vertical" className="h-6" />
+
+        {/* Block types */}
         <Button
           type="button"
           variant="outline"
@@ -159,7 +208,48 @@ export const TipTapEditor: FC<TipTapEditorProps> = ({ value, onChange }) => {
         >
           <Code className="w-4 h-4" />
         </Button>
+
         <Separator orientation="vertical" className="h-6" />
+
+        {/* Highlight */}
+        <Button
+          type="button"
+          variant={editor.isActive("highlight") ? "default" : "outline"}
+          size="sm"
+          onClick={() => editor.chain().focus().toggleHighlight().run()}
+        >
+          <Highlighter className="w-4 h-4" />
+        </Button>
+
+        {/* Alignment */}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => editor.chain().focus().setTextAlign("left").run()}
+        >
+          L
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => editor.chain().focus().setTextAlign("center").run()}
+        >
+          C
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => editor.chain().focus().setTextAlign("right").run()}
+        >
+          R
+        </Button>
+
+        <Separator orientation="vertical" className="h-6" />
+
+        {/* Links & media */}
         <Button type="button" variant="outline" size="sm" onClick={setLink}>
           <LinkIcon className="w-4 h-4" />
         </Button>
@@ -176,7 +266,6 @@ export const TipTapEditor: FC<TipTapEditorProps> = ({ value, onChange }) => {
         </Button>
       </div>
 
-      {/* Editor content */}
       <EditorContent editor={editor} />
     </div>
   );
