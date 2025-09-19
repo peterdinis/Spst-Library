@@ -2,15 +2,15 @@
 
 import { FC } from "react";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
 import { useCreateAuthor } from "@/hooks/authors/useCreateAuthor";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { TipTapEditor } from "../shared/TipTapEditor";
 
 const schema = z.object({
   name: z.string().min(1, "Meno je povinné"),
@@ -31,13 +31,9 @@ export const CreateAuthorForm: FC = () => {
   const { mutateAsync, isPending } = useCreateAuthor();
 
   const onSubmit = async (values: FormValues) => {
-    try {
-      await mutateAsync(values);
-      form.reset();
-      alert("Autor bol úspešne vytvorený!");
-    } catch (err: any) {
-      alert(err.message);
-    }
+    await mutateAsync(values);
+    form.reset();
+    alert("Autor bol úspešne vytvorený!");
   };
 
   const fieldAnim = {
@@ -56,49 +52,50 @@ export const CreateAuthorForm: FC = () => {
     >
       <h2 className="text-2xl font-bold text-center">Vytvoriť autora</h2>
 
+      {/* Name */}
+      <motion.div {...fieldAnim}>
+        <Label htmlFor="name">Meno</Label>
+        <Input id="name" {...form.register("name")} />
+        {form.formState.errors.name && (
+          <p className="text-red-500 text-sm mt-1">{form.formState.errors.name.message}</p>
+        )}
+      </motion.div>
+
+      {/* Bio with TipTap */}
+      <motion.div {...fieldAnim}>
+        <Label className="font-medium">Biografia</Label>
+        <Controller
+          control={form.control}
+          name="bio"
+          render={({ field }) => (
+            <TipTapEditor value={field.value || ""} onChange={field.onChange} />
+          )}
+        />
+        {form.formState.errors.bio && (
+          <p className="text-red-500 text-sm mt-1">{form.formState.errors.bio.message}</p>
+        )}
+      </motion.div>
+
+      {/* Remaining inputs */}
       {[
-        { name: "name", label: "Meno" },
-        { name: "bio", label: "Biografia", textarea: true },
         { name: "litPeriod", label: "Literárne obdobie" },
         { name: "authorImage", label: "URL obrázka autora" },
         { name: "bornDate", label: "Dátum narodenia (RRRR-MM-DD)" },
         { name: "deathDate", label: "Dátum úmrtia (nepovinné)" },
-      ].map(({ name, label, textarea }) => (
+      ].map(({ name, label }) => (
         <motion.div key={name} {...fieldAnim}>
-          <Label htmlFor={name} className="font-medium">
-            {label}
-          </Label>
-          {textarea ? (
-            <Textarea
-              id={name}
-              rows={3}
-              {...form.register(name as keyof FormValues)}
-            />
-          ) : (
-            <Input id={name} {...form.register(name as keyof FormValues)} />
-          )}
+          <Label htmlFor={name}>{label}</Label>
+          <Input id={name} {...form.register(name as keyof FormValues)} />
           {form.formState.errors[name as keyof FormValues] && (
-            <motion.p
-              className="text-red-500 text-sm mt-1"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              {
-                form.formState.errors[name as keyof FormValues]?.message as
-                  | string
-                  | undefined
-              }
-            </motion.p>
+            <p className="text-red-500 text-sm mt-1">
+              {form.formState.errors[name as keyof FormValues]?.message as string}
+            </p>
           )}
         </motion.div>
       ))}
 
       <motion.div {...fieldAnim}>
-        <Button
-          type="submit"
-          disabled={isPending}
-          className="w-full flex justify-center items-center"
-        >
+        <Button type="submit" disabled={isPending} className="w-full flex justify-center items-center">
           {isPending ? (
             <>
               <Loader2 className="animate-spin w-5 h-5 mr-2" />
