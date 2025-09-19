@@ -80,7 +80,7 @@ const CreateBookForm: FC<CreateBookFormProps> = ({ categories, authors }) => {
                 <SelectValue placeholder="Vyber autora" />
               </SelectTrigger>
               <SelectContent>
-                {authors.map((author) => (
+                {authors && authors.map((author) => (
                   <SelectItem key={author.id} value={author.id.toString()}>
                     {author.name}
                   </SelectItem>
@@ -99,7 +99,7 @@ const CreateBookForm: FC<CreateBookFormProps> = ({ categories, authors }) => {
                 <SelectValue placeholder="Vyber kategóriu" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((cat) => (
+                {categories && categories.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id.toString()}>
                     {cat.name}
                   </SelectItem>
