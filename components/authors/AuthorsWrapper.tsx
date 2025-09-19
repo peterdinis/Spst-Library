@@ -43,7 +43,7 @@ const AuthorsWrapper: FC = () => {
     limit: 50,
   });
 
-  const { toast } = useToast()
+  const { toast } = useToast();
   const [suggestName, setSuggestName] = useState("");
   const [suggestNote, setSuggestNote] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
@@ -97,8 +97,8 @@ const AuthorsWrapper: FC = () => {
         toast({
           title: "Nový typ na spisovateľa/ku bol pridaný",
           duration: 2000,
-          className: "bg-green-800 text-white font-bold text-base"
-        })
+          className: "bg-green-800 text-white font-bold text-base",
+        });
         setOpenDialog(false);
       },
     });
