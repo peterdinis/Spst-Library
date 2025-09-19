@@ -16,6 +16,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ModeToggle } from "./ModeToggle";
 import { useProfileWithAuth } from "@/hooks/auth/useProfile";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Navigation = () => {
   const router = useRouter();
@@ -55,7 +56,7 @@ const Navigation = () => {
               <Link
                 key={to}
                 href={to}
-                className="flex items-center space-x-1 px-3 py-2 rounded-lg transition-smooth hover:bg-muted text-muted-foreground hover:text-foreground"
+                className="flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 ease-in-out hover:bg-muted text-muted-foreground hover:text-foreground"
               >
                 <Icon className="h-4 w-4" />
                 <span>{label}</span>
@@ -71,7 +72,7 @@ const Navigation = () => {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="flex items-center space-x-1"
+                    className="flex items-center space-x-1 hover:scale-105 transition-transform"
                   >
                     <UserCircle className="h-4 w-4" />
                     <span>{user.name}</span>
@@ -81,7 +82,7 @@ const Navigation = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleLogout}
-                  className="flex items-center space-x-1"
+                  className="flex items-center space-x-1 hover:scale-105 transition-transform"
                 >
                   <LogOut className="h-4 w-4" />
                   <span>Odhlásenie</span>
@@ -103,6 +104,7 @@ const Navigation = () => {
               variant="ghost"
               size="sm"
               onClick={() => setIsOpen(!isOpen)}
+              className="transition-transform hover:scale-110"
             >
               {isOpen ? (
                 <X className="h-5 w-5" />
@@ -114,57 +116,81 @@ const Navigation = () => {
         </div>
 
         {/* Mobile Navigation */}
-        {isOpen && (
-          <div className="lg:hidden py-4 animate-fade-in">
-            <div className="flex flex-col space-y-2">
-              {navItems.map(({ to, label, icon: Icon }) => (
-                <Link
-                  key={to}
-                  href={to}
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center space-x-2 px-3 py-2 rounded-lg transition-smooth text-muted-foreground hover:text-foreground hover:bg-muted"
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{label}</span>
-                </Link>
-              ))}
-              <div className="pt-4 border-t space-y-2">
-                {isAuthenticated && user ? (
-                  <>
-                    <Link href="/profile" onClick={() => setIsOpen(false)}>
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="lg:hidden overflow-hidden"
+            >
+              <motion.div
+                className="py-4 flex flex-col space-y-2"
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                variants={{
+                  hidden: { opacity: 0, y: -10 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+                transition={{ staggerChildren: 0.05 }}
+              >
+                {navItems.map(({ to, label, icon: Icon }) => (
+                  <motion.div
+                    key={to}
+                    whileHover={{ x: 5, scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 200 }}
+                  >
+                    <Link
+                      href={to}
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center space-x-2 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{label}</span>
+                    </Link>
+                  </motion.div>
+                ))}
+
+                <div className="pt-4 border-t space-y-2">
+                  {isAuthenticated && user ? (
+                    <>
+                      <Link href="/profile" onClick={() => setIsOpen(false)}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="w-full flex items-center justify-center space-x-1 hover:scale-105 transition-transform"
+                        >
+                          <UserCircle className="h-4 w-4" />
+                          <span>Profil</span>
+                        </Button>
+                      </Link>
                       <Button
-                        variant="ghost"
+                        variant="outline"
                         size="sm"
-                        className="w-full flex items-center justify-center space-x-1"
+                        onClick={() => {
+                          handleLogout();
+                          setIsOpen(false);
+                        }}
+                        className="w-full flex items-center justify-center space-x-1 hover:scale-105 transition-transform"
                       >
-                        <UserCircle className="h-4 w-4" />
-                        <span>Profile</span>
+                        <LogOut className="h-4 w-4" />
+                        <span>Odhlásenie</span>
+                      </Button>
+                    </>
+                  ) : (
+                    <Link href="/auth" onClick={() => setIsOpen(false)}>
+                      <Button variant="default" size="sm" className="w-full">
+                        Prihlásenie / Registrácia
                       </Button>
                     </Link>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        handleLogout();
-                        setIsOpen(false);
-                      }}
-                      className="w-full flex items-center justify-center space-x-1"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      <span>Odhlásenie</span>
-                    </Button>
-                  </>
-                ) : (
-                  <Link href="/auth" onClick={() => setIsOpen(false)}>
-                    <Button variant="default" size="sm" className="w-full">
-                      Prihlásenie / Registrácia
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+                  )}
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   );
