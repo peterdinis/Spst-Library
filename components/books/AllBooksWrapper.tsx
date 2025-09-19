@@ -27,7 +27,11 @@ import { Book } from "@/types/bookTypes";
 import { Category } from "@/types/categoryTypes";
 import { BookCard } from "./BookCard";
 import { ITEMS_PER_PAGE } from "@/constants/applicationConstants";
+<<<<<<< HEAD
 import { useQueryState } from "nuqs";
+=======
+import { useDebounce } from "@/hooks/shared/useDebounce";
+>>>>>>> main
 
 const AllBooksWrapper: FC = () => {
   const [availabilityFilter, setAvailabilityFilter] = useState("all");
@@ -35,10 +39,15 @@ const AllBooksWrapper: FC = () => {
   const [sortBy, setSortBy] = useState("title");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+<<<<<<< HEAD
   const [authorQuery, setAuthorQuery] = useQueryState("author");
   const [searchTerm, setSearchTerm] = useState(authorQuery ?? "");
+=======
+  const debouncedSearch = useDebounce(searchTerm, 400);
+
+>>>>>>> main
   const { data, isLoading, isError } = useBooks({
-    search: searchTerm,
+    search: debouncedSearch,
     page: currentPage,
     limit: ITEMS_PER_PAGE,
   });

@@ -24,6 +24,7 @@ import { useForm } from "react-hook-form";
 import { FormValues, schema } from "./authorSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/useToast";
+import { useDebounce } from "@/hooks/shared/useDebounce";
 
 interface AuthorWithCounts extends Author {
   bookCount: number;
@@ -35,18 +36,17 @@ interface AuthorWithCounts extends Author {
 
 const AuthorsWrapper: FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
-
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const { data, isLoading, error } = useAllAuthors({
-    search: searchTerm,
+    search: debouncedSearch,
     page: 1,
     limit: 50,
   });
 
-  const { toast } = useToast()
+  const { toast } = useToast();
   const [suggestName, setSuggestName] = useState("");
   const [suggestNote, setSuggestNote] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
-
   const { mutate: createSuggestion, isPending } = useCreateAuthorSuggestion();
 
   const {
@@ -97,8 +97,8 @@ const AuthorsWrapper: FC = () => {
         toast({
           title: "Nový typ na spisovateľa/ku bol pridaný",
           duration: 2000,
-          className: "bg-green-800 text-white font-bold text-base"
-        })
+          className: "bg-green-800 text-white font-bold text-base",
+        });
         setOpenDialog(false);
       },
     });
