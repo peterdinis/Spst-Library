@@ -18,15 +18,16 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useCategories } from "@/hooks/categories/useCategories";
 import { ITEMS_PER_PAGE } from "@/constants/applicationConstants";
 import { Category } from "@/types/categoryTypes";
+import { useDebounce } from "@/hooks/shared/useDebounce";
 
 const CategoriesWrapper: FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const debouncedSearch = useDebounce(searchQuery, 400);
   const { data, isLoading, error } = useCategories(
     currentPage,
     ITEMS_PER_PAGE,
-    searchQuery || undefined,
+    debouncedSearch || undefined,
   );
 
   // odvodené hodnoty

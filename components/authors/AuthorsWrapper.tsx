@@ -24,6 +24,7 @@ import { useForm } from "react-hook-form";
 import { FormValues, schema } from "./authorSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/useToast";
+import { useDebounce } from "@/hooks/shared/useDebounce";
 
 interface AuthorWithCounts extends Author {
   bookCount: number;
@@ -35,9 +36,9 @@ interface AuthorWithCounts extends Author {
 
 const AuthorsWrapper: FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
-
+  const debouncedSearch = useDebounce(searchTerm, 400);
   const { data, isLoading, error } = useAllAuthors({
-    search: searchTerm,
+    search: debouncedSearch,
     page: 1,
     limit: 50,
   });
@@ -46,7 +47,6 @@ const AuthorsWrapper: FC = () => {
   const [suggestName, setSuggestName] = useState("");
   const [suggestNote, setSuggestNote] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
-
   const { mutate: createSuggestion, isPending } = useCreateAuthorSuggestion();
 
   const {

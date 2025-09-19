@@ -27,6 +27,7 @@ import { Book } from "@/types/bookTypes";
 import { Category } from "@/types/categoryTypes";
 import { BookCard } from "./BookCard";
 import { ITEMS_PER_PAGE } from "@/constants/applicationConstants";
+import { useDebounce } from "@/hooks/shared/useDebounce";
 
 const AllBooksWrapper: FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -35,9 +36,10 @@ const AllBooksWrapper: FC = () => {
   const [sortBy, setSortBy] = useState("title");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-
+  const debouncedSearch = useDebounce(searchTerm, 400);
+  
   const { data, isLoading, isError } = useBooks({
-    search: searchTerm,
+    search: debouncedSearch,
     page: currentPage,
     limit: ITEMS_PER_PAGE,
   });
@@ -181,9 +183,8 @@ const AllBooksWrapper: FC = () => {
 
         {/* Filter Box */}
         <div
-          className={`mb-8 transition-all duration-300 ${
-            showFilters ? "block" : "hidden md:block"
-          }`}
+          className={`mb-8 transition-all duration-300 ${showFilters ? "block" : "hidden md:block"
+            }`}
         >
           <div className="bg-white dark:bg-stone-950 p-6 rounded-xl shadow-sm border border-gray-100">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
