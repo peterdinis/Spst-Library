@@ -55,8 +55,8 @@ export const BorrowDialog = ({
 
     if (!name || !lastName || !fromDate || !toDate) {
       toast({
-        title: "Please fill all fields",
-        description: "All fields are required to borrow a book.",
+        title: "Vyplňte všetky polia",
+        description: "Všetky polia sú povinné pre požičanie knihy.",
         variant: "destructive",
       });
       return;
@@ -64,8 +64,8 @@ export const BorrowDialog = ({
 
     if (fromDate >= toDate) {
       toast({
-        title: "Invalid date range",
-        description: "Return date must be after borrow date.",
+        title: "Neplatný dátum",
+        description: "Dátum vrátenia musí byť po dátume požičania.",
         variant: "destructive",
       });
       return;
@@ -74,7 +74,7 @@ export const BorrowDialog = ({
     setIsLoading(true);
 
     try {
-      // Simulate API call
+      // Simulácia API volania
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       onConfirm({
@@ -84,7 +84,7 @@ export const BorrowDialog = ({
         toDate,
       });
 
-      // Reset form
+      // Reset formulára
       setName("");
       setLastName("");
       setFromDate(undefined);
@@ -92,8 +92,8 @@ export const BorrowDialog = ({
       onOpenChange(false);
     } catch (error) {
       toast({
-        title: "Error borrowing book",
-        description: "Please try again later.",
+        title: "Chyba pri požičaní knihy",
+        description: "Skúste to prosím neskôr.",
         variant: "destructive",
       });
     } finally {
@@ -103,33 +103,33 @@ export const BorrowDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] bg-card border shadow-elegant z-50">
+      <DialogContent className="sm:max-w-[725px] bg-card border shadow-elegant z-50">
         <DialogHeader>
-          <DialogTitle>Borrow Book</DialogTitle>
+          <DialogTitle>Požičať knihu</DialogTitle>
           <DialogDescription>
-            Fill in your details to borrow "{bookTitle}"
+            Vyplňte svoje údaje pre požičanie knihy "{bookTitle}"
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">First Name</Label>
+              <Label htmlFor="name">Meno</Label>
               <Input
                 id="name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your first name"
+                placeholder="Zadajte svoje meno"
                 required
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="lastName">Last Name</Label>
+              <Label htmlFor="lastName">Priezvisko</Label>
               <Input
                 id="lastName"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                placeholder="Enter your last name"
+                placeholder="Zadajte svoje priezvisko"
                 required
               />
             </div>
@@ -137,7 +137,7 @@ export const BorrowDialog = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>From Date</Label>
+              <Label>Dátum požičania</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -148,7 +148,7 @@ export const BorrowDialog = ({
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {fromDate ? format(fromDate, "PPP") : "Pick a date"}
+                    {fromDate ? format(fromDate, "PPP") : "Vyberte dátum"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -167,7 +167,7 @@ export const BorrowDialog = ({
             </div>
 
             <div className="space-y-2">
-              <Label>To Date</Label>
+              <Label>Dátum vrátenia</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -178,7 +178,7 @@ export const BorrowDialog = ({
                     )}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {toDate ? format(toDate, "PPP") : "Pick a date"}
+                    {toDate ? format(toDate, "PPP") : "Vyberte dátum"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -204,10 +204,10 @@ export const BorrowDialog = ({
               onClick={() => onOpenChange(false)}
               disabled={isLoading}
             >
-              Cancel
+              Zrušiť
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Borrowing..." : "Confirm Borrow"}
+              {isLoading ? "Požičanie..." : "Potvrdiť požičanie"}
             </Button>
           </DialogFooter>
         </form>
