@@ -12,7 +12,6 @@ import { Author } from "@/types/authorTypes";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
