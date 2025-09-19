@@ -4,9 +4,7 @@ import { FC } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-
 import Header from "../shared/Header";
-
 import { 
   Input 
 } from "@/components/ui/input";
@@ -24,13 +22,13 @@ import {
 import { Loader2 } from "lucide-react";
 import { useCreateBook } from "@/hooks/books/useCreateBook";
 import { CreateBookDto, createBookSchema } from "@/hooks/books/bookSchema";
+import { useCategories } from "@/hooks/categories/useCategories";
+import { useAllAuthors } from "@/hooks/authors/useAllAuthors";
 
-interface CreateBookFormProps {
-  categories: { id: number; name: string }[];
-  authors: { id: number; name: string }[];
-}
+const CreateBookForm: FC = () => {
+  const { data: categoriesData, isLoading: categoriesLoading } = useCategories();
+  const { data: authorsData, isLoading: authorsLoading } = useAllAuthors({ page: 1, limit: 50 });
 
-const CreateBookForm: FC<CreateBookFormProps> = ({ categories, authors }) => {
   const { mutate: createBook, isPending } = useCreateBook();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<CreateBookDto>({
@@ -42,6 +40,14 @@ const CreateBookForm: FC<CreateBookFormProps> = ({ categories, authors }) => {
       onSuccess: () => reset(),
     });
   };
+
+  if (categoriesLoading || authorsLoading) {
+    return (
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="animate-spin w-8 h-8" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto py-8">
@@ -80,7 +86,7 @@ const CreateBookForm: FC<CreateBookFormProps> = ({ categories, authors }) => {
                 <SelectValue placeholder="Vyber autora" />
               </SelectTrigger>
               <SelectContent>
-                {authors && authors.map((author) => (
+                {authorsData?.data.map((author) => (
                   <SelectItem key={author.id} value={author.id.toString()}>
                     {author.name}
                   </SelectItem>
@@ -99,7 +105,7 @@ const CreateBookForm: FC<CreateBookFormProps> = ({ categories, authors }) => {
                 <SelectValue placeholder="Vyber kategóriu" />
               </SelectTrigger>
               <SelectContent>
-                {categories && categories.map((cat) => (
+                {categoriesData?.data.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id.toString()}>
                     {cat.name}
                   </SelectItem>
@@ -119,7 +125,7 @@ const CreateBookForm: FC<CreateBookFormProps> = ({ categories, authors }) => {
         </div>
 
         <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? <Loader2 className="animates-spin w-8 h-8" /> : "Vytvoriť knihu"}
+          {isPending ? <Loader2 className="animate-spin w-8 h-8" /> : "Vytvoriť knihu"}
         </Button>
       </motion.form>
     </div>
