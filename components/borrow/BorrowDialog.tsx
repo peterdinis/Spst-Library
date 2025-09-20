@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,11 +22,14 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/useToast";
+import { useCreateOrder } from "@/hooks/orders/useCreateOrder";
+import { useProfile } from "@/hooks/auth/useProfile";
 
 interface BorrowDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   bookTitle: string;
+  bookId: number;
   onConfirm: (borrowData: BorrowData) => void;
 }
 
@@ -42,6 +45,7 @@ export const BorrowDialog = ({
   onOpenChange,
   bookTitle,
   onConfirm,
+  bookId,
 }: BorrowDialogProps) => {
   const [name, setName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -49,57 +53,83 @@ export const BorrowDialog = ({
   const [toDate, setToDate] = useState<Date>();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const createOrder = useCreateOrder();
+  const { data: user } = useProfile();
+  
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e: FormEvent) => {
+  e.preventDefault();
 
-    if (!name || !lastName || !fromDate || !toDate) {
-      toast({
-        title: "Vyplňte všetky polia",
-        description: "Všetky polia sú povinné pre požičanie knihy.",
-        variant: "destructive",
-      });
-      return;
-    }
+  if (!name || !lastName || !fromDate || !toDate) {
+    toast({
+      title: "Vyplňte všetky polia",
+      description: "Všetky polia sú povinné pre požičanie knihy.",
+      variant: "destructive",
+    });
+    return;
+  }
 
-    if (fromDate >= toDate) {
-      toast({
-        title: "Neplatný dátum",
-        description: "Dátum vrátenia musí byť po dátume požičania.",
-        variant: "destructive",
-      });
-      return;
-    }
+  if (fromDate >= toDate) {
+    toast({
+      title: "Neplatný dátum",
+      description: "Dátum vrátenia musí byť po dátume požičania.",
+      variant: "destructive",
+    });
+    return;
+  }
 
-    setIsLoading(true);
+  if (!user) {
+    toast({
+      title: "Nie ste prihlásený",
+      description: "Pre požičanie knihy sa musíte prihlásiť.",
+      variant: "destructive",
+    });
+    return;
+  }
 
-    try {
-      // Simulácia API volania
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+  setIsLoading(true);
 
-      onConfirm({
-        name,
-        lastName,
-        fromDate,
-        toDate,
-      });
+  try {
+    const newOrder = await createOrder.mutateAsync({
+      userId: user.id,
+      items: [
+        {
+          bookId: Number(bookId),
+          quantity: 1,
+        },
+      ],
+    });
 
-      // Reset formulára
-      setName("");
-      setLastName("");
-      setFromDate(undefined);
-      setToDate(undefined);
-      onOpenChange(false);
-    } catch (error) {
-      toast({
-        title: "Chyba pri požičaní knihy",
-        description: "Skúste to prosím neskôr.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    toast({
+      title: "Kniha požičaná",
+      description: `Objednávka #${newOrder.id} bola úspešne vytvorená.`,
+      className: "bg-green-800 text-white font-bold text-base"
+    });
+
+    onConfirm({
+      name,
+      lastName,
+      fromDate,
+      toDate,
+    });
+
+    // Reset form
+    setName("");
+    setLastName("");
+    setFromDate(undefined);
+    setToDate(undefined);
+    onOpenChange(false);
+  } catch (error: any) {
+    toast({
+      title: "Chyba pri požičaní knihy",
+      description: error?.message || "Skúste to prosím neskôr.",
+      variant: "destructive",
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
