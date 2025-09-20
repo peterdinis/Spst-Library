@@ -165,9 +165,7 @@ const ProfileWrapper: FC = () => {
                   </div>
                 </div>
                 <Badge
-                  variant={
-                    order.status === "PENDING" ? "secondary" : "default"
-                  }
+                  variant={order.status === "PENDING" ? "secondary" : "default"}
                 >
                   {order.status}
                 </Badge>
