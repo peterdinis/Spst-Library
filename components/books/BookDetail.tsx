@@ -23,7 +23,7 @@ export default function BookDetail() {
   const router = useRouter();
   const { toast } = useToast();
   const [showBorrowDialog, setShowBorrowDialog] = useState(false);
-
+  const bookId = Number(id);
   const { data: book, isLoading, error } = useBook(Number(id));
 
   const handleBorrow = (borrowData: BorrowData) => {
@@ -257,6 +257,7 @@ export default function BookDetail() {
 
       {/* Dialóg pre požičanie */}
       <BorrowDialog
+        bookId={bookId}
         open={showBorrowDialog}
         onOpenChange={setShowBorrowDialog}
         bookTitle={book.name}
