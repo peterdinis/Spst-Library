@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useState } from "react";
+import { FC } from "react";
 import {
   Card,
   CardContent,
@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  User,
   Mail,
   GraduationCap,
   BookOpen,
@@ -24,36 +23,6 @@ import {
 import { useToast } from "@/hooks/useToast";
 import { useProfile } from "@/hooks/auth/useProfile";
 
-const mockBorrowedBooks = [
-  {
-    id: "1",
-    title: "1984",
-    author: "George Orwell",
-    category: "Sci-fi",
-    dueDate: "2024-01-15",
-    borrowedDate: "2024-01-01",
-    description: "Dystopický román o totalitnej kontrole spoločnosti.",
-  },
-  {
-    id: "2",
-    title: "Kto chytá v žite",
-    author: "J.D. Salinger",
-    category: "Príbeh dospievania",
-    dueDate: "2024-01-20",
-    borrowedDate: "2024-01-06",
-    description: "Kontroverzný román o rebelii a odcudzení dospievajúcich.",
-  },
-  {
-    id: "3",
-    title: "Duna",
-    author: "Frank Herbert",
-    category: "Sci-fi",
-    dueDate: "2024-01-25",
-    borrowedDate: "2024-01-11",
-    description: "Epický sci-fi román odohrávajúci sa v budúcnosti.",
-  },
-];
-
 const mockStats = {
   totalBorrowed: 47,
   currentlyBorrowed: 3,
@@ -62,45 +31,7 @@ const mockStats = {
 };
 
 const ProfileWrapper: FC = () => {
-  const [borrowedBooks, setBorrowedBooks] = useState(mockBorrowedBooks);
-  const { toast } = useToast();
   const { data: user, isLoading, error, refetch, isError } = useProfile();
-
-  const handleReturnBook = (bookId: string) => {
-    setBorrowedBooks((books) => books.filter((book) => book.id !== bookId));
-    toast({
-      title: "Kniha bola vrátená!",
-      description: "Ďakujeme, že ste knihu vrátili načas.",
-    });
-  };
-
-  const handleRenewBook = (bookId: string) => {
-    setBorrowedBooks((books) =>
-      books.map((book) =>
-        book.id === bookId
-          ? {
-              ...book,
-              dueDate: new Date(
-                Date.now() + 14 * 24 * 60 * 60 * 1000,
-              ).toISOString(),
-            }
-          : book,
-      ),
-    );
-    toast({
-      title: "Kniha bola predĺžená!",
-      description: "Doba výpožičky bola predĺžená o 2 týždne.",
-    });
-  };
-
-  const overdueBooks = borrowedBooks.filter(
-    (book) => new Date(book.dueDate) < new Date(),
-  );
-  const upcomingDue = borrowedBooks.filter((book) => {
-    const dueDate = new Date(book.dueDate);
-    const threeDaysFromNow = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
-    return dueDate <= threeDaysFromNow && dueDate >= new Date();
-  });
 
   if (isLoading) {
     return (
@@ -141,6 +72,9 @@ const ProfileWrapper: FC = () => {
     );
   }
 
+  // tu už nepoužívame mock, ale reálne objednávky
+  const borrowedOrders = user.orders ?? [];
+
   return (
     <div className="min-h-screen bg-background px-4 py-8">
       {/* Profilová hlavička */}
@@ -174,7 +108,7 @@ const ProfileWrapper: FC = () => {
         </CardHeader>
       </Card>
 
-      {/* Štatistiky */}
+      {/* Štatistiky – zatiaľ ostávajú mock */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <Card className="text-center hover-lift shadow-card">
           <CardContent className="p-4">
@@ -211,112 +145,43 @@ const ProfileWrapper: FC = () => {
         </Card>
       </div>
 
-      {/* Upozornenia */}
-      {(overdueBooks.length > 0 || upcomingDue.length > 0) && (
-        <div className="mb-8 space-y-4">
-          {overdueBooks.length > 0 && (
-            <Card className="border-destructive bg-destructive/5">
-              <CardHeader>
-                <CardTitle className="text-destructive flex items-center">
-                  <Clock className="h-5 w-5 mr-2" />
-                  Požičky po termíne ({overdueBooks.length})
-                </CardTitle>
-                <CardDescription>
-                  Prosím vráťte tieto knihy čo najskôr, aby ste sa vyhli
-                  poplatkom za oneskorenie.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          )}
-          {upcomingDue.length > 0 && (
-            <Card className="border-secondary bg-secondary/5">
-              <CardHeader>
-                <CardTitle className="text-secondary flex items-center">
-                  <Calendar className="h-5 w-5 mr-2" />
-                  Termín blízko ({upcomingDue.length})
-                </CardTitle>
-                <CardDescription>
-                  Tieto knihy budú splatné do 3 dní.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          )}
-        </div>
-      )}
+      {/* Aktuálne objednávky */}
+      <h2 className="text-2xl font-bold mb-6">Aktuálne objednávky</h2>
 
-      {/* Aktuálne požičané knihy */}
-      <h2 className="text-2xl font-bold mb-6">Aktuálne požičané knihy</h2>
-
-      {borrowedBooks.length > 0 ? (
+      {borrowedOrders.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {borrowedBooks.map((book) => (
-            <Card key={book.id} className="hover-lift shadow-card">
+          {borrowedOrders.map((order: any) => (
+            <Card key={order.id} className="hover-lift shadow-card">
               <CardHeader className="pb-4 flex justify-between items-start">
                 <div className="flex-1">
                   <CardTitle className="text-lg font-semibold line-clamp-2">
-                    {book.title}
+                    Objednávka #{order.id}
                   </CardTitle>
                   <div className="flex items-center space-x-1 mt-2 text-muted-foreground">
-                    <User className="h-4 w-4" />
-                    <span className="text-sm">{book.author}</span>
+                    <Clock className="h-4 w-4" />
+                    <span className="text-sm">
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
                 <Badge
                   variant={
-                    new Date(book.dueDate) < new Date()
-                      ? "destructive"
-                      : "secondary"
+                    order.status === "PENDING" ? "secondary" : "default"
                   }
                 >
-                  {new Date(book.dueDate) < new Date()
-                    ? "Po termíne"
-                    : "Požičané"}
+                  {order.status}
                 </Badge>
               </CardHeader>
 
               <CardContent className="pb-4">
                 <div className="space-y-2 text-sm text-muted-foreground">
-                  <div className="flex items-center space-x-2">
-                    <BookOpen className="h-4 w-4" />
-                    <span>{book.category}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="h-4 w-4" />
-                    <span>
-                      Požičané:{" "}
-                      {new Date(book.borrowedDate).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Clock className="h-4 w-4" />
-                    <span>
-                      Termín: {new Date(book.dueDate).toLocaleDateString()}
-                    </span>
+                  <div>ID používateľa: {order.userId}</div>
+                  <div>
+                    Aktualizované:{" "}
+                    {new Date(order.updatedAt).toLocaleDateString()}
                   </div>
                 </div>
-                {book.description && (
-                  <p className="text-sm text-muted-foreground mt-3 line-clamp-2">
-                    {book.description}
-                  </p>
-                )}
               </CardContent>
-
-              <div className="p-6 pt-0 space-y-2">
-                <Button
-                  onClick={() => handleReturnBook(book.id)}
-                  className="w-full"
-                  variant="default"
-                >
-                  Vrátiť knihu
-                </Button>
-                <Button
-                  onClick={() => handleRenewBook(book.id)}
-                  className="w-full"
-                  variant="outline"
-                >
-                  Predĺžiť (14 dní)
-                </Button>
-              </div>
             </Card>
           ))}
         </div>
@@ -324,14 +189,11 @@ const ProfileWrapper: FC = () => {
         <div className="text-center py-12">
           <BookOpen className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-xl font-semibold mb-2">
-            Žiadne aktuálne požičané knihy
+            Žiadne aktuálne objednávky
           </h3>
           <p className="text-muted-foreground mb-4">
-            Prezrite si našu knižnicu a nájdite si svoju ďalšiu knihu!
+            Nemáte žiadne aktívne objednávky.
           </p>
-          <Button asChild>
-            <a href="/books">Prehľadať knihy</a>
-          </Button>
         </div>
       )}
     </div>
