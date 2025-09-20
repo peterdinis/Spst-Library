@@ -23,6 +23,8 @@ import { Badge } from "../ui/badge";
 import { Button } from "@/components/ui/button";
 import { useBooks } from "@/hooks/books/useAllBooks";
 import { useNotFilterCategories } from "@/hooks/categories/useNotFilteredCategories";
+import { useRecentlyAddedBooks } from "@/hooks/books/useRecentlyAddedBooks";
+import { useTopRatedBooks } from "@/hooks/books/useTopRatedBooks";
 import { Book } from "@/types/bookTypes";
 import { Category } from "@/types/categoryTypes";
 import { BookCard } from "./BookCard";
@@ -36,6 +38,8 @@ const AllBooksWrapper: FC = () => {
   const [sortBy, setSortBy] = useState("title");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [extraFilter, setExtraFilter] = useState("none"); // "none" | "recent" | "topRated"
+
   const debouncedSearch = useDebounce(searchTerm, 400);
 
   const { data, isLoading, isError } = useBooks({
@@ -43,6 +47,9 @@ const AllBooksWrapper: FC = () => {
     page: currentPage,
     limit: ITEMS_PER_PAGE,
   });
+
+  const { data: recentlyAddedBooks } = useRecentlyAddedBooks(7);
+  const { data: topRatedBooks } = useTopRatedBooks(20);
 
   const { data: categories, isLoading: isCategoriesLoading } =
     useNotFilterCategories();
@@ -52,7 +59,11 @@ const AllBooksWrapper: FC = () => {
   const totalPages = data?.lastPage ?? 1;
 
   const filteredBooks = useMemo(() => {
-    let result = [...books];
+    let result: Book[] = [];
+
+    if (extraFilter === "recent") result = recentlyAddedBooks ?? [];
+    else if (extraFilter === "topRated") result = topRatedBooks ?? [];
+    else result = [...books];
 
     const matchesAvailability = (book: Book) =>
       availabilityFilter === "all" ||
@@ -73,7 +84,15 @@ const AllBooksWrapper: FC = () => {
     });
 
     return result;
-  }, [books, availabilityFilter, categoryFilter, sortBy]);
+  }, [
+    books,
+    availabilityFilter,
+    categoryFilter,
+    sortBy,
+    extraFilter,
+    recentlyAddedBooks,
+    topRatedBooks,
+  ]);
 
   const availableCount = books.filter((book) => book.isAvailable).length;
   const borrowedCount = books.filter((book) => !book.isAvailable).length;
@@ -83,6 +102,7 @@ const AllBooksWrapper: FC = () => {
     setAvailabilityFilter("all");
     setCategoryFilter("all");
     setSortBy("title");
+    setExtraFilter("none");
     setCurrentPage(1);
   };
 
@@ -91,6 +111,7 @@ const AllBooksWrapper: FC = () => {
     availabilityFilter !== "all",
     categoryFilter !== "all",
     sortBy !== "title",
+    extraFilter !== "none",
   ].filter(Boolean).length;
 
   const handlePageChange = (page: number) => {
@@ -295,6 +316,32 @@ const AllBooksWrapper: FC = () => {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Extra filtre */}
+              <div>
+                <label
+                  htmlFor="extraFilter"
+                  className="text-sm font-medium text-gray-700 dark:text-sky-100 mb-1 block"
+                >
+                  Extra filtre
+                </label>
+                <Select
+                  value={extraFilter}
+                  onValueChange={(value) => {
+                    setExtraFilter(value);
+                    setCurrentPage(1);
+                  }}
+                >
+                  <SelectTrigger id="extraFilter" className="w-full">
+                    <SelectValue placeholder="Vybrať filter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Žiadny</SelectItem>
+                    <SelectItem value="recent">Nedávno pridané</SelectItem>
+                    <SelectItem value="topRated">Najlepšie hodnotené</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </div>
@@ -323,7 +370,7 @@ const AllBooksWrapper: FC = () => {
             </div>
 
             {/* Stránkovanie */}
-            {totalPages > 1 && (
+            {extraFilter === "none" && totalPages > 1 && (
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-stone-900 p-4 rounded-lg border border-gray-200">
                 <div className="text-sm text-gray-500 dark:text-sky-100">
                   Strana {currentPage} z {totalPages}
