@@ -55,81 +55,79 @@ export const BorrowDialog = ({
   const { toast } = useToast();
   const createOrder = useCreateOrder();
   const { data: user } = useProfile();
-  
 
   const handleSubmit = async (e: FormEvent) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!name || !lastName || !fromDate || !toDate) {
-    toast({
-      title: "Vyplňte všetky polia",
-      description: "Všetky polia sú povinné pre požičanie knihy.",
-      variant: "destructive",
-    });
-    return;
-  }
+    if (!name || !lastName || !fromDate || !toDate) {
+      toast({
+        title: "Vyplňte všetky polia",
+        description: "Všetky polia sú povinné pre požičanie knihy.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  if (fromDate >= toDate) {
-    toast({
-      title: "Neplatný dátum",
-      description: "Dátum vrátenia musí byť po dátume požičania.",
-      variant: "destructive",
-    });
-    return;
-  }
+    if (fromDate >= toDate) {
+      toast({
+        title: "Neplatný dátum",
+        description: "Dátum vrátenia musí byť po dátume požičania.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  if (!user) {
-    toast({
-      title: "Nie ste prihlásený",
-      description: "Pre požičanie knihy sa musíte prihlásiť.",
-      variant: "destructive",
-    });
-    return;
-  }
+    if (!user) {
+      toast({
+        title: "Nie ste prihlásený",
+        description: "Pre požičanie knihy sa musíte prihlásiť.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  setIsLoading(true);
+    setIsLoading(true);
 
-  try {
-    const newOrder = await createOrder.mutateAsync({
-      userId: user.id,
-      items: [
-        {
-          bookId: Number(bookId),
-          quantity: 1,
-        },
-      ],
-    });
+    try {
+      const newOrder = await createOrder.mutateAsync({
+        userId: user.id,
+        items: [
+          {
+            bookId: Number(bookId),
+            quantity: 1,
+          },
+        ],
+      });
 
-    toast({
-      title: "Kniha požičaná",
-      description: `Objednávka #${newOrder.id} bola úspešne vytvorená.`,
-      className: "bg-green-800 text-white font-bold text-base"
-    });
+      toast({
+        title: "Kniha požičaná",
+        description: `Objednávka #${newOrder.id} bola úspešne vytvorená.`,
+        className: "bg-green-800 text-white font-bold text-base",
+      });
 
-    onConfirm({
-      name,
-      lastName,
-      fromDate,
-      toDate,
-    });
+      onConfirm({
+        name,
+        lastName,
+        fromDate,
+        toDate,
+      });
 
-    // Reset form
-    setName("");
-    setLastName("");
-    setFromDate(undefined);
-    setToDate(undefined);
-    onOpenChange(false);
-  } catch (error: any) {
-    toast({
-      title: "Chyba pri požičaní knihy",
-      description: error?.message || "Skúste to prosím neskôr.",
-      variant: "destructive",
-    });
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+      // Reset form
+      setName("");
+      setLastName("");
+      setFromDate(undefined);
+      setToDate(undefined);
+      onOpenChange(false);
+    } catch (error: any) {
+      toast({
+        title: "Chyba pri požičaní knihy",
+        description: error?.message || "Skúste to prosím neskôr.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -1,5 +1,5 @@
-import { API_BASE_URL } from '@/constants/applicationConstants';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { API_BASE_URL } from "@/constants/applicationConstants";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export interface CreateOrderItem {
   bookId: number;
@@ -25,7 +25,7 @@ export interface OrderItem {
 export interface Order {
   id: number;
   userId: number;
-  status: 'PENDING' | 'COMPLETED' | 'CANCELLED' | 'RETURNED';
+  status: "PENDING" | "COMPLETED" | "CANCELLED" | "RETURNED";
   items: OrderItem[];
   createdAt: string;
   updatedAt: string;
@@ -39,16 +39,16 @@ export function useCreateOrder() {
     mutationKey: ["createOrder"],
     mutationFn: async (order: CreateOrderDto): Promise<Order> => {
       const res = await fetch(`${API_BASE_URL}/orders`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(order),
       });
 
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.message || 'Failed to create order');
+        throw new Error(error.message || "Failed to create order");
       }
 
       return res.json();
@@ -56,7 +56,7 @@ export function useCreateOrder() {
     onSuccess: (data) => {
       // Optionally invalidate queries to refetch orders list
       queryClient.invalidateQueries({
-        queryKey: ['orders'],
+        queryKey: ["orders"],
       });
     },
   });
