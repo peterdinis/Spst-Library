@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,40 +13,96 @@ import { Badge } from "@/components/ui/badge";
 import { BookOpen, User, ArrowLeft, Star, FileText, Hash } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useToast } from "@/hooks/useToast";
-import { BorrowData, BorrowDialog } from "../borrow/BorrowDialog";
-import Link from "next/link";
-import { Separator } from "../ui/separator";
-import { useState } from "react";
+import { BorrowDialog, BorrowData } from "../borrow/BorrowDialog";
+import { RatingDialog, RatingData } from "../rating/RatingDialog";
 import { useBook } from "@/hooks/books/useBookDetail";
+import { Separator } from "../ui/separator";
+import Link from "next/link";
+import { useCreateOrder } from "@/hooks/orders/useCreateOrder";
+import { useReturnOrder } from "@/hooks/orders/useReturnOrder";
+import { useAddRating } from "@/hooks/ratings/useAddRating";
+import { useProfile } from "@/hooks/auth/useProfile";
 
 export default function BookDetail() {
   const { id } = useParams();
   const router = useRouter();
   const { toast } = useToast();
-  const [showBorrowDialog, setShowBorrowDialog] = useState(false);
   const bookId = Number(id);
-  const { data: book, isLoading, error } = useBook(Number(id));
+
+  const { data: book, isLoading, error } = useBook(bookId);
+  const {data: user} = useProfile()
+  const [showBorrowDialog, setShowBorrowDialog] = useState(false);
+  const [showRatingDialog, setShowRatingDialog] = useState(false);
+
+  const addRatingMutation = useAddRating();
+  const createOrderMutation = useCreateOrder();
+  const returnOrderMutation = useReturnOrder();
 
   const handleBorrow = (borrowData: BorrowData) => {
     if (!book) return;
 
-    toast({
-      title: "Kniha bola úspešne požičaná!",
-      description: `${borrowData.name} ${borrowData.lastName} si požičal/a "${book.name}" od ${borrowData.fromDate.toLocaleDateString()} do ${borrowData.toDate.toLocaleDateString()}`,
-    });
-
-    // TODO: API volanie na backend pre borrow
+    createOrderMutation.mutate(
+      {
+        userId: Number(user?.id), // predpokladám, že BorrowData obsahuje userId
+        items: [{ bookId, quantity: 1 }],
+      },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Kniha požičaná!",
+            description: `${borrowData.name} ${borrowData.lastName} si požičal/a "${book.name}".`,
+          });
+        },
+        onError: () => {
+          toast({
+            title: "Chyba pri požičaní knihy",
+            description: "Skúste to znova neskôr.",
+            variant: "destructive",
+          });
+        },
+      }
+    );
   };
 
-  const handleReturn = () => {
+  const handleReturn = (orderId: number) => {
+    returnOrderMutation.mutate(orderId, {
+      onSuccess: () => {
+        toast({
+          title: "Kniha vrátená!",
+          description: `Ďakujeme za vrátenie "${book?.name}".`,
+        });
+      },
+      onError: () => {
+        toast({
+          title: "Chyba pri vracaní knihy",
+          description: "Skúste to znova neskôr.",
+          variant: "destructive",
+        });
+      },
+    });
+  };
+
+  const handleAddRating = (ratingData: RatingData) => {
     if (!book) return;
 
-    toast({
-      title: "Kniha bola vrátená!",
-      description: `Ďakujeme za vrátenie "${book.name}".`,
-    });
-
-    // TODO: API volanie na backend pre return
+    addRatingMutation.mutate(
+      { bookId, ...ratingData },
+      {
+        onSuccess: () => {
+          toast({
+            title: "Hodnotenie pridané!",
+            description: `Ďakujeme za vaše hodnotenie "${book.name}".`,
+          });
+        },
+        onError: () => {
+          toast({
+            title: "Chyba pri pridávaní hodnotenia",
+            description: "Skúste to znova neskôr.",
+            variant: "destructive",
+          });
+        },
+      }
+    );
   };
 
   if (isLoading) {
@@ -191,9 +248,18 @@ export default function BookDetail() {
                   Požičať knihu
                 </Button>
 
+                <Button
+                  onClick={() => setShowRatingDialog(true)}
+                  variant="secondary"
+                  className="w-full"
+                  size="lg"
+                >
+                  Pridať hodnotenie
+                </Button>
+
                 <Link
                   href={`/books?author=${encodeURIComponent(
-                    book.author?.name ?? "",
+                    book.author?.name ?? ""
                   )}`}
                 >
                   <Button variant="ghost" className="w-full" size="lg">
@@ -255,13 +321,20 @@ export default function BookDetail() {
         </div>
       </div>
 
-      {/* Dialóg pre požičanie */}
+      {/* Dialógy */}
       <BorrowDialog
         bookId={bookId}
         open={showBorrowDialog}
         onOpenChange={setShowBorrowDialog}
         bookTitle={book.name}
         onConfirm={handleBorrow}
+      />
+
+      <RatingDialog
+        bookId={bookId}
+        open={showRatingDialog}
+        onOpenChange={setShowRatingDialog}
+        onConfirm={handleAddRating}
       />
     </div>
   );
