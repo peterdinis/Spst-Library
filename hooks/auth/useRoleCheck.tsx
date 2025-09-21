@@ -6,14 +6,18 @@ import { useProfile } from "./useProfile";
 export type AppRole = "STUDENT" | "TEACHER";
 
 export const useRoleCheck = (allowedRoles: AppRole[] | AppRole) => {
-  const { data: profile, isLoading, error } = useProfile({
+  const {
+    data: profile,
+    isLoading,
+    error,
+  } = useProfile({
     retry: false,
     refetchOnWindowFocus: false,
   });
 
   const rolesArray = useMemo(
     () => (Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles]),
-    [allowedRoles]
+    [allowedRoles],
   );
 
   const hasRole = useMemo(() => {
