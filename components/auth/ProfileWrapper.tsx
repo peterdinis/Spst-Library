@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useState } from "react";
 import {
   Card,
   CardContent,
@@ -20,18 +20,19 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import { useToast } from "@/hooks/useToast";
 import { useProfile } from "@/hooks/auth/useProfile";
+import ReturnDialog from "../borrow/ReturnDialog";
 
 const mockStats = {
   totalBorrowed: 47,
   currentlyBorrowed: 3,
   overdue: 0,
-  memberSince: "September 2023",
 };
 
 const ProfileWrapper: FC = () => {
   const { data: user, isLoading, error, refetch, isError } = useProfile();
+  const [returnDialogOpen, setReturnDialogOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
   if (isLoading) {
     return (
@@ -72,12 +73,11 @@ const ProfileWrapper: FC = () => {
     );
   }
 
-  // tu už nepoužívame mock, ale reálne objednávky
   const borrowedOrders = user.orders ?? [];
 
   return (
     <div className="min-h-screen bg-background px-4 py-8">
-      {/* Profilová hlavička */}
+      {/* Profile Card */}
       <Card className="mb-8 shadow-card">
         <CardHeader>
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
@@ -108,7 +108,7 @@ const ProfileWrapper: FC = () => {
         </CardHeader>
       </Card>
 
-      {/* Štatistiky – zatiaľ ostávajú mock */}
+      {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <Card className="text-center hover-lift shadow-card">
           <CardContent className="p-4">
@@ -145,7 +145,7 @@ const ProfileWrapper: FC = () => {
         </Card>
       </div>
 
-      {/* Aktuálne objednávky */}
+      {/* Orders Section */}
       <h2 className="text-2xl font-bold mb-6">Aktuálne objednávky</h2>
 
       {borrowedOrders.length > 0 ? (
@@ -179,6 +179,22 @@ const ProfileWrapper: FC = () => {
                     {new Date(order.updatedAt).toLocaleDateString()}
                   </div>
                 </div>
+
+                {/* Return button if COMPLETED */}
+                {order.status === "COMPLETED" && (
+                  <div className="mt-4">
+                    <Button
+                      onClick={() => {
+                        setSelectedOrderId(order.id);
+                        setReturnDialogOpen(true);
+                      }}
+                      variant="destructive"
+                      size="sm"
+                    >
+                      Vrátiť objednávku
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
@@ -193,6 +209,17 @@ const ProfileWrapper: FC = () => {
             Nemáte žiadne aktívne objednávky.
           </p>
         </div>
+      )}
+      
+      {selectedOrderId && (
+        <ReturnDialog
+          orderId={selectedOrderId}
+          isOpen={returnDialogOpen}
+          onClose={() => {
+            setSelectedOrderId(null);
+            setReturnDialogOpen(false);
+          }}
+        />
       )}
     </div>
   );
