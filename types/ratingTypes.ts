@@ -5,7 +5,7 @@ export interface Rating {
   bookId: number;
   book: Book;
   value: number;
-  comment?: string | null;
+  comment: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -19,7 +19,6 @@ import { useBook } from "@/hooks/books/useBookDetail";
 import { Separator } from "../ui/separator";
 import Link from "next/link";
 import { useCreateOrder } from "@/hooks/orders/useCreateOrder";
-import { useReturnOrder } from "@/hooks/orders/useReturnOrder";
 import { useAddRating } from "@/hooks/ratings/useAddRating";
 import { useProfile } from "@/hooks/auth/useProfile";
 
@@ -30,20 +29,20 @@ export default function BookDetail() {
   const bookId = Number(id);
 
   const { data: book, isLoading, error } = useBook(bookId);
-  const {data: user} = useProfile()
+
+  const { data: user } = useProfile()
   const [showBorrowDialog, setShowBorrowDialog] = useState(false);
   const [showRatingDialog, setShowRatingDialog] = useState(false);
 
   const addRatingMutation = useAddRating();
   const createOrderMutation = useCreateOrder();
-  const returnOrderMutation = useReturnOrder();
 
   const handleBorrow = (borrowData: BorrowData) => {
     if (!book) return;
 
     createOrderMutation.mutate(
       {
-        userId: Number(user?.id), // predpokladám, že BorrowData obsahuje userId
+        userId: Number(user?.id),
         items: [{ bookId, quantity: 1 }],
       },
       {
@@ -62,24 +61,6 @@ export default function BookDetail() {
         },
       }
     );
-  };
-
-  const handleReturn = (orderId: number) => {
-    returnOrderMutation.mutate(orderId, {
-      onSuccess: () => {
-        toast({
-          title: "Kniha vrátená!",
-          description: `Ďakujeme za vrátenie "${book?.name}".`,
-        });
-      },
-      onError: () => {
-        toast({
-          title: "Chyba pri vracaní knihy",
-          description: "Skúste to znova neskôr.",
-          variant: "destructive",
-        });
-      },
-    });
   };
 
   const handleAddRating = (ratingData: RatingData) => {
@@ -240,22 +221,28 @@ export default function BookDetail() {
                 <CardTitle>Akcie</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button
-                  onClick={() => setShowBorrowDialog(true)}
-                  className="w-full"
-                  size="lg"
-                >
-                  Požičať knihu
-                </Button>
+                {user ? (
+                  <>
+                    <Button
+                      onClick={() => setShowBorrowDialog(true)}
+                      className="w-full"
+                      size="lg"
+                    >
+                      Požičať knihu
+                    </Button>
 
-                <Button
-                  onClick={() => setShowRatingDialog(true)}
-                  variant="secondary"
-                  className="w-full"
-                  size="lg"
-                >
-                  Pridať hodnotenie
-                </Button>
+                    <Button
+                      onClick={() => setShowRatingDialog(true)}
+                      variant="secondary"
+                      className="w-full"
+                      size="lg"
+                    >
+                      Pridať hodnotenie
+                    </Button>
+                  </>
+                ): (
+                  <p className="p-2 text-red-900 text-base font-bold ">Pre hodnotenie a požičanie knihy musíte byť prilasení</p>
+                )}
 
                 <Link
                   href={`/books?author=${encodeURIComponent(
@@ -304,18 +291,46 @@ export default function BookDetail() {
               </CardHeader>
               <CardContent>
                 {book.ratings && book.ratings.length > 0 ? (
-                  <div className="flex items-center space-x-2">
-                    <Star className="h-5 w-5 fill-secondary text-secondary" />
-                    <span className="font-semibold">
-                      {book.ratings.length} hodnotení
-                    </span>
+                  <div className="space-y-4">
+                    {/* Počet hodnotení */}
+                    <div className="flex items-center space-x-2">
+                      <Star className="h-5 w-5 fill-secondary text-secondary" />
+                      <span className="font-semibold">
+                        {book.ratings.length} hodnotení
+                      </span>
+                    </div>
+
+                    {/* Zoznam komentárov */}
+                    <div className="space-y-2">
+                      {book.ratings.map((item) => (
+                        <div
+                          key={item.id}
+                          className="p-3 border rounded-lg bg-muted/30"
+                        >
+                          <div className="flex items-center space-x-2 mb-1">
+                            {[...Array(item.value)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className="h-4 w-4 fill-yellow-400 text-yellow-400"
+                              />
+                            ))}
+                          </div>
+                          {item.comment ? (
+                            <p className="text-sm text-foreground">{item.comment}</p>
+                          ) : (
+                            <p className="text-sm text-muted-foreground italic">
+                              Bez komentára
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground">
-                    Zatiaľ žiadne hodnotenia
-                  </p>
+                  <p className="text-muted-foreground">Zatiaľ žiadne hodnotenia</p>
                 )}
               </CardContent>
+
             </Card>
           </div>
         </div>
