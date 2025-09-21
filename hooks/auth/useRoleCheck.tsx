@@ -9,7 +9,11 @@ export type AppRole = "STUDENT" | "TEACHER";
 export const useRoleCheck = (allowedRoles: AppRole[] | AppRole) => {
   const router = useRouter();
 
-  const { data: profile, isLoading, error } = useProfile({
+  const {
+    data: profile,
+    isLoading,
+    error,
+  } = useProfile({
     retry: false,
     refetchOnWindowFocus: false,
   });
