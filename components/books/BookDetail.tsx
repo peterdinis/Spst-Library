@@ -30,7 +30,7 @@ export default function BookDetail() {
 
   const { data: book, isLoading, error } = useBook(bookId);
 
-  const { data: user } = useProfile()
+  const { data: user } = useProfile();
   const [showBorrowDialog, setShowBorrowDialog] = useState(false);
   const [showRatingDialog, setShowRatingDialog] = useState(false);
 
@@ -59,7 +59,7 @@ export default function BookDetail() {
             variant: "destructive",
           });
         },
-      }
+      },
     );
   };
 
@@ -82,7 +82,7 @@ export default function BookDetail() {
             variant: "destructive",
           });
         },
-      }
+      },
     );
   };
 
@@ -240,13 +240,15 @@ export default function BookDetail() {
                       Pridať hodnotenie
                     </Button>
                   </>
-                ): (
-                  <p className="p-2 text-red-900 text-base font-bold ">Pre hodnotenie a požičanie knihy musíte byť prilasení</p>
+                ) : (
+                  <p className="p-2 text-red-900 text-base font-bold ">
+                    Pre hodnotenie a požičanie knihy musíte byť prilasení
+                  </p>
                 )}
 
                 <Link
                   href={`/books?author=${encodeURIComponent(
-                    book.author?.name ?? ""
+                    book.author?.name ?? "",
                   )}`}
                 >
                   <Button variant="ghost" className="w-full" size="lg">
@@ -316,7 +318,9 @@ export default function BookDetail() {
                             ))}
                           </div>
                           {item.comment ? (
-                            <p className="text-sm text-foreground">{item.comment}</p>
+                            <p className="text-sm text-foreground">
+                              {item.comment}
+                            </p>
                           ) : (
                             <p className="text-sm text-muted-foreground italic">
                               Bez komentára
@@ -327,10 +331,11 @@ export default function BookDetail() {
                     </div>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground">Zatiaľ žiadne hodnotenia</p>
+                  <p className="text-muted-foreground">
+                    Zatiaľ žiadne hodnotenia
+                  </p>
                 )}
               </CardContent>
-
             </Card>
           </div>
         </div>

@@ -80,7 +80,11 @@ export function RatingDialog({
         </div>
 
         <DialogFooter>
-          <Button onClick={handleConfirm} className="w-full" disabled={value === 0}>
+          <Button
+            onClick={handleConfirm}
+            className="w-full"
+            disabled={value === 0}
+          >
             Odoslať
           </Button>
         </DialogFooter>
