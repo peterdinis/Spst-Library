@@ -1,9 +1,7 @@
 import { FC } from "react";
 
 const ReturnDialog: FC = () => {
-    return (
-        <></>
-    )
-}
+  return <></>;
+};
 
 export default ReturnDialog;

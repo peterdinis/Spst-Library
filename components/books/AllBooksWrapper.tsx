@@ -338,7 +338,9 @@ const AllBooksWrapper: FC = () => {
                   <SelectContent>
                     <SelectItem value="none">Žiadny</SelectItem>
                     <SelectItem value="recent">Nedávno pridané</SelectItem>
-                    <SelectItem value="topRated">Najlepšie hodnotené</SelectItem>
+                    <SelectItem value="topRated">
+                      Najlepšie hodnotené
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
