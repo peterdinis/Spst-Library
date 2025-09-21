@@ -1,16 +1,15 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useProfile } from "./useProfile";
 
 export type AppRole = "STUDENT" | "TEACHER";
 
 export const useRoleCheck = (allowedRoles: AppRole[] | AppRole) => {
-  const {
-    data: profile,
-    isLoading,
-    error,
-  } = useProfile({
+  const router = useRouter();
+
+  const { data: profile, isLoading, error } = useProfile({
     retry: false,
     refetchOnWindowFocus: false,
   });
@@ -28,6 +27,17 @@ export const useRoleCheck = (allowedRoles: AppRole[] | AppRole) => {
   const isStudent = profile?.role.name === "STUDENT";
   const isTeacher = profile?.role.name === "TEACHER";
 
+  const isUnauthorized =
+    !isLoading &&
+    !!profile &&
+    !rolesArray.includes(profile.role.name as AppRole);
+
+  useEffect(() => {
+    if (isUnauthorized) {
+      router.replace("/unauthorized");
+    }
+  }, [isUnauthorized, router]);
+
   return {
     profile,
     isLoading,
@@ -35,9 +45,6 @@ export const useRoleCheck = (allowedRoles: AppRole[] | AppRole) => {
     hasRole,
     isStudent,
     isTeacher,
-    isUnauthorized:
-      !isLoading &&
-      !!profile &&
-      !rolesArray.includes(profile.role.name as AppRole),
+    isUnauthorized,
   };
 };
