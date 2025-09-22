@@ -66,7 +66,7 @@ const CreateCategoryForm: FC = () => {
     </p>;
   }
 
-  if (!isUnauthorized) {
+  if (isUnauthorized) {
     router.push("/unauthorized");
   }
 

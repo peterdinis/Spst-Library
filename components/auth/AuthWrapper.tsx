@@ -29,6 +29,8 @@ import {
   GraduationCap,
   Users,
   Loader2,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/useToast";
@@ -54,6 +56,10 @@ const AuthWrapper: FC = () => {
   const navigate = useRouter();
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const loginForm = useForm<LoginFormInputs>();
   const registerForm = useForm<RegisterFormInputs>();
 
@@ -63,7 +69,6 @@ const AuthWrapper: FC = () => {
   const handleLogin = (data: LoginFormInputs) => {
     loginMutation.mutate(data, {
       onSuccess: (res: { access_token: string; refresh_token: string }) => {
-        // Save the access token
         localStorage.setItem("token", res.access_token);
 
         toast({
@@ -189,11 +194,22 @@ const AuthWrapper: FC = () => {
                         <Input
                           {...loginForm.register("password")}
                           id="password"
-                          type="password"
+                          type={showPassword ? "text" : "password"}
                           placeholder="Zadajte svoje heslo"
-                          className="pl-10"
+                          className="pl-10 pr-10"
                           required
                         />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -272,19 +288,17 @@ const AuthWrapper: FC = () => {
                           <SelectValue placeholder="Vyberte svoju rolu" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem
-                            value="STUDENT"
-                            className="flex items-center space-x-2"
-                          >
-                            <GraduationCap className="h-4 w-4" />
-                            <span>Študent</span>
+                          <SelectItem value="STUDENT">
+                            <div className="flex items-center space-x-2">
+                              <GraduationCap className="h-4 w-4" />
+                              <span>Študent</span>
+                            </div>
                           </SelectItem>
-                          <SelectItem
-                            value="TEACHER"
-                            className="flex items-center space-x-2"
-                          >
-                            <Users className="h-4 w-4" />
-                            <span>Učiteľ</span>
+                          <SelectItem value="TEACHER">
+                            <div className="flex items-center space-x-2">
+                              <Users className="h-4 w-4" />
+                              <span>Učiteľ</span>
+                            </div>
                           </SelectItem>
                         </SelectContent>
                       </Select>
@@ -297,11 +311,24 @@ const AuthWrapper: FC = () => {
                         <Input
                           {...registerForm.register("registerPassword")}
                           id="registerPassword"
-                          type="password"
+                          type={showRegisterPassword ? "text" : "password"}
                           placeholder="Vytvorte si heslo"
-                          className="pl-10"
+                          className="pl-10 pr-10"
                           required
                         />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowRegisterPassword(!showRegisterPassword)
+                          }
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                          {showRegisterPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
                       </div>
                     </div>
 
@@ -312,11 +339,24 @@ const AuthWrapper: FC = () => {
                         <Input
                           {...registerForm.register("confirmPassword")}
                           id="confirmPassword"
-                          type="password"
+                          type={showConfirmPassword ? "text" : "password"}
                           placeholder="Potvrďte svoje heslo"
-                          className="pl-10"
+                          className="pl-10 pr-10"
                           required
                         />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
+                          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </button>
                       </div>
                     </div>
                   </div>
