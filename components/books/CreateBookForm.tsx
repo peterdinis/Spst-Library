@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
@@ -22,6 +22,8 @@ import { useCreateBook } from "@/hooks/books/useCreateBook";
 import { CreateBookDto, createBookSchema } from "@/hooks/books/bookSchema";
 import { useCategories } from "@/hooks/categories/useCategories";
 import { useAllAuthors } from "@/hooks/authors/useAllAuthors";
+import { useRoleCheck } from "@/hooks/auth/useRoleCheck";
+import { useRouter } from "next/navigation";
 
 const CreateBookForm: FC = () => {
   const { data: categoriesData, isLoading: categoriesLoading } =
@@ -45,6 +47,15 @@ const CreateBookForm: FC = () => {
   const onSubmit = (data: CreateBookDto) => {
     createBook(data, { onSuccess: () => reset() });
   };
+
+  const router = useRouter()
+  const {isUnauthorized } = useRoleCheck("TEACHER");
+
+  useEffect(() => {
+    if (!isUnauthorized) {
+      router.push("/unauthorized");
+    }
+  }, [isUnauthorized, router]);
 
   if (categoriesLoading || authorsLoading) {
     return (

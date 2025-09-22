@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,6 +21,8 @@ import {
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 import { TipTapEditor } from "../shared/TipTapEditor";
+import { useRoleCheck } from "@/hooks/auth/useRoleCheck";
+import { useRouter } from "next/navigation";
 
 const schema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -31,6 +33,10 @@ type FormValues = z.infer<typeof schema>;
 
 const CreateCategoryForm: FC = () => {
   const { toast } = useToast();
+  const router = useRouter();
+
+  const { isLoading, isUnauthorized } = useRoleCheck("TEACHER");
+
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: { name: "", description: "" },
@@ -44,7 +50,7 @@ const CreateCategoryForm: FC = () => {
         toast({ title: "Category created ✅" });
         form.reset();
       },
-      onError: (err: any) => {
+      onError: (err) => {
         toast({
           title: "Error",
           description: err.message || "Failed to create category",
@@ -53,6 +59,20 @@ const CreateCategoryForm: FC = () => {
       },
     });
   };
+
+  if (isLoading) {
+    return (
+      <p className="text-center mt-8">
+        <Loader2 className="animate-spin w-8 h-8 mx-auto" />
+      </p>
+    );
+  }
+
+  useEffect(() => {
+    if (!isUnauthorized) {
+      router.push("/unauthorized");
+    }
+  }, [isUnauthorized, router]);
 
   return (
     <div className="mt-16">
