@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -68,9 +68,11 @@ const CreateCategoryForm: FC = () => {
     );
   }
 
-  if (isUnauthorized) {
-    router.push("/unauthorized");
-  }
+  useEffect(() => {
+    if (!isUnauthorized) {
+      router.push("/unauthorized");
+    }
+  }, [isUnauthorized, router]);
 
   return (
     <div className="mt-16">

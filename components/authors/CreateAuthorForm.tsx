@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useEffect } from "react";
 import { z } from "zod";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { TipTapEditor } from "../shared/TipTapEditor";
+import { useRouter } from "next/navigation";
+import { useRoleCheck } from "@/hooks/auth/useRoleCheck";
 
 const schema = z.object({
   name: z.string().min(1, "Meno je povinné"),
@@ -35,6 +37,15 @@ export const CreateAuthorForm: FC = () => {
     form.reset();
     alert("Autor bol úspešne vytvorený!");
   };
+
+  const router = useRouter()
+    const {isUnauthorized } = useRoleCheck("TEACHER");
+  
+    useEffect(() => {
+      if (!isUnauthorized) {
+        router.push("/unauthorized");
+      }
+    }, [isUnauthorized, router]);
 
   const fieldAnim = {
     initial: { opacity: 0, y: 10 },
