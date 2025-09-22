@@ -33,8 +33,8 @@ type FormValues = z.infer<typeof schema>;
 
 const CreateCategoryForm: FC = () => {
   const { toast } = useToast();
-  const router = useRouter()
-  
+  const router = useRouter();
+
   const { isLoading, isUnauthorized } = useRoleCheck("TEACHER");
 
   const form = useForm<FormValues>({
@@ -61,9 +61,11 @@ const CreateCategoryForm: FC = () => {
   };
 
   if (isLoading) {
-    return <p className="text-center mt-8">
-      <Loader2 className="animate-spin w-8 h-8 mx-auto" />
-    </p>;
+    return (
+      <p className="text-center mt-8">
+        <Loader2 className="animate-spin w-8 h-8 mx-auto" />
+      </p>
+    );
   }
 
   if (isUnauthorized) {
