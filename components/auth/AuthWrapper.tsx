@@ -37,19 +37,7 @@ import { useToast } from "@/hooks/useToast";
 import Link from "next/link";
 import { useLogin } from "@/hooks/auth/useLogin";
 import { useRegister } from "@/hooks/auth/useRegister";
-
-type LoginFormInputs = {
-  email: string;
-  password: string;
-};
-
-type RegisterFormInputs = {
-  fullName: string;
-  registerEmail: string;
-  role: "STUDENT" | "TEACHER";
-  registerPassword: string;
-  confirmPassword: string;
-};
+import { LoginFormInputs, RegisterFormInputs, RoleType } from "./AuthTypes";
 
 const AuthWrapper: FC = () => {
   const { toast } = useToast();
@@ -227,7 +215,6 @@ const AuthWrapper: FC = () => {
               </form>
             </TabsContent>
 
-            {/* Register Tab */}
             <TabsContent value="register">
               <form
                 onSubmit={registerForm.handleSubmit(handleRegister)}
@@ -279,7 +266,7 @@ const AuthWrapper: FC = () => {
                         onValueChange={(val: string) =>
                           registerForm.setValue(
                             "role",
-                            val as "STUDENT" | "TEACHER",
+                            val as RoleType
                           )
                         }
                         required
