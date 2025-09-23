@@ -38,14 +38,14 @@ export const CreateAuthorForm: FC = () => {
     alert("Autor bol úspešne vytvorený!");
   };
 
-  const router = useRouter()
-    const {isUnauthorized } = useRoleCheck("TEACHER");
-  
-    useEffect(() => {
-      if (!isUnauthorized) {
-        router.push("/unauthorized");
-      }
-    }, [isUnauthorized, router]);
+  const router = useRouter();
+  const { isUnauthorized } = useRoleCheck("TEACHER");
+
+  useEffect(() => {
+    if (!isUnauthorized) {
+      router.push("/unauthorized");
+    }
+  }, [isUnauthorized, router]);
 
   const fieldAnim = {
     initial: { opacity: 0, y: 10 },

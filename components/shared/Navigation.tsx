@@ -176,11 +176,11 @@ const Navigation: FC = () => {
                     </>
                   ) : (
                     <>
-                    <Link href="/auth" onClick={() => setIsOpen(false)}>
-                      <Button variant="default" size="sm" className="w-full">
-                        Prihlásenie / Registrácia
-                      </Button>
-                    </Link>
+                      <Link href="/auth" onClick={() => setIsOpen(false)}>
+                        <Button variant="default" size="sm" className="w-full">
+                          Prihlásenie / Registrácia
+                        </Button>
+                      </Link>
                       <div className="mt-6 bg-transparent w-full">
                         <ModeToggle />
                       </div>

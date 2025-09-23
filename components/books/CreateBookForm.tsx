@@ -48,8 +48,8 @@ const CreateBookForm: FC = () => {
     createBook(data, { onSuccess: () => reset() });
   };
 
-  const router = useRouter()
-  const {isUnauthorized } = useRoleCheck("TEACHER");
+  const router = useRouter();
+  const { isUnauthorized } = useRoleCheck("TEACHER");
 
   useEffect(() => {
     if (!isUnauthorized) {
