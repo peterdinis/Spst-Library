@@ -58,7 +58,6 @@ const AuthWrapper: FC = () => {
     loginMutation.mutate(data, {
       onSuccess: (res: { access_token: string; refresh_token: string }) => {
         localStorage.setItem("token", res.access_token);
-
         toast({
           title: "Prihlásenie úspešné!",
           description: "Vitaj späť v Školskej knižnici.",
@@ -115,7 +114,7 @@ const AuthWrapper: FC = () => {
   const isLoading = loginMutation.isPending || registerMutation.isPending;
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4 md:p-6">
       <div className="w-full max-w-md animate-scale-in space-y-6">
         {/* Logo */}
         <div className="text-center space-y-2">
@@ -215,6 +214,7 @@ const AuthWrapper: FC = () => {
               </form>
             </TabsContent>
 
+            {/* Register Tab */}
             <TabsContent value="register">
               <form
                 onSubmit={registerForm.handleSubmit(handleRegister)}
@@ -260,18 +260,15 @@ const AuthWrapper: FC = () => {
                       </div>
                     </div>
 
-                    <div className="space-y-2 w-[600px]">
+                    <div className="space-y-2">
                       <Label htmlFor="role">Rola</Label>
                       <Select
                         onValueChange={(val: string) =>
-                          registerForm.setValue(
-                            "role",
-                            val as RoleType
-                          )
+                          registerForm.setValue("role", val as RoleType)
                         }
                         required
                       >
-                        <SelectTrigger className="w-[400px]">
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Vyberte svoju rolu" />
                         </SelectTrigger>
                         <SelectContent>
