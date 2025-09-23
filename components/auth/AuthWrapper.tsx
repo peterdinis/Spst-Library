@@ -77,7 +77,7 @@ const AuthWrapper: FC = () => {
         });
         navigate.push("/profile");
       },
-      onError: (err: any) => {
+      onError: (err) => {
         toast({
           title: "Chyba",
           description: err.message,
@@ -113,7 +113,7 @@ const AuthWrapper: FC = () => {
           registerForm.reset();
           setActiveTab("login");
         },
-        onError: (err: any) => {
+        onError: (err) => {
           toast({
             title: "Chyba",
             description: err.message,
@@ -273,7 +273,7 @@ const AuthWrapper: FC = () => {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 w-[600px]">
                       <Label htmlFor="role">Rola</Label>
                       <Select
                         onValueChange={(val: string) =>
@@ -284,7 +284,7 @@ const AuthWrapper: FC = () => {
                         }
                         required
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="w-[400px]">
                           <SelectValue placeholder="Vyberte svoju rolu" />
                         </SelectTrigger>
                         <SelectContent>
