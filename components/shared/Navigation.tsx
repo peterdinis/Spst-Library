@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { FC, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   BookOpen,
@@ -18,7 +18,7 @@ import { ModeToggle } from "./ModeToggle";
 import { useProfileWithAuth } from "@/hooks/auth/useProfile";
 import { motion, AnimatePresence } from "framer-motion";
 
-const Navigation = () => {
+const Navigation: FC = () => {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -42,7 +42,6 @@ const Navigation = () => {
     <nav className="bg-card border-b shadow-card sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <BookOpen className="h-8 w-8 text-primary" />
             <span className="text-xl font-bold text-primary">
@@ -50,7 +49,6 @@ const Navigation = () => {
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
             {navItems.map(({ to, label, icon: Icon }) => (
               <Link
@@ -64,7 +62,6 @@ const Navigation = () => {
             ))}
           </div>
 
-          {/* User Menu */}
           <div className="hidden lg:flex items-center space-x-4">
             {loggedIn && user ? (
               <>
@@ -98,7 +95,6 @@ const Navigation = () => {
             <ModeToggle />
           </div>
 
-          {/* Mobile menu button */}
           <div className="flex items-center space-x-2 lg:hidden">
             <Button
               variant="ghost"
@@ -115,7 +111,6 @@ const Navigation = () => {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
@@ -180,11 +175,16 @@ const Navigation = () => {
                       </Button>
                     </>
                   ) : (
+                    <>
                     <Link href="/auth" onClick={() => setIsOpen(false)}>
                       <Button variant="default" size="sm" className="w-full">
                         Prihlásenie / Registrácia
                       </Button>
                     </Link>
+                      <div className="mt-6 bg-transparent w-full">
+                        <ModeToggle />
+                      </div>
+                    </>
                   )}
                 </div>
               </motion.div>
