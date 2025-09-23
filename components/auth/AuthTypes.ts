@@ -8,7 +8,7 @@ export type LoginFormInputs = {
 export type RegisterFormInputs = {
   fullName: string;
   registerEmail: string;
-  role: RoleType
+  role: RoleType;
   registerPassword: string;
   confirmPassword: string;
 };
