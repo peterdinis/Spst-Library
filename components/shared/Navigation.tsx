@@ -13,23 +13,14 @@ import {
   UserCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ModeToggle } from "./ModeToggle";
-import { useProfileWithAuth } from "@/hooks/auth/useProfile";
 import { motion, AnimatePresence } from "framer-motion";
+import { useClerk } from "@clerk/nextjs";
 
 const Navigation: FC = () => {
-  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-
-  const { data: user, isAuthenticated } = useProfileWithAuth();
-  const [loggedIn, setLoggedIn] = useState(isAuthenticated);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setLoggedIn(false);
-    router.push("/auth");
-  };
+  const { signOut } = useClerk();
+  const { user} = useClerk();
 
   const navItems = [
     { to: "/", label: "Domov", icon: BookOpen },
@@ -63,7 +54,7 @@ const Navigation: FC = () => {
           </div>
 
           <div className="hidden lg:flex items-center space-x-4">
-            {loggedIn && user ? (
+            {user ? (
               <>
                 <Link href="/profile">
                   <Button
@@ -72,13 +63,15 @@ const Navigation: FC = () => {
                     className="flex items-center space-x-1 hover:scale-105 transition-transform"
                   >
                     <UserCircle className="h-4 w-4" />
-                    <span>{user.name}</span>
+                    <span>{user?.fullName}</span>
                   </Button>
                 </Link>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={handleLogout}
+                  onClick={() => {
+                    signOut();
+                  }}
                   className="flex items-center space-x-1 hover:scale-105 transition-transform"
                 >
                   <LogOut className="h-4 w-4" />
@@ -86,11 +79,18 @@ const Navigation: FC = () => {
                 </Button>
               </>
             ) : (
-              <Link href="/auth">
-                <Button variant="default" size="sm">
-                  Prihlásenie / Registrácia
-                </Button>
-              </Link>
+              <>
+                <Link href="/sign-up">
+                  <Button variant="default" size="sm">
+                    Registrácia
+                  </Button>
+                </Link>
+                <Link href="/sign-in">
+                  <Button variant="default" size="sm">
+                    Prihlásenie
+                  </Button>
+                </Link>
+              </>
             )}
             <ModeToggle />
           </div>
@@ -149,7 +149,7 @@ const Navigation: FC = () => {
                 ))}
 
                 <div className="pt-4 border-t space-y-2">
-                  {isAuthenticated && user ? (
+                  {user ? (
                     <>
                       <Link href="/profile" onClick={() => setIsOpen(false)}>
                         <Button
@@ -165,7 +165,7 @@ const Navigation: FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          handleLogout();
+                          signOut();
                           setIsOpen(false);
                         }}
                         className="w-full flex items-center justify-center space-x-1 hover:scale-105 transition-transform"
@@ -176,9 +176,14 @@ const Navigation: FC = () => {
                     </>
                   ) : (
                     <>
-                      <Link href="/auth" onClick={() => setIsOpen(false)}>
-                        <Button variant="default" size="sm" className="w-full">
-                          Prihlásenie / Registrácia
+                      <Link href="/sign-up">
+                        <Button variant="default" size="sm">
+                          Registrácia
+                        </Button>
+                      </Link>
+                      <Link href="/sign-in">
+                        <Button variant="default" size="sm">
+                          Prihlásenie
                         </Button>
                       </Link>
                       <div className="mt-6 bg-transparent w-full">
