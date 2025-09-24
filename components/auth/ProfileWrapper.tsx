@@ -12,7 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Mail,
-  GraduationCap,
   BookOpen,
   Clock,
   Calendar,
@@ -20,8 +19,8 @@ import {
   Loader2,
   AlertCircle,
 } from "lucide-react";
-import { useProfile } from "@/hooks/auth/useProfile";
 import ReturnDialog from "../borrow/ReturnDialog";
+import { useClerk } from "@clerk/nextjs";
 
 const mockStats = {
   totalBorrowed: 47,
@@ -30,11 +29,11 @@ const mockStats = {
 };
 
 const ProfileWrapper: FC = () => {
-  const { data: user, isLoading, error, refetch, isError } = useProfile();
+  const {user, loaded, isSignedIn} = useClerk()
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
-  if (isLoading) {
+  if (loaded) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -43,7 +42,7 @@ const ProfileWrapper: FC = () => {
     );
   }
 
-  if (isError || !user) {
+  if (!isSignedIn || !user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-4">
         <Card className="max-w-md w-full">
@@ -53,18 +52,11 @@ const ProfileWrapper: FC = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-destructive">
-              {error?.message || "Nepodarilo sa načítať váš profil"}
+              Nepodarilo sa načítať váš profil
             </p>
             <div className="flex space-x-2">
-              <Button
-                onClick={() => refetch()}
-                variant="outline"
-                className="flex-1"
-              >
-                Skúsiť znova
-              </Button>
               <Button asChild className="flex-1">
-                <a href="/login">Prejsť na prihlásenie</a>
+                <a href="/sign-in">Prejsť na prihlásenie</a>
               </Button>
             </div>
           </CardContent>
@@ -82,21 +74,17 @@ const ProfileWrapper: FC = () => {
         <CardHeader>
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
             <div className="flex-1">
-              <CardTitle className="text-2xl mb-2">{user.name}</CardTitle>
+              <CardTitle className="text-2xl mb-2">{user && user.fullName}</CardTitle>
               <CardDescription className="space-y-1">
                 <div className="flex items-center space-x-2">
                   <Mail className="h-4 w-4" />
-                  <span>{user.email}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <GraduationCap className="h-4 w-4" />
-                  <span>{user.role.name}</span>
+                  <span>{user && user.emailAddresses[0]?.emailAddress}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4" />
                   <span>
                     Člen od{" "}
-                    {new Date(user.createdAt).toLocaleDateString("sk-SK", {
+                    {new Date(user && user.createdAt!).toLocaleDateString("sk-SK", {
                       year: "numeric",
                       month: "long",
                     })}

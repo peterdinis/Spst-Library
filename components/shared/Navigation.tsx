@@ -17,11 +17,12 @@ import { useRouter } from "next/navigation";
 import { ModeToggle } from "./ModeToggle";
 import { useProfileWithAuth } from "@/hooks/auth/useProfile";
 import { motion, AnimatePresence } from "framer-motion";
+import { useClerk } from "@clerk/nextjs";
 
 const Navigation: FC = () => {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-
+  const {signOut} = useClerk()
   const { data: user, isAuthenticated } = useProfileWithAuth();
   const [loggedIn, setLoggedIn] = useState(isAuthenticated);
 
@@ -78,7 +79,9 @@ const Navigation: FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={handleLogout}
+                  onClick={() => {
+                    signOut();
+                  }}
                   className="flex items-center space-x-1 hover:scale-105 transition-transform"
                 >
                   <LogOut className="h-4 w-4" />
@@ -86,11 +89,18 @@ const Navigation: FC = () => {
                 </Button>
               </>
             ) : (
-              <Link href="/auth">
-                <Button variant="default" size="sm">
-                  Prihlásenie / Registrácia
-                </Button>
-              </Link>
+              <>
+                <Link href="/sign-up">
+                  <Button variant="default" size="sm">
+                    Registrácia
+                  </Button>
+                </Link>
+                <Link href="/sign-in">
+                  <Button variant="default" size="sm">
+                    Prihlásenie
+                  </Button>
+                </Link>
+              </>
             )}
             <ModeToggle />
           </div>
@@ -165,7 +175,7 @@ const Navigation: FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          handleLogout();
+                          signOut();
                           setIsOpen(false);
                         }}
                         className="w-full flex items-center justify-center space-x-1 hover:scale-105 transition-transform"
@@ -176,9 +186,14 @@ const Navigation: FC = () => {
                     </>
                   ) : (
                     <>
-                      <Link href="/auth" onClick={() => setIsOpen(false)}>
-                        <Button variant="default" size="sm" className="w-full">
-                          Prihlásenie / Registrácia
+                      <Link href="/sign-up">
+                        <Button variant="default" size="sm">
+                          Registrácia
+                        </Button>
+                      </Link>
+                      <Link href="/sign-in">
+                        <Button variant="default" size="sm">
+                          Prihlásenie
                         </Button>
                       </Link>
                       <div className="mt-6 bg-transparent w-full">
