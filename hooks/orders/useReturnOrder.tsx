@@ -22,7 +22,6 @@ export const useReturnOrder = () => {
       return res.json();
     },
     onSuccess: (_, orderId) => {
-      // Invalidate or refetch orders query
       queryClient.invalidateQueries({
         queryKey: ["orders"],
       });

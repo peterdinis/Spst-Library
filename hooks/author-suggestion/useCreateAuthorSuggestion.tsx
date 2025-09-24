@@ -29,7 +29,6 @@ export function useCreateAuthorSuggestion() {
       return res.json();
     },
     onSuccess: () => {
-      // napr. revalidácia zoznamu návrhov (ak ich niekde zobrazuješ)
       queryClient.invalidateQueries({ queryKey: ["author-suggestions"] });
     },
   });

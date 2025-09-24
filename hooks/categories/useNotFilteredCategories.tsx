@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export function useNotFilterCategories() {
   return useQuery<CategoryListResponse>({
-    queryKey: ["filteredCategories"],
+    queryKey: ["notFilteredCategories"],
     queryFn: async () => {
       const res = await fetch(`${API_BASE_URL}/categories/all`);
       if (!res.ok) {

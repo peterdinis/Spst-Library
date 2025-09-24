@@ -10,5 +10,4 @@ export const createBookSchema = z.object({
   authorId: z.number().int(),
 });
 
-// Typ inferovaný zo schema
 export type CreateBookDto = z.infer<typeof createBookSchema>;

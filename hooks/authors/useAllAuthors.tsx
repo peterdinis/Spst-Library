@@ -23,7 +23,6 @@ interface AuthorsResponse {
   };
 }
 
-// Funkcia pre fetchovanie autorov
 const fetchAuthors = async (
   params: QueryAuthorParams,
 ): Promise<AuthorsResponse> => {
