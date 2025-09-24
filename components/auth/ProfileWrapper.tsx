@@ -29,7 +29,7 @@ const mockStats = {
 };
 
 const ProfileWrapper: FC = () => {
-  const {user, loaded, isSignedIn} = useClerk()
+  const { user, loaded, isSignedIn } = useClerk();
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
@@ -51,9 +51,7 @@ const ProfileWrapper: FC = () => {
             <CardTitle>Nepodarilo sa načítať profil</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-destructive">
-              Nepodarilo sa načítať váš profil
-            </p>
+            <p className="text-destructive">Nepodarilo sa načítať váš profil</p>
             <div className="flex space-x-2">
               <Button asChild className="flex-1">
                 <a href="/sign-in">Prejsť na prihlásenie</a>
@@ -74,20 +72,25 @@ const ProfileWrapper: FC = () => {
         <CardHeader>
           <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
             <div className="flex-1">
-              <CardTitle className="text-2xl mb-2">{user && user.fullName}</CardTitle>
+              <CardTitle className="text-2xl mb-2">
+                {user && user.fullName}
+              </CardTitle>
               <CardDescription className="space-y-1">
                 <div className="flex items-center space-x-2">
                   <Mail className="h-4 w-4" />
-                  <span>{user && user.emailAddresses[0]?.emailAddress}</span>
+                  <span>{user && user.emailAddresses[0]?.emailAddress}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4" />
                   <span>
                     Člen od{" "}
-                    {new Date(user && user.createdAt!).toLocaleDateString("sk-SK", {
-                      year: "numeric",
-                      month: "long",
-                    })}
+                    {new Date(user && user.createdAt!).toLocaleDateString(
+                      "sk-SK",
+                      {
+                        year: "numeric",
+                        month: "long",
+                      },
+                    )}
                   </span>
                 </div>
               </CardDescription>

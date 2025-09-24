@@ -22,7 +22,7 @@ import { useClerk } from "@clerk/nextjs";
 const Navigation: FC = () => {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const {signOut} = useClerk()
+  const { signOut } = useClerk();
   const { data: user, isAuthenticated } = useProfileWithAuth();
   const [loggedIn, setLoggedIn] = useState(isAuthenticated);
 

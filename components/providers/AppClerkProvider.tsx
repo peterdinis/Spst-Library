@@ -7,12 +7,10 @@ type AppClerkProviderProps = {
   children: ReactNode;
 };
 
-const AppClerkProvider: FC<AppClerkProviderProps> = ({children}: AppClerkProviderProps) => {
-    return (
-        <ClerkProvider>
-            {children}
-        </ClerkProvider>
-    )
-}
+const AppClerkProvider: FC<AppClerkProviderProps> = ({
+  children,
+}: AppClerkProviderProps) => {
+  return <ClerkProvider>{children}</ClerkProvider>;
+};
 
 export default AppClerkProvider;
