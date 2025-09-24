@@ -23,6 +23,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/useToast";
 import { useUser } from "@clerk/nextjs";
+import { useCreateOrder } from "@/hooks/orders/useCreateOrder";
 
 interface BorrowDialogProps {
   open: boolean;
@@ -89,7 +90,7 @@ export const BorrowDialog = ({
 
     try {
       const newOrder = await createOrder.mutateAsync({
-        userId: user.id,
+        userId: Number(user.id),
         items: [
           {
             bookId: Number(bookId),
