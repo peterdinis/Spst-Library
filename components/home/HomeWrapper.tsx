@@ -4,10 +4,17 @@ import { motion, Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import type { FC } from "react";
+import { useEffect, useState } from "react";
 import schollImage from "../../public/img/main.png";
 import { Button } from "../ui/button";
 
 const Hero: FC = () => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const homepageVariants: Variants = {
     hidden: { opacity: 0, scale: 0.9 },
     visible: {
@@ -19,6 +26,8 @@ const Hero: FC = () => {
       },
     },
   };
+
+  if (!mounted) return null; // zabráni hydratacii na serveri
 
   return (
     <motion.div
@@ -42,12 +51,7 @@ const Hero: FC = () => {
 
           <div className="flex flex-col justify-center gap-4 sm:flex-row md:justify-start">
             <Link href="/books" className="w-full sm:w-auto">
-              <Button
-                id="bookBtn"
-                size="lg"
-                variant="default"
-                className="w-full"
-              >
+              <Button id="bookBtn" size="lg" variant="default" className="w-full">
                 Zobraziť všetky knihy
               </Button>
             </Link>
@@ -57,12 +61,7 @@ const Hero: FC = () => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Button
-                id="schollBtn"
-                size="lg"
-                variant="secondary"
-                className="w-full"
-              >
+              <Button id="schollBtn" size="lg" variant="secondary" className="w-full">
                 Školská stránka
               </Button>
             </Link>
