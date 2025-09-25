@@ -30,7 +30,7 @@ export default function BookDetail() {
 
   const { data: book, isLoading, error } = useBook(bookId);
 
-  const { user } = useClerk()
+  const { user } = useClerk();
   const [showBorrowDialog, setShowBorrowDialog] = useState(false);
   const [showRatingDialog, setShowRatingDialog] = useState(false);
 
