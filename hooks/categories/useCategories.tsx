@@ -25,6 +25,6 @@ export function useCategories(
       }
       return res.json();
     },
-    staleTime: 60_000, // matches your backend cache TTL
+    staleTime: 60_000,
   });
 }

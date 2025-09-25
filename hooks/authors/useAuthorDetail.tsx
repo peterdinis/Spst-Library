@@ -12,7 +12,7 @@ async function fetchAuthor(id: number): Promise<Author> {
 
 export function useAuthor(id: number | undefined) {
   return useQuery<Author>({
-    queryKey: ["author", id],
+    queryKey: ["authorDetail", id],
     queryFn: () => fetchAuthor(id as number),
   });
 }

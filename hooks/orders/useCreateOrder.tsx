@@ -54,7 +54,6 @@ export function useCreateOrder() {
       return res.json();
     },
     onSuccess: (data) => {
-      // Optionally invalidate queries to refetch orders list
       queryClient.invalidateQueries({
         queryKey: ["orders"],
       });

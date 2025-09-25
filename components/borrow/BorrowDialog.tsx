@@ -22,8 +22,8 @@ import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/useToast";
+import { useUser } from "@clerk/nextjs";
 import { useCreateOrder } from "@/hooks/orders/useCreateOrder";
-import { useProfile } from "@/hooks/auth/useProfile";
 
 interface BorrowDialogProps {
   open: boolean;
@@ -54,7 +54,7 @@ export const BorrowDialog = ({
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const createOrder = useCreateOrder();
-  const { data: user } = useProfile();
+  const { user } = useUser();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -90,7 +90,7 @@ export const BorrowDialog = ({
 
     try {
       const newOrder = await createOrder.mutateAsync({
-        userId: user.id,
+        userId: Number(user.id),
         items: [
           {
             bookId: Number(bookId),

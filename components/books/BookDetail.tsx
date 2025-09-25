@@ -20,7 +20,7 @@ import { Separator } from "../ui/separator";
 import Link from "next/link";
 import { useCreateOrder } from "@/hooks/orders/useCreateOrder";
 import { useAddRating } from "@/hooks/ratings/useAddRating";
-import { useProfile } from "@/hooks/auth/useProfile";
+import { useClerk } from "@clerk/nextjs";
 
 export default function BookDetail() {
   const { id } = useParams();
@@ -30,7 +30,7 @@ export default function BookDetail() {
 
   const { data: book, isLoading, error } = useBook(bookId);
 
-  const { data: user } = useProfile();
+  const { user } = useClerk()
   const [showBorrowDialog, setShowBorrowDialog] = useState(false);
   const [showRatingDialog, setShowRatingDialog] = useState(false);
 

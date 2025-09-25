@@ -13,7 +13,7 @@ async function fetchRecentlyAddedBooks(days: number = 1): Promise<Book[]> {
 
 export function useRecentlyAddedBooks(days: number = 1) {
   return useQuery({
-    queryKey: ["books", "recently-added", days],
+    queryKey: ["recentlyAddedBooks", days],
     queryFn: () => fetchRecentlyAddedBooks(days),
   });
 }
