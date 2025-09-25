@@ -37,7 +37,9 @@ const Navigation: FC = () => {
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <BookOpen className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold text-primary">SPŠT Knižnica</span>
+            <span className="text-xl font-bold text-primary">
+              SPŠT Knižnica
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -103,7 +105,11 @@ const Navigation: FC = () => {
               onClick={() => setIsOpen(!isOpen)}
               className="transition-transform hover:scale-110"
             >
-              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {isOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
             </Button>
           </div>
         </div>

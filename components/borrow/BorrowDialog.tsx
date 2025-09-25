@@ -54,7 +54,7 @@ export const BorrowDialog = ({
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const createOrder = useCreateOrder();
-  const {user} = useUser()
+  const { user } = useUser();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
