@@ -34,7 +34,9 @@ const ProfileWrapper: FC = () => {
   const { user, loaded, isSignedIn } = useClerk();
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
-  const {data: userOrders, isLoading: userLoading} = useOrdersByUser(Number(user?.id));
+  const { data: userOrders, isLoading: userLoading } = useOrdersByUser(
+    Number(user?.id),
+  );
 
   if (!loaded || userLoading) {
     return (
@@ -142,54 +144,57 @@ const ProfileWrapper: FC = () => {
 
       {userOrders && userOrders.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {userOrders && userOrders.map((order: Order) => (
-            <Card key={order.id} className="hover-lift shadow-card">
-              <CardHeader className="pb-4 flex justify-between items-start">
-                <div className="flex-1">
-                  <CardTitle className="text-lg font-semibold line-clamp-2">
-                    Objednávka #{order.id}
-                  </CardTitle>
-                  <div className="flex items-center space-x-1 mt-2 text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span className="text-sm">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </span>
+          {userOrders &&
+            userOrders.map((order: Order) => (
+              <Card key={order.id} className="hover-lift shadow-card">
+                <CardHeader className="pb-4 flex justify-between items-start">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg font-semibold line-clamp-2">
+                      Objednávka #{order.id}
+                    </CardTitle>
+                    <div className="flex items-center space-x-1 mt-2 text-muted-foreground">
+                      <Clock className="h-4 w-4" />
+                      <span className="text-sm">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <Badge
-                  variant={order.status === "PENDING" ? "secondary" : "default"}
-                >
-                  {order.status}
-                </Badge>
-              </CardHeader>
+                  <Badge
+                    variant={
+                      order.status === "PENDING" ? "secondary" : "default"
+                    }
+                  >
+                    {order.status}
+                  </Badge>
+                </CardHeader>
 
-              <CardContent className="pb-4">
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <div>ID používateľa: {order.userId}</div>
-                  <div>
-                    Aktualizované:{" "}
-                    {new Date(order.updatedAt).toLocaleDateString()}
+                <CardContent className="pb-4">
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <div>ID používateľa: {order.userId}</div>
+                    <div>
+                      Aktualizované:{" "}
+                      {new Date(order.updatedAt).toLocaleDateString()}
+                    </div>
                   </div>
-                </div>
 
-                {/* Return button if COMPLETED */}
-                {order.status === "COMPLETED" && (
-                  <div className="mt-4">
-                    <Button
-                      onClick={() => {
-                        setSelectedOrderId(order.id);
-                        setReturnDialogOpen(true);
-                      }}
-                      variant="destructive"
-                      size="sm"
-                    >
-                      Vrátiť objednávku
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+                  {/* Return button if COMPLETED */}
+                  {order.status === "COMPLETED" && (
+                    <div className="mt-4">
+                      <Button
+                        onClick={() => {
+                          setSelectedOrderId(order.id);
+                          setReturnDialogOpen(true);
+                        }}
+                        variant="destructive"
+                        size="sm"
+                      >
+                        Vrátiť objednávku
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
         </div>
       ) : (
         <div className="text-center py-12">

@@ -51,7 +51,12 @@ const Hero: FC = () => {
 
           <div className="flex flex-col justify-center gap-4 sm:flex-row md:justify-start">
             <Link href="/books" className="w-full sm:w-auto">
-              <Button id="bookBtn" size="lg" variant="default" className="w-full">
+              <Button
+                id="bookBtn"
+                size="lg"
+                variant="default"
+                className="w-full"
+              >
                 Zobraziť všetky knihy
               </Button>
             </Link>
@@ -61,7 +66,12 @@ const Hero: FC = () => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Button id="schollBtn" size="lg" variant="secondary" className="w-full">
+              <Button
+                id="schollBtn"
+                size="lg"
+                variant="secondary"
+                className="w-full"
+              >
                 Školská stránka
               </Button>
             </Link>

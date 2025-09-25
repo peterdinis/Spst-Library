@@ -12,7 +12,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, User, ArrowLeft, Star, FileText, Hash } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useToast } from "@/hooks/useToast";
 import { BorrowDialog, BorrowData } from "../borrow/BorrowDialog";
 import { RatingDialog, RatingData } from "../rating/RatingDialog";
 import { useBook } from "@/hooks/books/useBookDetail";
@@ -21,6 +20,7 @@ import Link from "next/link";
 import { useCreateOrder } from "@/hooks/orders/useCreateOrder";
 import { useAddRating } from "@/hooks/ratings/useAddRating";
 import { useClerk } from "@clerk/nextjs";
+import { useToast } from "@/hooks/shared/useToast";
 
 export default function BookDetail() {
   const { id } = useParams();

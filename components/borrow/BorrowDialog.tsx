@@ -21,9 +21,9 @@ import {
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/useToast";
 import { useUser } from "@clerk/nextjs";
 import { useCreateOrder } from "@/hooks/orders/useCreateOrder";
+import { useToast } from "@/hooks/shared/useToast";
 
 interface BorrowDialogProps {
   open: boolean;
