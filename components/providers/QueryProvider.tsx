@@ -8,7 +8,7 @@ type QueryProviderProps = {
   children?: ReactNode;
 };
 
-const QueryProvider: FC<QueryProviderProps> = ({ children }) => {
+const QueryProvider: FC<QueryProviderProps> = ({ children }: QueryProviderProps) => {
   const queryClient = new QueryClient();
 
   return (
