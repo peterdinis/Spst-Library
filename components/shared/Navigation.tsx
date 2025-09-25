@@ -19,8 +19,7 @@ import { useClerk } from "@clerk/nextjs";
 
 const Navigation: FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { signOut } = useClerk();
-  const { user} = useClerk();
+  const { signOut, user, loaded } = useClerk();
 
   const navItems = [
     { to: "/", label: "Domov", icon: BookOpen },
@@ -29,17 +28,19 @@ const Navigation: FC = () => {
     { to: "/authors", label: "Spisovatelia", icon: User },
   ];
 
+  if (!loaded) return null;
+
   return (
     <nav className="bg-card border-b shadow-card sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
+          {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <BookOpen className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold text-primary">
-              SPŠT Knižnica
-            </span>
+            <span className="text-xl font-bold text-primary">SPŠT Knižnica</span>
           </Link>
 
+          {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
             {navItems.map(({ to, label, icon: Icon }) => (
               <Link
@@ -53,6 +54,7 @@ const Navigation: FC = () => {
             ))}
           </div>
 
+          {/* User & Mode Toggle */}
           <div className="hidden lg:flex items-center space-x-4">
             {user ? (
               <>
@@ -63,15 +65,13 @@ const Navigation: FC = () => {
                     className="flex items-center space-x-1 hover:scale-105 transition-transform"
                   >
                     <UserCircle className="h-4 w-4" />
-                    <span>{user?.fullName}</span>
+                    <span>{user.fullName}</span>
                   </Button>
                 </Link>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    signOut();
-                  }}
+                  onClick={() => signOut()}
                   className="flex items-center space-x-1 hover:scale-105 transition-transform"
                 >
                   <LogOut className="h-4 w-4" />
@@ -95,6 +95,7 @@ const Navigation: FC = () => {
             <ModeToggle />
           </div>
 
+          {/* Mobile Menu Toggle */}
           <div className="flex items-center space-x-2 lg:hidden">
             <Button
               variant="ghost"
@@ -102,15 +103,12 @@ const Navigation: FC = () => {
               onClick={() => setIsOpen(!isOpen)}
               className="transition-transform hover:scale-110"
             >
-              {isOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
+              {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
 
+        {/* Mobile Menu */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
@@ -186,7 +184,7 @@ const Navigation: FC = () => {
                           Prihlásenie
                         </Button>
                       </Link>
-                      <div className="mt-6 bg-transparent w-full">
+                      <div className="mt-6 w-full">
                         <ModeToggle />
                       </div>
                     </>
