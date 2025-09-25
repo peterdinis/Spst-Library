@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import ReturnDialog from "../borrow/ReturnDialog";
 import { useClerk } from "@clerk/nextjs";
+import { useOrdersByUser } from "@/hooks/users/useUserOrders";
+import { Order } from "@/types/orderTypes";
 
 const mockStats = {
   totalBorrowed: 47,
@@ -32,8 +34,9 @@ const ProfileWrapper: FC = () => {
   const { user, loaded, isSignedIn } = useClerk();
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const {data: userOrders, isLoading: userLoading} = useOrdersByUser(Number(user?.id));
 
-  if (!loaded) {
+  if (!loaded || userLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -62,8 +65,6 @@ const ProfileWrapper: FC = () => {
       </div>
     );
   }
-
-  const borrowedOrders = user.orders ?? [];
 
   return (
     <div className="min-h-screen bg-background px-4 py-8">
@@ -139,9 +140,9 @@ const ProfileWrapper: FC = () => {
       {/* Orders Section */}
       <h2 className="text-2xl font-bold mb-6">Aktuálne objednávky</h2>
 
-      {borrowedOrders.length > 0 ? (
+      {userOrders && userOrders.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {borrowedOrders.map((order: any) => (
+          {userOrders && userOrders.map((order: Order) => (
             <Card key={order.id} className="hover-lift shadow-card">
               <CardHeader className="pb-4 flex justify-between items-start">
                 <div className="flex-1">
