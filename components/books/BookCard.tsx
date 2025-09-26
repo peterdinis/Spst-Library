@@ -71,7 +71,7 @@ export const BookCard = ({ book }: BookCardProps) => {
         <Link href={`/books/${book.id}`} className="w-full">
           <Button
             variant="default"
-            className="w-full flex items-center space-x-2"
+            className="w-full flex items-center cursor-pointer space-x-2"
           >
             <Eye className="h-4 w-4" />
             <span>Detail knihy</span>

@@ -132,7 +132,7 @@ const AllBooksWrapper: FC = () => {
                 </div>
                 Knižnica
               </h1>
-              <p className="text-gray-500">
+              <p className="text-gray-500 dark:text-gray-100">
                 Prezrite si a požičajte knihy z našej kolekcie
               </p>
             </div>
