@@ -42,7 +42,7 @@ export default function BookDetail() {
 
     createOrderMutation.mutate(
       {
-        userId: Number(user?.id),
+        userId: user?.id as unknown as string,
         items: [{ bookId, quantity: 1 }],
       },
       {
