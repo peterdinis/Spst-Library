@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { FC } from "react";
+import Link from "next/link";
 
 const Footer: FC = () => {
   const footerVariants = {
@@ -26,7 +27,7 @@ const Footer: FC = () => {
         <div className="flex flex-wrap items-center justify-center md:justify-between">
           <div className="mx-auto w-full px-4 text-center md:w-6/12">
             <div className="py-1 text-sm font-semibold sm:text-base">
-              <a
+              <Link
                 href="https://www.spsbj.sk/"
                 className="text-2xl"
                 target="_blank"
@@ -38,7 +39,7 @@ const Footer: FC = () => {
                 >
                   &copy; SPŠT Knižnica 2025
                 </motion.span>
-              </a>
+              </Link>
             </div>
           </div>
         </div>

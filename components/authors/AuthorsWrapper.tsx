@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, BookOpen, Calendar, Award, Loader2, Send } from "lucide-react";
+import { Search, BookOpen, Calendar, Award, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useAllAuthors } from "@/hooks/authors/useAllAuthors";
 import { Author } from "@/types/authorTypes";
@@ -22,8 +22,8 @@ import { useCreateAuthorSuggestion } from "@/hooks/author-suggestion/useCreateAu
 import { useForm } from "react-hook-form";
 import { FormValues, schema } from "./authorSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useToast } from "@/hooks/useToast";
 import { useDebounce } from "@/hooks/shared/useDebounce";
+import { useToast } from "@/hooks/shared/useToast";
 
 interface AuthorWithCounts extends Author {
   bookCount: number;
@@ -43,8 +43,6 @@ const AuthorsWrapper: FC = () => {
   });
 
   const { toast } = useToast();
-  const [suggestName, setSuggestName] = useState("");
-  const [suggestNote, setSuggestNote] = useState("");
   const [openDialog, setOpenDialog] = useState(false);
   const { mutate: createSuggestion, isPending } = useCreateAuthorSuggestion();
 
