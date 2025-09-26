@@ -170,14 +170,11 @@ const ProfileWrapper: FC = () => {
 
                 <CardContent className="pb-4">
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    <div>ID používateľa: {order.userId}</div>
                     <div>
                       Aktualizované:{" "}
                       {new Date(order.updatedAt).toLocaleDateString()}
                     </div>
                   </div>
-
-                  {/* Return button if COMPLETED */}
                   {order.status === "COMPLETED" && (
                     <div className="mt-4">
                       <Button
