@@ -200,9 +200,7 @@ const CategoriesWrapper: FC = () => {
                         {category.books.length} celkom
                       </span>
                       <Link
-                        href={`/books?category=${encodeURIComponent(
-                          category.name,
-                        )}`}
+                        href={`/books?category=${encodeURIComponent(category.id)}`}
                       >
                         <Button variant="outline" size="sm">
                           Prezrieť
