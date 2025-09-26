@@ -7,7 +7,7 @@ export interface CreateOrderItem {
 }
 
 export interface CreateOrderDto {
-  userId: number;
+  userId: string;
   items: CreateOrderItem[];
 }
 
@@ -31,7 +31,6 @@ export interface Order {
   updatedAt: string;
 }
 
-// Hook to create a new order
 export function useCreateOrder() {
   const queryClient = useQueryClient();
 
