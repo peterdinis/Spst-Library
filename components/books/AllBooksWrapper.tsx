@@ -38,16 +38,14 @@ const AllBooksWrapper: FC = () => {
   const [sortBy, setSortBy] = useState("title");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [extraFilter, setExtraFilter] = useState("none"); // "none" | "recent" | "topRated"
+  const [extraFilter, setExtraFilter] = useState("none");
 
   const debouncedSearch = useDebounce(searchTerm, 400);
-
-  // upravené, categoryId sa odosiela na backend len ak nie je "all"
   const { data, isLoading, isError } = useBooks({
     search: debouncedSearch,
     page: currentPage,
     limit: ITEMS_PER_PAGE,
-    //categoryId: categoryFilter !== "all" ? Number(categoryFilter) : undefined,
+    categoryId: categoryFilter !== "all" ? Number(categoryFilter) : undefined,
   });
 
   const { data: recentlyAddedBooks } = useRecentlyAddedBooks(7);
