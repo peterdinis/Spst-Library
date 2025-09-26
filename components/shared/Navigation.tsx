@@ -23,6 +23,8 @@ const Navigation: FC = () => {
   const { signOut, user, loaded } = useClerk();
   const { toast } = useToast()
 
+  console.log(user?.id)
+
   const navItems = [
     { to: "/", label: "Domov", icon: BookOpen },
     { to: "/books", label: "Knihy", icon: Bookmark },

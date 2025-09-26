@@ -35,7 +35,7 @@ const ProfileWrapper: FC = () => {
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const { data: userOrders, isLoading: userLoading } = useOrdersByUser(
-    Number(user?.id),
+    user?.id as unknown as string
   );
 
   if (!loaded || userLoading) {

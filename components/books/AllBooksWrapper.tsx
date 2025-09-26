@@ -38,7 +38,7 @@ const AllBooksWrapper: FC = () => {
   const [sortBy, setSortBy] = useState("title");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [extraFilter, setExtraFilter] = useState("none"); // "none" | "recent" | "topRated"
+  const [extraFilter, setExtraFilter] = useState("none")
 
   const debouncedSearch = useDebounce(searchTerm, 400);
 
