@@ -14,7 +14,6 @@ import {
   Mail,
   BookOpen,
   Clock,
-  Calendar,
   Award,
   Loader2,
   AlertCircle,
@@ -82,19 +81,6 @@ const ProfileWrapper: FC = () => {
                 <div className="flex items-center space-x-2">
                   <Mail className="h-4 w-4" />
                   <span>{user && user.emailAddresses[0]?.emailAddress}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>
-                    Člen od{" "}
-                    {new Date(user && user.createdAt!).toLocaleDateString(
-                      "sk-SK",
-                      {
-                        year: "numeric",
-                        month: "long",
-                      },
-                    )}
-                  </span>
                 </div>
               </CardDescription>
             </div>

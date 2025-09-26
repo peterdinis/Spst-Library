@@ -30,7 +30,6 @@ const CategoriesWrapper: FC = () => {
     debouncedSearch || undefined,
   );
 
-  // odvodené hodnoty
   const categories = data?.data ?? [];
   const totalPages = data?.meta.totalPages ?? 0;
   const totalBooks = categories.reduce(
@@ -41,7 +40,7 @@ const CategoriesWrapper: FC = () => {
     (sum: number, cat: Category) =>
       sum +
       cat.books.filter(
-        (book: any) => book.available !== false, // prispôsob podľa backendu
+        (book: any) => book.available !== false,
       ).length,
     0,
   );
@@ -51,7 +50,6 @@ const CategoriesWrapper: FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // animačné varianty
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -91,7 +89,6 @@ const CategoriesWrapper: FC = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Hlavička */}
         <motion.div
           className="mb-8"
           initial={{ opacity: 0, y: -20 }}
@@ -104,8 +101,6 @@ const CategoriesWrapper: FC = () => {
           <p className="text-muted-foreground mb-6">
             Preskúmajte našu rozmanitú zbierku podľa žánru a tém
           </p>
-
-          {/* Vyhľadávací panel */}
           <div className="relative mb-6">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <input
@@ -163,7 +158,6 @@ const CategoriesWrapper: FC = () => {
           </motion.div>
         </motion.div>
 
-        {/* Mriežka kategórií */}
         <AnimatePresence mode="wait">
           <motion.div
             key={`page-${currentPage}-${searchQuery}`}
@@ -195,7 +189,7 @@ const CategoriesWrapper: FC = () => {
                       {category.description ?? "Popis nie je k dispozícii."}
                     </p>
 
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center cursor-pointer justify-between text-sm">
                       <span className="text-muted-foreground">
                         {category.books.length} celkom
                       </span>
