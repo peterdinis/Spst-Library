@@ -9,7 +9,8 @@ async function fetchBooks(params: QueryTypeDto): Promise<BooksResponse> {
   if (params.search) query.append("search", params.search);
   if (params.page) query.append("page", params.page.toString());
   if (params.limit) query.append("limit", params.limit.toString());
-
+  if (params.categoryId)
+    query.append("categoryId", params.categoryId.toString());
   const res = await fetch(`${API_BASE_URL}/books?${query.toString()}`);
   if (!res.ok) {
     throw new Error("Failed to fetch books");

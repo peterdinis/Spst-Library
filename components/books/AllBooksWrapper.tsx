@@ -41,6 +41,8 @@ const AllBooksWrapper: FC = () => {
   const [extraFilter, setExtraFilter] = useState("none");
 
   const debouncedSearch = useDebounce(searchTerm, 400);
+
+  // API call s podporou categoryId
   const { data, isLoading, isError } = useBooks({
     search: debouncedSearch,
     page: currentPage,
@@ -50,6 +52,7 @@ const AllBooksWrapper: FC = () => {
 
   const { data: recentlyAddedBooks } = useRecentlyAddedBooks(7);
   const { data: topRatedBooks } = useTopRatedBooks(20);
+
   const { data: categories, isLoading: isCategoriesLoading } =
     useNotFilterCategories();
 
@@ -57,6 +60,7 @@ const AllBooksWrapper: FC = () => {
   const totalBooks = data?.total ?? 0;
   const totalPages = data?.lastPage ?? 1;
 
+  // Filtrovanie iba podľa dostupnosti + extra filter / zoradenie
   const filteredBooks = useMemo(() => {
     let result: Book[] = [];
 
