@@ -30,7 +30,7 @@ const CategoryInfo: FC = () => {
 
     return (
         <motion.div
-            className="max-w-4xl mx-auto p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg mt-6"
+            className="max-w-4xl mx-auto p-6 bg-white dark:bg-stone-800 rounded-2xl shadow-lg mt-6"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
