@@ -2,7 +2,7 @@ import { API_BASE_URL } from "@/constants/applicationConstants";
 import { Order } from "@/types/orderTypes";
 import { useQuery } from "@tanstack/react-query";
 
-const fetchOrdersByUser = async (userId: number): Promise<Order[]> => {
+const fetchOrdersByUser = async (userId: string): Promise<Order[]> => {
   const res = await fetch(`${API_BASE_URL}/orders/user/${userId}`);
   if (!res.ok) {
     throw new Error("Failed to fetch orders");
@@ -10,11 +10,11 @@ const fetchOrdersByUser = async (userId: number): Promise<Order[]> => {
   return res.json();
 };
 
-export const useOrdersByUser = (userId: number) => {
+export const useOrdersByUser = (userId: string) => {
   return useQuery<Order[], Error>({
     queryKey: ["orders", userId],
     queryFn: () => fetchOrdersByUser(userId),
-    staleTime: 1000 * 60 * 5,
+    staleTime: Infinity,
     refetchOnWindowFocus: false,
     enabled: !!userId,
   });

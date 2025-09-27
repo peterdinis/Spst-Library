@@ -252,8 +252,8 @@ const AuthorsWrapper: FC = () => {
                   </div>
                 </div>
 
-                <div className="pt-2">
-                  <Link href={`/authors/${author.id}`}>
+                <div className="pt-2 cursor-pointer">
+                  <Link className="cursor-pointer" href={`/authors/${author.id}`}>
                     <Button variant="outline" size="sm" className="w-full">
                       Zobraziť detail o autorovi
                     </Button>

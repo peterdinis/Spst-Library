@@ -14,7 +14,6 @@ import {
   Mail,
   BookOpen,
   Clock,
-  Calendar,
   Award,
   Loader2,
   AlertCircle,
@@ -35,7 +34,7 @@ const ProfileWrapper: FC = () => {
   const [returnDialogOpen, setReturnDialogOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const { data: userOrders, isLoading: userLoading } = useOrdersByUser(
-    Number(user?.id),
+    user?.id as unknown as string
   );
 
   if (!loaded || userLoading) {
@@ -82,19 +81,6 @@ const ProfileWrapper: FC = () => {
                 <div className="flex items-center space-x-2">
                   <Mail className="h-4 w-4" />
                   <span>{user && user.emailAddresses[0]?.emailAddress}</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>
-                    Člen od{" "}
-                    {new Date(user && user.createdAt!).toLocaleDateString(
-                      "sk-SK",
-                      {
-                        year: "numeric",
-                        month: "long",
-                      },
-                    )}
-                  </span>
                 </div>
               </CardDescription>
             </div>
@@ -170,14 +156,11 @@ const ProfileWrapper: FC = () => {
 
                 <CardContent className="pb-4">
                   <div className="space-y-2 text-sm text-muted-foreground">
-                    <div>ID používateľa: {order.userId}</div>
                     <div>
                       Aktualizované:{" "}
                       {new Date(order.updatedAt).toLocaleDateString()}
                     </div>
                   </div>
-
-                  {/* Return button if COMPLETED */}
                   {order.status === "COMPLETED" && (
                     <div className="mt-4">
                       <Button

@@ -16,10 +16,12 @@ import Link from "next/link";
 import { ModeToggle } from "./ModeToggle";
 import { motion, AnimatePresence } from "framer-motion";
 import { useClerk } from "@clerk/nextjs";
+import { useToast } from "@/hooks/shared/useToast";
 
 const Navigation: FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { signOut, user, loaded } = useClerk();
+  const { toast } = useToast();
 
   const navItems = [
     { to: "/", label: "Domov", icon: BookOpen },
@@ -56,7 +58,7 @@ const Navigation: FC = () => {
             ))}
           </div>
 
-          {/* User & Mode Toggle */}
+          {/* User & Mode Toggle (desktop) */}
           <div className="hidden lg:flex items-center space-x-4">
             {user ? (
               <>
@@ -73,7 +75,15 @@ const Navigation: FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => signOut()}
+                  onClick={() => {
+                    signOut();
+                    toast({
+                      title: "Úspešné odhlásenie",
+                      duration: 2000,
+                      className:
+                        "bg-green-800 text-white font-bold text-base",
+                    });
+                  }}
                   className="flex items-center space-x-1 hover:scale-105 transition-transform"
                 >
                   <LogOut className="h-4 w-4" />
@@ -97,7 +107,7 @@ const Navigation: FC = () => {
             <ModeToggle />
           </div>
 
-          {/* Mobile Menu Toggle */}
+          {/* Mobile Menu Button */}
           <div className="flex items-center space-x-2 lg:hidden">
             <Button
               variant="ghost"
@@ -114,7 +124,7 @@ const Navigation: FC = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Navigation */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
@@ -171,6 +181,12 @@ const Navigation: FC = () => {
                         onClick={() => {
                           signOut();
                           setIsOpen(false);
+                          toast({
+                            title: "Úspešné odhlásenie",
+                            duration: 2000,
+                            className:
+                              "bg-green-800 text-white font-bold text-base",
+                          });
                         }}
                         className="w-full flex items-center justify-center space-x-1 hover:scale-105 transition-transform"
                       >
@@ -179,21 +195,21 @@ const Navigation: FC = () => {
                       </Button>
                     </>
                   ) : (
-                    <>
-                      <Link href="/sign-up">
-                        <Button variant="default" size="sm">
+                    <div className="flex flex-col w-full space-y-2">
+                      <Link href="/sign-up" className="w-full">
+                        <Button variant="default" size="sm" className="w-full">
                           Registrácia
                         </Button>
                       </Link>
-                      <Link href="/sign-in">
-                        <Button variant="default" size="sm">
+                      <Link href="/sign-in" className="w-full">
+                        <Button variant="default" size="sm" className="w-full">
                           Prihlásenie
                         </Button>
                       </Link>
                       <div className="mt-6 w-full">
                         <ModeToggle />
                       </div>
-                    </>
+                    </div>
                   )}
                 </div>
               </motion.div>
