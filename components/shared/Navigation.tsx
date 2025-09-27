@@ -21,9 +21,7 @@ import { useToast } from "@/hooks/shared/useToast";
 const Navigation: FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { signOut, user, loaded } = useClerk();
-  const { toast } = useToast()
-
-  console.log(user?.id)
+  const { toast } = useToast();
 
   const navItems = [
     { to: "/", label: "Domov", icon: BookOpen },
@@ -60,7 +58,7 @@ const Navigation: FC = () => {
             ))}
           </div>
 
-          {/* User & Mode Toggle */}
+          {/* User & Mode Toggle (desktop) */}
           <div className="hidden lg:flex items-center space-x-4">
             {user ? (
               <>
@@ -82,8 +80,9 @@ const Navigation: FC = () => {
                     toast({
                       title: "Úspešné odhlásenie",
                       duration: 2000,
-                      className: "bg-green-800 text-white font-bold text-base"
-                    })
+                      className:
+                        "bg-green-800 text-white font-bold text-base",
+                    });
                   }}
                   className="flex items-center space-x-1 hover:scale-105 transition-transform"
                 >
@@ -108,6 +107,7 @@ const Navigation: FC = () => {
             <ModeToggle />
           </div>
 
+          {/* Mobile Menu Button */}
           <div className="flex items-center space-x-2 lg:hidden">
             <Button
               variant="ghost"
@@ -124,6 +124,7 @@ const Navigation: FC = () => {
           </div>
         </div>
 
+        {/* Mobile Navigation */}
         <AnimatePresence>
           {isOpen && (
             <motion.div
@@ -183,8 +184,9 @@ const Navigation: FC = () => {
                           toast({
                             title: "Úspešné odhlásenie",
                             duration: 2000,
-                            className: "bg-green-800 text-white font-bold text-base"
-                          })
+                            className:
+                              "bg-green-800 text-white font-bold text-base",
+                          });
                         }}
                         className="w-full flex items-center justify-center space-x-1 hover:scale-105 transition-transform"
                       >
@@ -193,21 +195,21 @@ const Navigation: FC = () => {
                       </Button>
                     </>
                   ) : (
-                    <>
-                      <Link href="/sign-up">
-                        <Button variant="default" size="sm">
+                    <div className="flex flex-col w-full space-y-2">
+                      <Link href="/sign-up" className="w-full">
+                        <Button variant="default" size="sm" className="w-full">
                           Registrácia
                         </Button>
                       </Link>
-                      <Link href="/sign-in">
-                        <Button variant="default" size="sm">
+                      <Link href="/sign-in" className="w-full">
+                        <Button variant="default" size="sm" className="w-full">
                           Prihlásenie
                         </Button>
                       </Link>
                       <div className="mt-6 w-full">
                         <ModeToggle />
                       </div>
-                    </>
+                    </div>
                   )}
                 </div>
               </motion.div>
