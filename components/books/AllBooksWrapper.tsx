@@ -38,14 +38,16 @@ const AllBooksWrapper: FC = () => {
   const [sortBy, setSortBy] = useState("title");
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [extraFilter, setExtraFilter] = useState("none")
+  const [extraFilter, setExtraFilter] = useState("none");
 
   const debouncedSearch = useDebounce(searchTerm, 400);
 
+  // API call s podporou categoryId
   const { data, isLoading, isError } = useBooks({
     search: debouncedSearch,
     page: currentPage,
     limit: ITEMS_PER_PAGE,
+    categoryId: categoryFilter !== "all" ? Number(categoryFilter) : undefined,
   });
 
   const { data: recentlyAddedBooks } = useRecentlyAddedBooks(7);
@@ -58,6 +60,7 @@ const AllBooksWrapper: FC = () => {
   const totalBooks = data?.total ?? 0;
   const totalPages = data?.lastPage ?? 1;
 
+  // Filtrovanie iba podľa dostupnosti + extra filter / zoradenie
   const filteredBooks = useMemo(() => {
     let result: Book[] = [];
 
@@ -70,10 +73,7 @@ const AllBooksWrapper: FC = () => {
       (availabilityFilter === "available" && book.isAvailable) ||
       (availabilityFilter === "borrowed" && !book.isAvailable);
 
-    const matchesCategory = (book: Book) =>
-      categoryFilter === "all" || book.category?.id === Number(categoryFilter);
-
-    result = result.filter(matchesAvailability).filter(matchesCategory);
+    result = result.filter(matchesAvailability);
 
     result.sort((a, b) => {
       if (sortBy === "title") return a.name.localeCompare(b.name);
@@ -87,7 +87,6 @@ const AllBooksWrapper: FC = () => {
   }, [
     books,
     availabilityFilter,
-    categoryFilter,
     sortBy,
     extraFilter,
     recentlyAddedBooks,
