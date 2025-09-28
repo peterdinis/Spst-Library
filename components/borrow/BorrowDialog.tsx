@@ -24,6 +24,7 @@ import { cn } from "@/lib/utils";
 import { useUser } from "@clerk/nextjs";
 import { useCreateOrder } from "@/hooks/orders/useCreateOrder";
 import { useToast } from "@/hooks/shared/useToast";
+import { ApiError, isApiError } from "@/types/errorTypes";
 
 interface BorrowDialogProps {
   open: boolean;
@@ -111,17 +112,18 @@ export const BorrowDialog = ({
         fromDate,
         toDate,
       });
-
-      // Reset form
+      
       setName("");
       setLastName("");
       setFromDate(undefined);
       setToDate(undefined);
       onOpenChange(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = isApiError(error) ? error.message : "Skúste to prosím neskôr.";
+
       toast({
         title: "Chyba pri požičaní knihy",
-        description: error?.message || "Skúste to prosím neskôr.",
+        description: errorMessage || "Skúste to prosím neskôr.",
         variant: "destructive",
       });
     } finally {

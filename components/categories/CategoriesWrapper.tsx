@@ -38,7 +38,7 @@ const CategoriesWrapper: FC = () => {
   );
   const totalAvailable = categories.reduce(
     (sum: number, cat: Category) =>
-      sum + cat.books.filter((book: any) => book.available !== false).length,
+      sum + cat.books.filter((book) => book.isAvailable !== false).length,
     0,
   );
 
