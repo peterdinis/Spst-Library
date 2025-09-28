@@ -12,7 +12,7 @@ const fetchOrdersByUser = async (userId: string): Promise<Order[]> => {
 
 export const useOrdersByUser = (userId: string) => {
   return useQuery<Order[], Error>({
-    queryKey: ["orders", userId],
+    queryKey: ["userOrders", userId],
     queryFn: () => fetchOrdersByUser(userId),
     staleTime: Infinity,
     refetchOnWindowFocus: false,

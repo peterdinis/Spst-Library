@@ -1,11 +1,6 @@
 import { API_BASE_URL } from "@/constants/applicationConstants";
+import { CreateRatingDto } from "@/types/ratingTypes";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
-export interface CreateRatingDto {
-  bookId: number;
-  value: number;
-  comment?: string;
-}
 
 export const useAddRating = () => {
   const queryClient = useQueryClient();
