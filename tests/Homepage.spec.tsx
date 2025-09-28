@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Hero Component', () => {
   test.beforeEach(async ({ page }) => {
     // Naviguj na stránku kde sa Hero komponenta nachádza
-    await page.goto('/'); // baseURL je nastavená v playwright.config.ts
+    await page.goto('http://localhost:3000/');
     
     // Počkaj na načítanie stránky
     await page.waitForLoadState('networkidle');
