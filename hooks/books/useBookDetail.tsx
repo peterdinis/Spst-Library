@@ -20,6 +20,6 @@ export function useBook(id: number) {
     queryKey: ["bookDetail", id],
     queryFn: () => fetchBook(id),
     enabled: !!id && id > 0,
-    staleTime: 60_000, 
+    staleTime: 60_000,
   });
 }

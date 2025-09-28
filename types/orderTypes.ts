@@ -26,7 +26,6 @@ export enum OrderStatus {
   CANCELLED = "CANCELLED",
 }
 
-
 export interface CreateOrderItem {
   bookId: number;
   quantity: number;

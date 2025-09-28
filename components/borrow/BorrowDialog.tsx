@@ -112,14 +112,16 @@ export const BorrowDialog = ({
         fromDate,
         toDate,
       });
-      
+
       setName("");
       setLastName("");
       setFromDate(undefined);
       setToDate(undefined);
       onOpenChange(false);
     } catch (error: unknown) {
-      const errorMessage = isApiError(error) ? error.message : "Skúste to prosím neskôr.";
+      const errorMessage = isApiError(error)
+        ? error.message
+        : "Skúste to prosím neskôr.";
 
       toast({
         title: "Chyba pri požičaní knihy",
