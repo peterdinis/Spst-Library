@@ -80,8 +80,7 @@ const Navigation: FC = () => {
                     toast({
                       title: "Úspešné odhlásenie",
                       duration: 2000,
-                      className:
-                        "bg-green-800 text-white font-bold text-base",
+                      className: "bg-green-800 text-white font-bold text-base",
                     });
                   }}
                   className="flex items-center space-x-1 hover:scale-105 transition-transform"

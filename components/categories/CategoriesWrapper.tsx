@@ -38,10 +38,7 @@ const CategoriesWrapper: FC = () => {
   );
   const totalAvailable = categories.reduce(
     (sum: number, cat: Category) =>
-      sum +
-      cat.books.filter(
-        (book: any) => book.available !== false,
-      ).length,
+      sum + cat.books.filter((book: any) => book.available !== false).length,
     0,
   );
 
@@ -193,9 +190,7 @@ const CategoriesWrapper: FC = () => {
                       <span className="text-muted-foreground">
                         {category.books.length} celkom
                       </span>
-                      <Link
-                        href={`/categories/${category.id}`}
-                      >
+                      <Link href={`/categories/${category.id}`}>
                         <Button variant="outline" size="sm">
                           Prezrieť
                         </Button>

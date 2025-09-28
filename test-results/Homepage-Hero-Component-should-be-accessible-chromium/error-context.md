@@ -1,0 +1,81 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e6] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+      - img [ref=e8] [cursor=pointer]
+    - generic [ref=e11] [cursor=pointer]:
+      - button "Open issues overlay" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13] [cursor=pointer]:
+          - generic [ref=e14] [cursor=pointer]: "0"
+          - generic [ref=e15] [cursor=pointer]: "1"
+        - generic [ref=e16] [cursor=pointer]: Issue
+      - button "Collapse issues badge" [ref=e17] [cursor=pointer]:
+        - img [ref=e18] [cursor=pointer]
+  - alert [ref=e20]
+  - navigation [ref=e21]:
+    - generic [ref=e23]:
+      - link "SPŠT Knižnica" [ref=e24] [cursor=pointer]:
+        - /url: /
+        - img [ref=e25] [cursor=pointer]
+        - generic [ref=e27] [cursor=pointer]: SPŠT Knižnica
+      - generic [ref=e28]:
+        - link "Domov" [ref=e29] [cursor=pointer]:
+          - /url: /
+          - img [ref=e30] [cursor=pointer]
+          - generic [ref=e32] [cursor=pointer]: Domov
+        - link "Knihy" [ref=e33] [cursor=pointer]:
+          - /url: /books
+          - img [ref=e34] [cursor=pointer]
+          - generic [ref=e36] [cursor=pointer]: Knihy
+        - link "Kategórie" [ref=e37] [cursor=pointer]:
+          - /url: /categories
+          - img [ref=e38] [cursor=pointer]
+          - generic [ref=e43] [cursor=pointer]: Kategórie
+        - link "Spisovatelia" [ref=e44] [cursor=pointer]:
+          - /url: /authors
+          - img [ref=e45] [cursor=pointer]
+          - generic [ref=e48] [cursor=pointer]: Spisovatelia
+      - generic [ref=e49]:
+        - link "Registrácia" [ref=e50] [cursor=pointer]:
+          - /url: /sign-up
+          - button "Registrácia" [ref=e51] [cursor=pointer]
+        - link "Prihlásenie" [ref=e52] [cursor=pointer]:
+          - /url: /sign-in
+          - button "Prihlásenie" [ref=e53] [cursor=pointer]
+        - button "Toggle theme" [ref=e54] [cursor=pointer]:
+          - img
+          - generic [ref=e55] [cursor=pointer]: Toggle theme
+  - generic [ref=e57]:
+    - generic [ref=e58]:
+      - heading "SPŠT Knižnica" [level=1] [ref=e59]
+      - heading "Knihy sú jedinečne prenosné kúzlo – Stephen King" [level=2] [ref=e60]:
+        - generic [ref=e61]: Knihy sú jedinečne prenosné kúzlo – Stephen King
+      - generic [ref=e62]:
+        - link "Zobraziť všetky knihy" [ref=e63] [cursor=pointer]:
+          - /url: /books
+          - button "Zobraziť všetky knihy" [ref=e64] [cursor=pointer]
+        - link "Školská stránka" [ref=e65] [cursor=pointer]:
+          - /url: https://www.spsbj.sk/
+          - button "Školská stránka" [ref=e66] [cursor=pointer]
+    - img "Scholl homepage" [ref=e69]
+  - generic "group of cards" [ref=e73]:
+    - generic "card 1" [ref=e74]:
+      - img [ref=e75]
+      - heading "Doma Objednáš" [level=4] [ref=e78]
+    - generic "card 2" [ref=e79]:
+      - img [ref=e80]
+      - heading "V škole vyzdvihneš" [level=4] [ref=e84]
+    - generic "card 3" [ref=e85]:
+      - img "eyes" [ref=e86]: 👀
+      - heading "Ľahké že?" [level=4] [ref=e87]
+  - contentinfo [ref=e88]:
+    - link "© SPŠT Knižnica 2025" [ref=e93] [cursor=pointer]:
+      - /url: https://www.spsbj.sk/
+      - generic [ref=e94] [cursor=pointer]: © SPŠT Knižnica 2025
+  - generic [ref=e95]:
+    - img [ref=e97]
+    - button "Open Tanstack query devtools" [ref=e145] [cursor=pointer]:
+      - img [ref=e146] [cursor=pointer]
+```

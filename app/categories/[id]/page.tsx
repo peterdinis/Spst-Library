@@ -2,7 +2,7 @@ import CategoryInfo from "@/components/categories/CategoryInfo";
 import { NextPage } from "next";
 
 const CategoryDetailPage: NextPage = () => {
-    return <CategoryInfo />
-}
+  return <CategoryInfo />;
+};
 
-export default CategoryDetailPage
+export default CategoryDetailPage;

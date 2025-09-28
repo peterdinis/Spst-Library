@@ -1,0 +1,72 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8] [cursor=pointer]
+  - alert [ref=e12]
+  - navigation [ref=e13]:
+    - generic [ref=e15]:
+      - link "SPŠT Knižnica" [ref=e16] [cursor=pointer]:
+        - /url: /
+        - img [ref=e17] [cursor=pointer]
+        - generic [ref=e20] [cursor=pointer]: SPŠT Knižnica
+      - generic [ref=e21]:
+        - link "Domov" [ref=e22] [cursor=pointer]:
+          - /url: /
+          - img [ref=e23] [cursor=pointer]
+          - generic [ref=e26] [cursor=pointer]: Domov
+        - link "Knihy" [ref=e27] [cursor=pointer]:
+          - /url: /books
+          - img [ref=e28] [cursor=pointer]
+          - generic [ref=e30] [cursor=pointer]: Knihy
+        - link "Kategórie" [ref=e31] [cursor=pointer]:
+          - /url: /categories
+          - img [ref=e32] [cursor=pointer]
+          - generic [ref=e37] [cursor=pointer]: Kategórie
+        - link "Spisovatelia" [ref=e38] [cursor=pointer]:
+          - /url: /authors
+          - img [ref=e39] [cursor=pointer]
+          - generic [ref=e42] [cursor=pointer]: Spisovatelia
+      - generic [ref=e43]:
+        - link "Registrácia" [ref=e44] [cursor=pointer]:
+          - /url: /sign-up
+          - button "Registrácia" [ref=e45] [cursor=pointer]
+        - link "Prihlásenie" [ref=e46] [cursor=pointer]:
+          - /url: /sign-in
+          - button "Prihlásenie" [ref=e47] [cursor=pointer]
+        - button "Toggle theme" [ref=e48] [cursor=pointer]:
+          - img
+          - generic [ref=e49] [cursor=pointer]: Toggle theme
+  - generic [ref=e51]:
+    - generic [ref=e52]:
+      - heading "SPŠT Knižnica" [level=1] [ref=e53]
+      - heading "Knihy sú jedinečne prenosné kúzlo – Stephen King" [level=2] [ref=e54]:
+        - generic [ref=e55]: Knihy sú jedinečne prenosné kúzlo – Stephen King
+      - generic [ref=e56]:
+        - link "Zobraziť všetky knihy" [ref=e57] [cursor=pointer]:
+          - /url: /books
+          - button "Zobraziť všetky knihy" [ref=e58] [cursor=pointer]
+        - link "Školská stránka" [ref=e59] [cursor=pointer]:
+          - /url: https://www.spsbj.sk/
+          - button "Školská stránka" [ref=e60] [cursor=pointer]
+    - img "Scholl homepage" [ref=e63]
+  - generic "group of cards" [ref=e67]:
+    - generic "card 1" [ref=e68]:
+      - img [ref=e69]
+      - heading "Doma Objednáš" [level=4] [ref=e72]
+    - generic "card 2" [ref=e73]:
+      - img [ref=e74]
+      - heading "V škole vyzdvihneš" [level=4] [ref=e82]
+    - generic "card 3" [ref=e83]:
+      - img "eyes" [ref=e84]: 👀
+      - heading "Ľahké že?" [level=4] [ref=e85]
+  - contentinfo [ref=e86]:
+    - link "© SPŠT Knižnica 2025" [ref=e91] [cursor=pointer]:
+      - /url: https://www.spsbj.sk/
+      - generic [ref=e92] [cursor=pointer]: © SPŠT Knižnica 2025
+  - generic [ref=e93]:
+    - img [ref=e95]
+    - button "Open Tanstack query devtools" [ref=e144] [cursor=pointer]:
+      - img [ref=e145] [cursor=pointer]
+```
