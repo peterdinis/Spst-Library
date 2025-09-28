@@ -1,35 +1,6 @@
 import { API_BASE_URL } from "@/constants/applicationConstants";
+import { CreateOrderDto, Order } from "@/types/orderTypes";
 import { useMutation } from "@tanstack/react-query";
-
-export interface CreateOrderItem {
-  bookId: number;
-  quantity: number;
-}
-
-export interface CreateOrderDto {
-  userId: string;
-  items: CreateOrderItem[];
-}
-
-export interface OrderItem {
-  id: number;
-  bookId: number;
-  quantity: number;
-  book: {
-    id: number;
-    name: string;
-    isAvailable: boolean;
-  };
-}
-
-export interface Order {
-  id: number;
-  userId: number;
-  status: "PENDING" | "COMPLETED" | "CANCELLED" | "RETURNED";
-  items: OrderItem[];
-  createdAt: string;
-  updatedAt: string;
-}
 
 export function useCreateOrder() {
   return useMutation({
