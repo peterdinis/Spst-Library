@@ -17,9 +17,9 @@ async function fetchBook(id: number): Promise<Book> {
 
 export function useBook(id: number) {
   return useQuery({
-    queryKey: ["book", id],
+    queryKey: ["bookDetail", id],
     queryFn: () => fetchBook(id),
-    enabled: !!id && id > 0, // fetch sa spustí iba ak id existuje a je validné
-    staleTime: 60_000, // rovnaké ako cache TTL na serveri
+    enabled: !!id && id > 0,
+    staleTime: 60_000, 
   });
 }

@@ -15,6 +15,7 @@ export function useCreateAuthorSuggestion() {
   const queryClient = useQueryClient();
 
   return useMutation({
+    mutationKey: ["authorSuggestion"],
     mutationFn: async (payload: CreateAuthorSuggestionInput) => {
       const res = await fetch(`${API_BASE_URL}/author-suggestions`, {
         method: "POST",

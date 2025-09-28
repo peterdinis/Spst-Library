@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "@/constants/applicationConstants";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 export interface CreateOrderItem {
   bookId: number;
@@ -32,8 +32,6 @@ export interface Order {
 }
 
 export function useCreateOrder() {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationKey: ["createOrder"],
     mutationFn: async (order: CreateOrderDto): Promise<Order> => {
@@ -51,11 +49,6 @@ export function useCreateOrder() {
       }
 
       return res.json();
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({
-        queryKey: ["orders"],
-      });
     },
   });
 }
