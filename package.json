@@ -7,7 +7,9 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "test": "pnpm exec playwright test",
+    "test-ui": "pnpm exec playwright test --ui"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.33.0",
@@ -44,6 +46,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.2.0",
+    "@playwright/test": "^1.55.1",
     "@tailwindcss/postcss": "^4.1.13",
     "@types/node": "^20.19.17",
     "@types/react": "^19.1.14",
