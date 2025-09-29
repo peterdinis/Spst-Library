@@ -1,30 +1,34 @@
-# 📚 Školská Knižnica – SPŠT Bardejov
+# 📚 School Library – SPŠT Bardejov
 
-Tento projekt je webová aplikácia pre správu školskej knižnice na **Strednej priemyselnej škole technickej v Bardejove**, postavená na [T3 Stacku](https://create.t3.gg/).
-
----
-
-## 🧭 Funkcionalita
-
-- ✅ Prihlásenie žiakov a učiteľov
-- 📖 Vyhľadávanie a prezeranie kníh
-- 📥 Požičiavanie a 📤 vracanie kníh
-- 🛠️ Admin rozhranie pre:
-  - Správu kníh a dostupnosti
-  - Správu používateľov
-  - Kontrolu výpožičiek
+This project is a **web application for managing the school library** at the **Secondary Industrial Technical School in Bardejov**. It is designed to simplify library operations, enhance user experience for students and teachers, and provide administrators with effective management tools.
 
 ---
 
-## ⚙️ Použité technológie
+## 🧭 Features
 
-Projekt využíva moderný **T3 Stack**:
+The application offers a wide range of functionalities tailored for both regular users and administrators:
 
-- [Next.js](https://nextjs.org) – React framework
-- [NextAuth.js](https://next-auth.js.org) – Autentifikácia
-- [Prisma](https://prisma.io) – ORM pre databázu
-- [Drizzle](https://orm.drizzle.team) – Alternatívne ORM
-- [Tailwind CSS](https://tailwindcss.com) – Štýlovanie pomocou utility tried
-- [tRPC](https://trpc.io) – Typovo bezpečné API
+### For Students and Teachers:
+- ✅ **User Authentication** – Secure login system for students and teachers.
+- 📖 **Book Browsing and Searching** – Easily search for books by title, author, or category, and view detailed information about each book.
+- 📥 **Borrowing Books** – Request books and keep track of borrowed items.
+- 📤 **Returning Books** – Mark books as returned and update availability in real time.
+
+### For Administrators:
+- 🛠️ **Book Management** – Add new books, update existing information, and manage the number of available copies.
+- 🧑‍💻 **User Management** – View all registered users, manage their roles, and control access permissions.
+- 📊 **Loan Monitoring** – Track which books are currently borrowed, overdue items, and history of loans.
 
 ---
+
+## ⚙️ Technologies Used
+
+The project uses modern web development technologies to ensure a robust, scalable, and user-friendly system:
+
+- **Next.js** – A React framework for building server-rendered and statically generated web applications.
+- **Clerk** – Handles secure authentication and user session management.
+- **Tailwind CSS** – A utility-first CSS framework for rapid and responsive styling.
+
+---
+
+This application aims to **streamline library operations**, improve accessibility for students and teachers, and provide administrators with clear insights into library usage and inventory.
