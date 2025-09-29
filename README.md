@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📚 School Library – SPŠT Bardejov
 
-## Getting Started
+This project is a **web application for managing the school library** at the **Secondary Industrial Technical School in Bardejov**. It is designed to simplify library operations, enhance user experience for students and teachers, and provide administrators with effective management tools.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🧭 Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The application offers a wide range of functionalities tailored for both regular users and administrators:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### For Students and Teachers:
+- ✅ **User Authentication** – Secure login system for students and teachers.
+- 📖 **Book Browsing and Searching** – Easily search for books by title, author, or category, and view detailed information about each book.
+- 📥 **Borrowing Books** – Request books and keep track of borrowed items.
+- 📤 **Returning Books** – Mark books as returned and update availability in real time.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### For Administrators:
+- 🛠️ **Book Management** – Add new books, update existing information, and manage the number of available copies.
+- 🧑‍💻 **User Management** – View all registered users, manage their roles, and control access permissions.
+- 📊 **Loan Monitoring** – Track which books are currently borrowed, overdue items, and history of loans.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## ⚙️ Technologies Used
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The project uses modern web development technologies to ensure a robust, scalable, and user-friendly system:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Next.js** – A React framework for building server-rendered and statically generated web applications.
+- **Clerk** – Handles secure authentication and user session management.
+- **Tailwind CSS** – A utility-first CSS framework for rapid and responsive styling.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This application aims to **streamline library operations**, improve accessibility for students and teachers, and provide administrators with clear insights into library usage and inventory.

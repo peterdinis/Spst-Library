@@ -9,3 +9,9 @@ export interface Rating {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface CreateRatingDto {
+  bookId: number;
+  value: number;
+  comment?: string;
+}

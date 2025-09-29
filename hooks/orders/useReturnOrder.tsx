@@ -1,16 +1,15 @@
 import { API_BASE_URL } from "@/constants/applicationConstants";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 interface ReturnOrderResponse {
   id: number;
   status: string;
-  items: any[];
+  items: unknown[];
 }
 
 export const useReturnOrder = () => {
-  const queryClient = useQueryClient();
-
   return useMutation<ReturnOrderResponse, Error, number>({
+    mutationKey: ["returnOrder"],
     mutationFn: async (orderId: number) => {
       const res = await fetch(`${API_BASE_URL}/orders/${orderId}/return`, {
         method: "PATCH",
@@ -20,11 +19,6 @@ export const useReturnOrder = () => {
         throw new Error(err.message || "Failed to return order");
       }
       return res.json();
-    },
-    onSuccess: (_, orderId) => {
-      queryClient.invalidateQueries({
-        queryKey: ["orders"],
-      });
     },
   });
 };

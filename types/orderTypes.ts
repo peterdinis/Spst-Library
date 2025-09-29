@@ -25,3 +25,13 @@ export enum OrderStatus {
   COMPLETED = "COMPLETED",
   CANCELLED = "CANCELLED",
 }
+
+export interface CreateOrderItem {
+  bookId: number;
+  quantity: number;
+}
+
+export interface CreateOrderDto {
+  userId: string;
+  items: CreateOrderItem[];
+}
