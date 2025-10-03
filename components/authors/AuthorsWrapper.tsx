@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, FC } from "react";
+import { useState, useMemo, FC, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,16 @@ import { FormValues, schema } from "./authorSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDebounce } from "@/hooks/shared/useDebounce";
 import { useToast } from "@/hooks/shared/useToast";
+
+// Client-only wrapper to prevent SSR/client hydration mismatch
+const ClientOnly: FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+  return <>{children}</>;
+};
 
 interface AuthorWithCounts extends Author {
   bookCount: number;
@@ -55,36 +65,40 @@ const AuthorsWrapper: FC = () => {
     resolver: zodResolver(schema),
   });
 
-  const authors: Author[] = data?.data || [];
+  const authors: any[] = data?.data || [];
 
-  const authorsWithCounts: AuthorWithCounts[] = useMemo(() => {
-    return authors.map((author) => ({
-      ...author,
-      bookCount: author.books.length,
-      availableBooks: author.books.filter((b) => b.isAvailable).length,
-      genres: author.litPeriod ? [author.litPeriod] : [],
-      popularWorks: author.books.slice(0, 3).map((b) => b.name),
-      awards: [],
-    }));
-  }, [authors]);
+  const authorsWithCounts: AuthorWithCounts[] = useMemo(
+    () =>
+      authors.map((author) => ({
+        ...author,
+        bookCount: author.books.length,
+        availableBooks: author.books.filter((b: { isAvailable: boolean; }) => b.isAvailable).length,
+        genres: author.litPeriod ? [author.litPeriod] : [],
+        popularWorks: author.books.slice(0, 3).map((b: {name: string}) => b.name),
+        awards: [],
+      })),
+    [authors]
+  );
 
-  const filteredAuthors = useMemo(() => {
-    return authorsWithCounts.filter(
-      (author) =>
-        author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        author.genres.some((genre) =>
-          genre.toLowerCase().includes(searchTerm.toLowerCase()),
-        ),
-    );
-  }, [authorsWithCounts, searchTerm]);
+  const filteredAuthors = useMemo(
+    () =>
+      authorsWithCounts.filter(
+        (author) =>
+          author.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          author.genres.some((genre) =>
+            genre.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+      ),
+    [authorsWithCounts, searchTerm]
+  );
 
   const totalBooks = authorsWithCounts.reduce(
     (sum, author) => sum + author.bookCount,
-    0,
+    0
   );
   const totalAvailable = authorsWithCounts.reduce(
     (sum, author) => sum + author.availableBooks,
-    0,
+    0
   );
 
   const onSubmit = (values: FormValues) => {
@@ -168,7 +182,7 @@ const AuthorsWrapper: FC = () => {
                 <div className="text-2xl font-bold text-foreground">
                   {
                     Array.from(
-                      new Set(authorsWithCounts.flatMap((a) => a.genres)),
+                      new Set(authorsWithCounts.flatMap((a) => a.genres))
                     ).length
                   }
                 </div>
@@ -190,185 +204,190 @@ const AuthorsWrapper: FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredAuthors.map((author, index) => (
-            <Card
-              key={author.id}
-              className="hover-lift shadow-card group animate-scale-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <CardHeader className="pb-4">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <CardTitle className="text-lg font-semibold group-hover:text-primary transition-smooth">
-                      {author.name}
-                    </CardTitle>
-                    <div className="text-sm text-muted-foreground mt-1">
-                      Narodený {author.bornDate} •{" "}
-                      {author.deathDate ? `Zomrel ${author.deathDate}` : "Žije"}
+        <ClientOnly>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredAuthors.map((author, index) => (
+              <Card
+                key={author.id}
+                className="hover-lift shadow-card group animate-scale-in"
+              >
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <CardTitle className="text-lg font-semibold group-hover:text-primary transition-smooth">
+                        {author.name}
+                      </CardTitle>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        Narodený {author.bornDate} •{" "}
+                        {author.deathDate
+                          ? `Zomrel ${author.deathDate}`
+                          : "Žije"}
+                      </div>
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className="bg-primary/10 text-primary"
+                    >
+                      {author.availableBooks}/{author.bookCount} dostupných
+                    </Badge>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-muted-foreground line-clamp-3">
+                    {author.bio}
+                  </p>
+
+                  <div className="space-y-2">
+                    <div className="text-sm font-medium text-foreground">
+                      Žánre:
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {author.genres.map((genre, idx) => (
+                        <Badge key={idx} variant="secondary" className="text-xs">
+                          {genre}
+                        </Badge>
+                      ))}
                     </div>
                   </div>
-                  <Badge
-                    variant="outline"
-                    className="bg-primary/10 text-primary"
-                  >
-                    {author.availableBooks}/{author.bookCount} dostupných
-                  </Badge>
-                </div>
-              </CardHeader>
 
-              <CardContent className="space-y-4">
-                <p className="text-sm text-muted-foreground line-clamp-3">
-                  {author.bio}
-                </p>
-
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-foreground">
-                    Žánre:
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {author.genres.map((genre, idx) => (
-                      <Badge key={idx} variant="secondary" className="text-xs">
-                        {genre}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-foreground">
-                    Populárne diela:
-                  </div>
-                  <div className="space-y-1">
-                    {author.popularWorks.map((work, idx) => (
-                      <div
-                        key={idx}
-                        className="text-xs text-muted-foreground flex items-center"
-                      >
-                        <BookOpen className="h-3 w-3 mr-1 flex-shrink-0" />
-                        <span className="line-clamp-1">{work}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="pt-2 cursor-pointer">
-                  <Link
-                    className="cursor-pointer"
-                    href={`/authors/${author.id}`}
-                  >
-                    <Button variant="outline" size="sm" className="w-full">
-                      Zobraziť detail o autorovi
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {filteredAuthors.length === 0 && (
-          <div className="text-center py-12 animate-fade-in">
-            <p className="text-muted-foreground text-lg">
-              Nenašli sa žiadni autori zodpovedajúci vášmu hľadaniu.
-            </p>
-            <p className="text-muted-foreground">Skúste iný hľadaný výraz.</p>
-          </div>
-        )}
-
-        <div className="mt-12 text-center">
-          <div className="bg-gradient-secondary p-8 rounded-lg text-black dark:text-white">
-            <h2 className="text-2xl font-bold mb-2">Navrhnite nového autora</h2>
-            <p className="mb-4 opacity-90">
-              Nevidíte svojho obľúbeného autora? Pošlite nám návrh.
-            </p>
-
-            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="bg-white dark:bg-stone-600 hover:bg-gray-50"
-                >
-                  Odoslať návrh
-                </Button>
-              </DialogTrigger>
-
-              <DialogContent className="sm:max-w-lg">
-                <DialogHeader>
-                  <DialogTitle>Odoslať návrh autora</DialogTitle>
-                </DialogHeader>
-
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  <div>
-                    <Input placeholder="Meno autora*" {...register("name")} />
-                    {errors.name && (
-                      <p className="text-sm text-red-500 mt-1">
-                        {errors.name.message}
-                      </p>
-                    )}
+                  <div className="space-y-2">
+                    <div className="text-sm font-medium text-foreground">
+                      Populárne diela:
+                    </div>
+                    <div className="space-y-1">
+                      {author.popularWorks.map((work, idx) => (
+                        <div
+                          key={idx}
+                          className="text-xs text-muted-foreground flex items-center"
+                        >
+                          <BookOpen className="h-3 w-3 mr-1 flex-shrink-0" />
+                          <span className="line-clamp-1">{work}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
-                  <div>
-                    <Input
-                      placeholder="Literárne obdobie*"
-                      {...register("litPeriod")}
-                    />
-                    {errors.litPeriod && (
-                      <p className="text-sm text-red-500 mt-1">
-                        {errors.litPeriod.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Input type="date" {...register("bornDate")} />
-                    {errors.bornDate && (
-                      <p className="text-sm text-red-500 mt-1">
-                        {errors.bornDate.message}
-                      </p>
-                    )}
-                  </div>
-
-                  <Input
-                    type="date"
-                    placeholder="Dátum úmrtia"
-                    {...register("deathDate")}
-                  />
-                  <Input
-                    placeholder="URL obrázku"
-                    {...register("authorImage")}
-                  />
-                  <Textarea
-                    placeholder="Stručný životopis"
-                    {...register("bio")}
-                  />
-                  <Input
-                    placeholder="Vaše meno (ak nie ste prihlásený)"
-                    {...register("suggestedByName")}
-                  />
-
-                  <DialogFooter>
-                    <Button
-                      type="submit"
-                      disabled={isPending}
-                      className="w-full"
+                  <div className="pt-2 cursor-pointer">
+                    <Link
+                      className="cursor-pointer"
+                      href={`/authors/${author.id}`}
                     >
-                      {isPending ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Odosielam...
-                        </>
-                      ) : (
-                        "Odoslať návrh"
-                      )}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </DialogContent>
-            </Dialog>
+                      <Button variant="outline" size="sm" className="w-full">
+                        Zobraziť detail o autorovi
+                      </Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </div>
+
+          {filteredAuthors.length === 0 && (
+            <div className="text-center py-12 animate-fade-in">
+              <p className="text-muted-foreground text-lg">
+                Nenašli sa žiadni autori zodpovedajúci vášmu hľadaniu.
+              </p>
+              <p className="text-muted-foreground">Skúste iný hľadaný výraz.</p>
+            </div>
+          )}
+        </ClientOnly>
+
+        <ClientOnly>
+          <div className="mt-12 text-center">
+            <div className="bg-gradient-secondary p-8 rounded-lg text-black dark:text-white">
+              <h2 className="text-2xl font-bold mb-2">Navrhnite nového autora</h2>
+              <p className="mb-4 opacity-90">
+                Nevidíte svojho obľúbeného autora? Pošlite nám návrh.
+              </p>
+
+              <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="bg-white dark:bg-stone-600 hover:bg-gray-50"
+                  >
+                    Odoslať návrh
+                  </Button>
+                </DialogTrigger>
+
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Odoslať návrh autora</DialogTitle>
+                  </DialogHeader>
+
+                  <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <div>
+                      <Input placeholder="Meno autora*" {...register("name")} />
+                      {errors.name && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {errors.name.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Input
+                        placeholder="Literárne obdobie*"
+                        {...register("litPeriod")}
+                      />
+                      {errors.litPeriod && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {errors.litPeriod.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <Input type="date" {...register("bornDate")} />
+                      {errors.bornDate && (
+                        <p className="text-sm text-red-500 mt-1">
+                          {errors.bornDate.message}
+                        </p>
+                      )}
+                    </div>
+
+                    <Input
+                      type="date"
+                      placeholder="Dátum úmrtia"
+                      {...register("deathDate")}
+                    />
+                    <Input
+                      placeholder="URL obrázku"
+                      {...register("authorImage")}
+                    />
+                    <Textarea
+                      placeholder="Stručný životopis"
+                      {...register("bio")}
+                    />
+                    <Input
+                      placeholder="Vaše meno (ak nie ste prihlásený)"
+                      {...register("suggestedByName")}
+                    />
+
+                    <DialogFooter>
+                      <Button
+                        type="submit"
+                        disabled={isPending}
+                        className="w-full"
+                      >
+                        {isPending ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Odosielam...
+                          </>
+                        ) : (
+                          "Odoslať návrh"
+                        )}
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+        </ClientOnly>
       </div>
     </div>
   );
