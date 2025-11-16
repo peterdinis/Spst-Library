@@ -11,34 +11,48 @@ namespace BooksService.Controllers
     public class BooksController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<BooksController> _logger;
 
-        public BooksController(ApplicationDbContext context)
+        public BooksController(ApplicationDbContext context, ILogger<BooksController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BookDto>>> GetBooks()
         {
+            _logger.LogInformation("Getting all books");
+            
             var books = await _context.Books
                 .Select(b => MapToDto(b))
                 .ToListAsync();
 
+            _logger.LogInformation("Retrieved {Count} books", books.Count);
             return Ok(books);
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<BookDto>> GetBook(int id)
         {
-            var book = await _context.Books.FindAsync(id);
-            if (book == null) return NotFound(new { message = "Book not found" });
+            _logger.LogInformation("Getting book with ID {BookId}", id);
 
+            var book = await _context.Books.FindAsync(id);
+            if (book == null)
+            {
+                _logger.LogWarning("Book with ID {BookId} not found", id);
+                return NotFound(new { message = "Book not found" });
+            }
+
+            _logger.LogInformation("Book with ID {BookId} found: {BookTitle}", id, book.Title);
             return Ok(MapToDto(book));
         }
 
         [HttpPost]
         public async Task<ActionResult<BookDto>> CreateBook(CreateBookDto dto)
         {
+            _logger.LogInformation("Creating new book with title: {BookTitle}", dto.Title);
+
             var book = new Book
             {
                 Title = dto.Title,
@@ -59,9 +73,12 @@ namespace BooksService.Controllers
             {
                 _context.Books.Add(book);
                 await _context.SaveChangesAsync();
+                
+                _logger.LogInformation("Book created successfully with ID {BookId}: {BookTitle}", book.Id, book.Title);
             }
             catch (DbUpdateException ex)
             {
+                _logger.LogError(ex, "Database error while creating book with title: {BookTitle}", dto.Title);
                 return StatusCode(500, new { message = "Database error", details = ex.Message });
             }
 
@@ -71,8 +88,16 @@ namespace BooksService.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBook(int id, UpdateBookDto dto)
         {
+            _logger.LogInformation("Updating book with ID {BookId}", id);
+
             var book = await _context.Books.FindAsync(id);
-            if (book == null) return NotFound(new { message = "Book not found" });
+            if (book == null)
+            {
+                _logger.LogWarning("Book with ID {BookId} not found for update", id);
+                return NotFound(new { message = "Book not found" });
+            }
+
+            _logger.LogInformation("Updating book from: {OldTitle} to: {NewTitle}", book.Title, dto.Title);
 
             book.Title = dto.Title;
             book.Author = dto.Author;
@@ -89,13 +114,16 @@ namespace BooksService.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Book with ID {BookId} updated successfully", id);
             }
             catch (DbUpdateConcurrencyException)
             {
+                _logger.LogWarning("Concurrency conflict while updating book with ID {BookId}", id);
                 return Conflict(new { message = "Book was updated by another process" });
             }
             catch (DbUpdateException ex)
             {
+                _logger.LogError(ex, "Database error while updating book with ID {BookId}", id);
                 return StatusCode(500, new { message = "Database error", details = ex.Message });
             }
 
@@ -105,17 +133,28 @@ namespace BooksService.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBook(int id)
         {
+            _logger.LogInformation("Deleting book with ID {BookId}", id);
+
             var book = await _context.Books.FindAsync(id);
-            if (book == null) return NotFound(new { message = "Book not found" });
+            if (book == null)
+            {
+                _logger.LogWarning("Book with ID {BookId} not found for deletion", id);
+                return NotFound(new { message = "Book not found" });
+            }
+
+            _logger.LogInformation("Deleting book: {BookTitle} by {BookAuthor} (ID: {BookId})", 
+                book.Title, book.Author, book.Id);
 
             _context.Books.Remove(book);
 
             try
             {
                 await _context.SaveChangesAsync();
+                _logger.LogInformation("Book with ID {BookId} deleted successfully", id);
             }
             catch (DbUpdateException ex)
             {
+                _logger.LogError(ex, "Database error while deleting book with ID {BookId}", id);
                 return StatusCode(500, new { message = "Database error", details = ex.Message });
             }
 
