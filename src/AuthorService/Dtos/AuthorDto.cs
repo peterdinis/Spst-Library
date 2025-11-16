@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace SchoolLibraryApp.DTOs
+namespace AuthorService.Dtos
 {
     // Base DTO with common properties
     public abstract class AuthorBaseDto
