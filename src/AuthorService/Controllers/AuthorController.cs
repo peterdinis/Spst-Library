@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using FluentValidation;
 using AuthorService.Data;
 using AuthorService.Dtos;
 using AuthorService.Entities;
@@ -12,11 +13,19 @@ namespace AuthorService.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<AuthorsController> _logger;
+        private readonly IValidator<CreateAuthorDto> _createValidator;
+        private readonly IValidator<UpdateAuthorDto> _updateValidator;
 
-        public AuthorsController(ApplicationDbContext context, ILogger<AuthorsController> logger)
+        public AuthorsController(
+            ApplicationDbContext context, 
+            ILogger<AuthorsController> logger,
+            IValidator<CreateAuthorDto> createValidator,
+            IValidator<UpdateAuthorDto> updateValidator)
         {
             _context = context;
             _logger = logger;
+            _createValidator = createValidator;
+            _updateValidator = updateValidator;
         }
 
         [HttpGet]
@@ -51,18 +60,27 @@ namespace AuthorService.Controllers
         [HttpPost]
         public async Task<ActionResult<AuthorDto>> CreateAuthor(CreateAuthorDto dto)
         {
+            // Validate using FluentValidation
+            var validationResult = await _createValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                _logger.LogWarning("Validation failed for creating author: {Errors}", 
+                    string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)));
+                return BadRequest(new { errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+            }
+
             _logger.LogInformation("Creating new author: {FirstName} {LastName}", dto.FirstName, dto.LastName);
 
             var author = new Author
             {
-                FirstName = dto.FirstName,
-                LastName = dto.LastName,
-                Biography = dto.Biography,
-                Email = dto.Email,
+                FirstName = dto.FirstName.Trim(),
+                LastName = dto.LastName.Trim(),
+                Biography = dto.Biography?.Trim() ?? null!,
+                Email = dto.Email.Trim(),
                 DateOfBirth = dto.DateOfBirth,
                 DateOfDeath = dto.DateOfDeath,
-                Country = dto.Country,
-                Website = dto.Website,
+                Country = dto.Country.Trim(),
+                Website = dto.Website?.Trim() ?? null!,
                 IsActive = true,
                 CreatedDate = DateTime.UtcNow,
                 LastModified = DateTime.UtcNow
@@ -89,13 +107,22 @@ namespace AuthorService.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAuthor(int id, UpdateAuthorDto dto)
         {
-            _logger.LogInformation("Updating author with ID {AuthorId}", id);
+            // Validate using FluentValidation
+            var validationResult = await _updateValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+            {
+                _logger.LogWarning("Validation failed for updating author with ID {AuthorId}: {Errors}", 
+                    id, string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)));
+                return BadRequest(new { errors = validationResult.Errors.Select(e => e.ErrorMessage) });
+            }
 
             if (id != dto.AuthorId)
             {
                 _logger.LogWarning("ID mismatch in URL ({UrlId}) and body ({BodyId})", id, dto.AuthorId);
                 return BadRequest(new { message = "ID in URL does not match ID in body" });
             }
+
+            _logger.LogInformation("Updating author with ID {AuthorId}", id);
 
             var author = await _context.Authors.FindAsync(id);
             if (author == null)
@@ -108,14 +135,14 @@ namespace AuthorService.Controllers
                 author.FirstName, author.LastName, dto.FirstName, dto.LastName);
 
             // Update properties
-            author.FirstName = dto.FirstName;
-            author.LastName = dto.LastName;
-            author.Biography = dto.Biography;
-            author.Email = dto.Email;
+            author.FirstName = dto.FirstName.Trim();
+            author.LastName = dto.LastName.Trim();
+            author.Biography = dto.Biography?.Trim() ?? null!;
+            author.Email = dto.Email.Trim();
             author.DateOfBirth = dto.DateOfBirth;
             author.DateOfDeath = dto.DateOfDeath;
-            author.Country = dto.Country;
-            author.Website = dto.Website;
+            author.Country = dto.Country.Trim();
+            author.Website = dto.Website?.Trim() ?? null!;
             author.IsActive = dto.IsActive;
             author.LastModified = DateTime.UtcNow;
 
