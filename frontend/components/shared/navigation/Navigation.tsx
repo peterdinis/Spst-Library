@@ -34,6 +34,14 @@ import {
   Badge,
   Avatar,
   Tooltip,
+  Dialog,
+  DialogSurface,
+  DialogTitle,
+  DialogBody,
+  DialogActions,
+  DialogContent,
+  Input,
+  Field,
 } from '@fluentui/react-components';
 import { useNavigationStyles } from './useNavigationStyles';
 
@@ -45,11 +53,11 @@ export interface NavItem {
   badge?: number;
   children?: NavItem[];
   requiresAuth?: boolean;
+  onClick?: () => void;
 }
 
 export interface NavigationProps {
   userRole?: 'student' | 'librarian' | 'admin' | null;
-  notificationCount?: number;
   userName?: string;
   userGrade?: string;
   studentId?: string;
@@ -57,7 +65,6 @@ export interface NavigationProps {
 
 const LibraryNavigation: FC<NavigationProps> = ({
   userRole = 'student',
-  notificationCount = 0,
   userName = 'Študent',
 }) => {
   const styles = useNavigationStyles();
@@ -67,9 +74,14 @@ const LibraryNavigation: FC<NavigationProps> = ({
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   
   const userMenuRef = useRef<HTMLDivElement>(null);
   const mobileUserMenuRef = useRef<HTMLDivElement>(null);
+
+  // Default notification count
+  const notificationCount = 3;
 
   // Handle scroll effect
   useEffect(() => {
@@ -108,6 +120,15 @@ const LibraryNavigation: FC<NavigationProps> = ({
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      console.log('Vyhľadávanie:', searchQuery);
+      // Tu by sa spustilo vyhľadávanie
+      setIsSearchDialogOpen(false);
+      setSearchQuery('');
+    }
+  };
 
   // Navigation data based on user role
   const getNavItems = (): NavItem[] => {
@@ -150,8 +171,9 @@ const LibraryNavigation: FC<NavigationProps> = ({
       {
         id: 'vyhladavanie',
         label: 'Vyhľadávanie',
-        href: '/search',
+        href: '#',
         icon: <Search size={20} />,
+        onClick: () => setIsSearchDialogOpen(true),
       },
     ];
 
@@ -197,6 +219,13 @@ const LibraryNavigation: FC<NavigationProps> = ({
         href: '/admin/reports',
         icon: <BarChart3 size={20} />,
         requiresAuth: true,
+      },
+      {
+        id: 'vyhladavanie',
+        label: 'Vyhľadávanie',
+        href: '#',
+        icon: <Search size={20} />,
+        onClick: () => setIsSearchDialogOpen(true),
       },
     ];
 
@@ -314,6 +343,11 @@ const LibraryNavigation: FC<NavigationProps> = ({
     e.stopPropagation();
 
     setActiveItem(item.id);
+
+    if (item.onClick) {
+      item.onClick();
+      return;
+    }
 
     if (item.children) {
       setOpenDropdown(openDropdown === item.id ? null : item.id);
@@ -608,8 +642,12 @@ const LibraryNavigation: FC<NavigationProps> = ({
                 className={`${styles.quickNavItem} ${activeItem === item.id ? styles.quickNavItemActive : ''}`}
                 onClick={(e) => {
                   e.preventDefault();
-                  setActiveItem(item.id);
-                  console.log(`Navigating to: ${item.href}`);
+                  if (item.onClick) {
+                    item.onClick();
+                  } else {
+                    setActiveItem(item.id);
+                    console.log(`Navigating to: ${item.href}`);
+                  }
                 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -809,6 +847,45 @@ const LibraryNavigation: FC<NavigationProps> = ({
             </>
           )}
         </AnimatePresence>
+
+        {/* Search Dialog */}
+        <Dialog open={isSearchDialogOpen} onOpenChange={(_, { open }) => setIsSearchDialogOpen(open)}>
+          <DialogSurface>
+            <DialogBody>
+              <DialogTitle>Vyhľadávanie v knižnici</DialogTitle>
+              <DialogContent>
+                <Field label="Zadajte hľadaný výraz">
+                  <Input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Hľadať knihy, autori, kategórie..."
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        handleSearch();
+                      }
+                    }}
+                  />
+                </Field>
+                <div className={styles.searchTips}>
+                  <p>Tipy pre vyhľadávanie:</p>
+                  <ul>
+                    <li>Použite * pre zástupné znaky (napr. program*)</li>
+                    <li>Hľadajte podľa autora: "autor: Meno Priezvisko"</li>
+                    <li>Hľadajte podľa kategórie: "kategoria: Názov"</li>
+                  </ul>
+                </div>
+              </DialogContent>
+              <DialogActions>
+                <Button appearance="secondary" onClick={() => setIsSearchDialogOpen(false)}>
+                  Zrušiť
+                </Button>
+                <Button appearance="primary" onClick={handleSearch} disabled={!searchQuery.trim()}>
+                  Hľadať
+                </Button>
+              </DialogActions>
+            </DialogBody>
+          </DialogSurface>
+        </Dialog>
       </div>
     </FluentProvider>
   );
