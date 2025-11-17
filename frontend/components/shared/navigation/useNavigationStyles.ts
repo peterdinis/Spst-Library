@@ -306,6 +306,106 @@ export const useNavigationStyles = makeStyles({
     margin: '0.5rem 0',
   },
 
+  // Tablet Navigation
+  tabletNavHeader: {
+    display: 'none',
+    flexDirection: 'column',
+    backgroundColor: tokens.colorNeutralBackground1,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    backdropFilter: 'blur(10px)',
+  },
+
+  tabletNavTop: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '0.75rem 1rem',
+  },
+
+  tabletBrand: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    fontWeight: tokens.fontWeightSemibold,
+    color: tokens.colorBrandForeground1,
+    flex: 1,
+    justifyContent: 'center',
+  },
+
+  tabletLogo: {
+    fontSize: '1.5rem',
+    cursor: 'pointer',
+  },
+
+  tabletActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+  },
+
+  tabletBadge: {
+    flexShrink: 0,
+  },
+
+  tabletAvatar: {
+    flexShrink: 0,
+    cursor: 'pointer',
+  },
+
+  tabletToggle: {
+    minWidth: 'auto',
+    padding: '0.5rem',
+  },
+
+  themeToggleTablet: {
+    minWidth: 'auto',
+    padding: '0.5rem',
+  },
+
+  tabletQuickNav: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    padding: '0.5rem 1rem',
+    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
+  },
+
+  quickNavItem: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '0.25rem',
+    padding: '0.5rem',
+    textDecoration: 'none',
+    color: tokens.colorNeutralForeground2,
+    borderRadius: tokens.borderRadiusMedium,
+    transition: `all ${tokens.durationFast} ${tokens.curveEasyEase}`,
+    cursor: 'pointer',
+    minWidth: '60px',
+    
+    ':hover': {
+      color: tokens.colorBrandForeground1,
+      backgroundColor: tokens.colorNeutralBackground1Hover,
+    },
+  },
+
+  quickNavItemActive: {
+    color: `${tokens.colorBrandForeground1} !important`,
+    backgroundColor: tokens.colorBrandBackground2,
+  },
+
+  quickNavIcon: {
+    display: 'flex',
+    alignItems: 'center',
+    fontSize: '1.1rem',
+  },
+
+  quickNavLabel: {
+    fontSize: '0.7rem',
+    fontWeight: tokens.fontWeightMedium,
+    textAlign: 'center',
+  },
+
   // Mobile Navigation
   mobileNavHeader: {
     display: 'none',
@@ -392,6 +492,12 @@ export const useNavigationStyles = makeStyles({
     borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
   },
 
+  mobileFooterActions: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.5rem',
+  },
+
   userProfile: {
     display: 'flex',
     alignItems: 'center',
@@ -399,6 +505,15 @@ export const useNavigationStyles = makeStyles({
     padding: '1.5rem',
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
     backgroundColor: tokens.colorBrandBackground2,
+    position: 'relative',
+  },
+
+  closeMobileMenu: {
+    position: 'absolute',
+    top: '1rem',
+    right: '1rem',
+    minWidth: 'auto',
+    padding: '0.5rem',
   },
 
   themeToggleMobile: {
@@ -408,27 +523,69 @@ export const useNavigationStyles = makeStyles({
 
   mobileUserMenu: {
     position: 'fixed',
-    top: '4.5rem',
-    right: '1rem',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
     backgroundColor: tokens.colorNeutralBackground1,
     border: `1px solid ${tokens.colorNeutralStroke1}`,
     borderRadius: tokens.borderRadiusMedium,
     boxShadow: tokens.shadow16,
-    padding: '0.5rem',
-    minWidth: '200px',
+    padding: '1rem',
+    width: '90vw',
+    maxWidth: '400px',
+    maxHeight: '80vh',
+    overflowY: 'auto',
     zIndex: 1001,
+  },
+
+  mobileUserHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1rem',
+    paddingBottom: '1rem',
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
+    marginBottom: '0.5rem',
+    position: 'relative',
+  },
+
+  mobileUserInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.25rem',
+    flex: 1,
+  },
+
+  mobileUserRole: {
+    fontSize: '0.875rem',
+    color: tokens.colorNeutralForeground3,
+  },
+
+  closeUserMenu: {
+    position: 'absolute',
+    top: '0',
+    right: '0',
+    minWidth: 'auto',
+    padding: '0.5rem',
   },
 
   // Responsive
   responsiveHide: {
-    '@media (max-width: 767px)': {
+    '@media (max-width: 1023px)': {
       display: 'none !important',
     },
   },
 
-  responsiveShow: {
-    '@media (min-width: 768px)': {
-      display: 'none !important',
+  responsiveShowTablet: {
+    display: 'none',
+    '@media (min-width: 768px) and (max-width: 1023px)': {
+      display: 'flex !important',
+    },
+  },
+
+  responsiveShowMobile: {
+    display: 'none',
+    '@media (max-width: 767px)': {
+      display: 'flex !important',
     },
   },
 });

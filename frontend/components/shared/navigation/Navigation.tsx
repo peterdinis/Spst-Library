@@ -1,13 +1,11 @@
 "use client"
 
-import React, { ReactNode, useState, useEffect } from 'react';
+import { ReactNode, useState, useEffect, useRef, FC } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import {
   BookOpen,
   Home,
   Search,
-  History,
-  User,
   Settings,
   Library,
   Users,
@@ -21,7 +19,12 @@ import {
   ChevronDown,
   Bell,
   Shield,
-  Bookmark,
+  Mail,
+  HelpCircle,
+  BookText,
+  FolderTree,
+  PenTool,
+  Building,
 } from 'lucide-react';
 import {
   Button,
@@ -52,20 +55,21 @@ export interface NavigationProps {
   studentId?: string;
 }
 
-const LibraryNavigation: React.FC<NavigationProps> = ({
+const LibraryNavigation: FC<NavigationProps> = ({
   userRole = 'student',
   notificationCount = 0,
-  userName = 'Student',
-  userGrade = 'Grade 10',
-  studentId = 'S12345'
+  userName = 'Študent',
 }) => {
   const styles = useNavigationStyles();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeItem, setActiveItem] = useState<string>('home');
+  const [activeItem, setActiveItem] = useState<string>('domov');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const mobileUserMenuRef = useRef<HTMLDivElement>(null);
 
   // Handle scroll effect
   useEffect(() => {
@@ -76,11 +80,14 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Close mobile menu on resize
+  // Close menus on resize and handle responsive behavior
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 768) {
+      if (window.innerWidth >= 1024) {
         setIsMobileMenuOpen(false);
+      }
+      if (window.innerWidth < 1024) {
+        setIsUserMenuOpen(false);
       }
     };
     window.addEventListener('resize', handleResize);
@@ -89,103 +96,104 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
 
   // Close dropdowns when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+      if (mobileUserMenuRef.current && !mobileUserMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
       setOpenDropdown(null);
-      setIsUserMenuOpen(false);
     };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Navigation data based on user role
   const getNavItems = (): NavItem[] => {
     const baseItems: NavItem[] = [
       {
-        id: 'home',
-        label: 'Home',
+        id: 'domov',
+        label: 'Domov',
         href: '/',
         icon: <Home size={20} />,
       },
       {
-        id: 'catalog',
-        label: 'Book Catalog',
-        href: '/catalog',
+        id: 'knihy',
+        label: 'Knihy',
+        href: '/books',
         icon: <BookOpen size={20} />,
         badge: notificationCount,
       },
       {
-        id: 'search',
-        label: 'Search',
-        href: '/search',
-        icon: <Search size={20} />,
+        id: 'kategorie',
+        label: 'Kategórie',
+        href: '/categories',
+        icon: <FolderTree size={20} />,
+      },
+      {
+        id: 'spisovatelia',
+        label: 'Spisovatelia',
+        href: '/authors',
+        icon: <PenTool size={20} />,
+      },
+      {
+        id: 'vydavatelstva',
+        label: 'Vydavateľstvá',
+        href: '/publishers',
+        icon: <Building size={20} />,
       },
     ];
 
     const studentItems: NavItem[] = [
       ...baseItems,
       {
-        id: 'my-books',
-        label: 'My Books',
-        href: '/my-books',
-        icon: <Library size={20} />,
-        requiresAuth: true,
-        children: [
-          {
-            id: 'currently-reading',
-            label: 'Currently Reading',
-            href: '/my-books/current',
-            icon: <Bookmark size={16} />,
-          },
-          {
-            id: 'favorites',
-            label: 'Favorites',
-            href: '/my-books/favorites',
-            icon: <Bookmark size={16} />,
-          },
-        ],
-      },
-      {
-        id: 'borrowing-history',
-        label: 'Borrowing History',
-        href: '/history',
-        icon: <History size={20} />,
-        requiresAuth: true,
+        id: 'vyhladavanie',
+        label: 'Vyhľadávanie',
+        href: '/search',
+        icon: <Search size={20} />,
       },
     ];
 
     const librarianItems: NavItem[] = [
       ...baseItems,
       {
-        id: 'management',
-        label: 'Management',
+        id: 'sprava',
+        label: 'Správa',
         href: '#',
         icon: <Settings size={20} />,
         requiresAuth: true,
         children: [
           {
-            id: 'manage-books',
-            label: 'Manage Books',
+            id: 'sprava-knih',
+            label: 'Správa kníh',
             href: '/admin/books',
-            icon: <BookOpen size={16} />,
+            icon: <BookText size={16} />,
           },
           {
-            id: 'manage-members',
-            label: 'Library Members',
-            href: '/admin/members',
+            id: 'sprava-pouzivatelov',
+            label: 'Správa používateľov',
+            href: '/admin/users',
             icon: <Users size={16} />,
           },
           {
-            id: 'borrow-requests',
-            label: 'Borrow Requests',
+            id: 'ziadosti-o-vypozicky',
+            label: 'Žiadosti o výpožičky',
             href: '/admin/requests',
             icon: <Bell size={16} />,
             badge: 3,
           },
+          {
+            id: 'sprava-kategorii',
+            label: 'Správa kategórií',
+            href: '/admin/categories',
+            icon: <FolderTree size={16} />,
+          },
         ],
       },
       {
-        id: 'reports',
-        label: 'Reports & Analytics',
+        id: 'reporty',
+        label: 'Reporty & Štatistiky',
         href: '/admin/reports',
         icon: <BarChart3 size={20} />,
         requiresAuth: true,
@@ -196,22 +204,28 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
       ...librarianItems,
       {
         id: 'system',
-        label: 'System',
+        label: 'Systém',
         href: '#',
         icon: <Shield size={20} />,
         requiresAuth: true,
         children: [
           {
-            id: 'system-settings',
-            label: 'System Settings',
+            id: 'systemove-nastavenia',
+            label: 'Systémové nastavenia',
             href: '/admin/settings',
             icon: <Settings size={16} />,
           },
           {
-            id: 'user-management',
-            label: 'User Management',
-            href: '/admin/users',
+            id: 'sprava-rol',
+            label: 'Správa rolí',
+            href: '/admin/roles',
             icon: <Users size={16} />,
+          },
+          {
+            id: 'databaza',
+            label: 'Správa databázy',
+            href: '/admin/database',
+            icon: <Library size={16} />,
           },
         ],
       },
@@ -267,7 +281,7 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
       scale: 0.95,
       y: -10,
       transition: {
-        duration: 0.2,
+        duration: 0.15,
       },
     },
     open: {
@@ -276,7 +290,7 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
       y: 0,
       transition: {
         type: 'spring',
-        stiffness: 400,
+        stiffness: 500,
         damping: 30,
       },
     },
@@ -288,7 +302,7 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
       opacity: 1,
       x: 0,
       transition: {
-        delay: i * 0.1,
+        delay: i * 0.08,
         type: 'spring',
         stiffness: 300,
       },
@@ -305,7 +319,7 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
       setOpenDropdown(openDropdown === item.id ? null : item.id);
     } else {
       setOpenDropdown(null);
-      if (window.innerWidth < 768) {
+      if (window.innerWidth < 1024) {
         setIsMobileMenuOpen(false);
       }
       // Here you would typically use router.push(item.href) for navigation
@@ -366,7 +380,7 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
               </motion.span>
             )}
             {item.requiresAuth && (
-              <Tooltip content="Requires login" relationship="description">
+              <Tooltip content="Vyžaduje prihlásenie" relationship="description">
                 <span className={styles.authIndicator}>🔒</span>
               </Tooltip>
             )}
@@ -392,7 +406,7 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
                     e.preventDefault();
                     setActiveItem(child.id);
                     setOpenDropdown(null);
-                    if (window.innerWidth < 768) {
+                    if (window.innerWidth < 1024) {
                       setIsMobileMenuOpen(false);
                     }
                     console.log(`Navigating to: ${child.href}`);
@@ -432,8 +446,8 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
               📚
             </motion.div>
             <div className={styles.brandText}>
-              <span className={styles.brandName}>School Library</span>
-              <span className={styles.brandSubtitle}>Knowledge Hub</span>
+              <span className={styles.brandName}>SPŠT Knižnica</span>
+              <span className={styles.brandSubtitle}>Vzdelávacie centrum</span>
             </div>
           </div>
 
@@ -442,7 +456,7 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
           </div>
 
           <div className={styles.navActions}>
-            <Tooltip content={isDarkMode ? "Switch to light mode" : "Switch to dark mode"} relationship="description">
+            <Tooltip content={isDarkMode ? "Prepnúť na svetlý režim" : "Prepnúť na tmavý režim"} relationship="description">
               <Button
                 appearance="subtle"
                 onClick={handleThemeToggle}
@@ -451,8 +465,9 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
               />
             </Tooltip>
 
-            <div className={styles.userMenu}>
-              <Tooltip content="Account menu" relationship="description">
+            {/* Desktop User Menu */}
+            <div className={styles.userMenu} ref={userMenuRef}>
+              <Tooltip content="Menu účtu" relationship="description">
                 <Button
                   appearance="subtle"
                   onClick={handleUserMenuToggle}
@@ -466,7 +481,7 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
                   }
                   className={styles.userButton}
                 >
-                  <span className={styles.userName}>{userName}</span>
+                  <span className={styles.userName}>{userName.split(' ')[0]}</span>
                   <motion.span
                     animate={{ rotate: isUserMenuOpen ? 180 : 0 }}
                     transition={{ duration: 0.2 }}
@@ -495,26 +510,43 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
                       <div className={styles.userDetails}>
                         <strong>{userName}</strong>
                         <span className={styles.userRole}>
-                          {userRole === 'admin' ? 'Administrator' :
-                            userRole === 'librarian' ? 'Librarian' : 'Student'}
+                          {userRole === 'admin' ? 'Administrátor' :
+                            userRole === 'librarian' ? 'Knihovník' : 'Študent'}
                         </span>
-                        <span className={styles.userId}>{studentId}</span>
                       </div>
                     </div>
 
                     <div className={styles.dropdownItems}>
                       <a href="/profile" className={styles.dropdownLink}>
                         <UserCircle size={18} />
-                        <span>My Profile</span>
+                        <span>Môj profil</span>
+                      </a>
+                      <a href="/notifications" className={styles.dropdownLink}>
+                        <Bell size={18} />
+                        <span>Notifikácie</span>
+                        {notificationCount > 0 && (
+                          <Badge size="small" appearance="filled" color="danger">
+                            {notificationCount}
+                          </Badge>
+                        )}
+                      </a>
+                      <a href="/messages" className={styles.dropdownLink}>
+                        <Mail size={18} />
+                        <span>Správy</span>
+                        <Badge size="small" appearance="filled">2</Badge>
                       </a>
                       <a href="/settings" className={styles.dropdownLink}>
                         <Settings size={18} />
-                        <span>Settings</span>
+                        <span>Nastavenia</span>
+                      </a>
+                      <a href="/help" className={styles.dropdownLink}>
+                        <HelpCircle size={18} />
+                        <span>Pomoc & Podpora</span>
                       </a>
                       <div className={styles.dropdownDivider} />
                       <a href="/logout" className={styles.dropdownLink}>
                         <LogOut size={18} />
-                        <span>Logout</span>
+                        <span>Odhlásiť sa</span>
                       </a>
                     </div>
                   </motion.div>
@@ -524,8 +556,75 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
           </div>
         </motion.nav>
 
+        {/* Tablet Navigation Header */}
+        <div className={`${styles.tabletNavHeader} ${styles.responsiveShowTablet}`}>
+          <div className={styles.tabletNavTop}>
+            <Button
+              appearance="subtle"
+              icon={isMobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className={styles.tabletToggle}
+            />
+            
+            <div className={styles.tabletBrand}>
+              <motion.div
+                className={styles.tabletLogo}
+                whileHover={{ rotate: 10 }}
+                transition={{ duration: 0.3 }}
+              >
+                📚
+              </motion.div>
+              <span>SPŠT Knižnica</span>
+            </div>
+
+            <div className={styles.tabletActions}>
+              <Button
+                appearance="subtle"
+                onClick={handleThemeToggle}
+                icon={isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+                className={styles.themeToggleTablet}
+              />
+              {notificationCount > 0 && (
+                <Badge size="small" appearance="filled" color="danger" className={styles.tabletBadge}>
+                  {notificationCount}
+                </Badge>
+              )}
+              <Avatar
+                size={32}
+                name={userName}
+                color="brand"
+                onClick={handleUserMenuToggle}
+                className={styles.tabletAvatar}
+              />
+            </div>
+          </div>
+
+          {/* Tablet Quick Actions */}
+          <div className={styles.tabletQuickNav}>
+            {navItems.slice(0, 5).map((item, index) => (
+              <motion.a
+                key={item.id}
+                href={item.href}
+                className={`${styles.quickNavItem} ${activeItem === item.id ? styles.quickNavItemActive : ''}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveItem(item.id);
+                  console.log(`Navigating to: ${item.href}`);
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <span className={styles.quickNavIcon}>
+                  {item.icon}
+                </span>
+                <span className={styles.quickNavLabel}>{item.label}</span>
+              </motion.a>
+            ))}
+          </div>
+        </div>
+
         {/* Mobile Navigation Header */}
-        <div className={`${styles.mobileNavHeader} ${styles.responsiveShow} ${isScrolled ? styles.scrolled : ''
+        <div className={`${styles.mobileNavHeader} ${styles.responsiveShowMobile} ${isScrolled ? styles.scrolled : ''
           }`}>
           <Button
             appearance="subtle"
@@ -542,7 +641,7 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
             >
               📚
             </motion.div>
-            <span>School Library</span>
+            <span>SPŠT Knižnica</span>
           </div>
 
           <div className={styles.mobileActions}>
@@ -555,7 +654,7 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
               size={32}
               name={userName}
               color="brand"
-              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              onClick={handleUserMenuToggle}
               className={styles.mobileAvatar}
             />
           </div>
@@ -591,10 +690,16 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
                     <div className={styles.userInfo}>
                       <strong>{userName}</strong>
                       <span className={styles.userDetails}>
-                        {userRole === 'admin' ? 'Administrator' :
-                          userRole === 'librarian' ? 'Librarian' : 'Student'} • {studentId}
+                        {userRole === 'admin' ? 'Administrátor' :
+                          userRole === 'librarian' ? 'Knihovník' : 'Študent'}
                       </span>
                     </div>
+                    <Button
+                      appearance="subtle"
+                      icon={<X size={20} />}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={styles.closeMobileMenu}
+                    />
                   </div>
                 </div>
 
@@ -603,46 +708,105 @@ const LibraryNavigation: React.FC<NavigationProps> = ({
                 </div>
 
                 <div className={styles.mobileNavFooter}>
-                  <Button
-                    appearance="subtle"
-                    onClick={handleThemeToggle}
-                    icon={isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
-                    className={styles.themeToggleMobile}
-                  >
-                    {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-                  </Button>
+                  <div className={styles.mobileFooterActions}>
+                    <Button
+                      appearance="subtle"
+                      onClick={handleThemeToggle}
+                      icon={isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
+                      className={styles.themeToggleMobile}
+                    >
+                      {isDarkMode ? 'Svetlý režim' : 'Tmavý režim'}
+                    </Button>
+                    <Button
+                      appearance="subtle"
+                      href="/help"
+                      icon={<HelpCircle size={18} />}
+                    >
+                      Pomoc
+                    </Button>
+                  </div>
                 </div>
               </motion.nav>
             </>
           )}
         </AnimatePresence>
 
-        {/* Mobile User Menu */}
+        {/* Mobile & Tablet User Menu */}
         <AnimatePresence>
-          {isUserMenuOpen && window.innerWidth < 768 && (
-            <motion.div
-              className={styles.mobileUserMenu}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 20 }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className={styles.dropdownItems}>
-                <a href="/profile" className={styles.dropdownLink}>
-                  <UserCircle size={18} />
-                  <span>My Profile</span>
-                </a>
-                <a href="/settings" className={styles.dropdownLink}>
-                  <Settings size={18} />
-                  <span>Settings</span>
-                </a>
-                <div className={styles.dropdownDivider} />
-                <a href="/logout" className={styles.dropdownLink}>
-                  <LogOut size={18} />
-                  <span>Logout</span>
-                </a>
-              </div>
-            </motion.div>
+          {isUserMenuOpen && window.innerWidth < 1024 && (
+            <>
+              <motion.div
+                className={styles.mobileOverlay}
+                variants={overlayVariants}
+                initial="closed"
+                animate="open"
+                exit="closed"
+                onClick={() => setIsUserMenuOpen(false)}
+              />
+              <motion.div
+                className={styles.mobileUserMenu}
+                ref={mobileUserMenuRef}
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className={styles.mobileUserHeader}>
+                  <Avatar
+                    size={48}
+                    name={userName}
+                    color="brand"
+                  />
+                  <div className={styles.mobileUserInfo}>
+                    <strong>{userName}</strong>
+                    <span className={styles.mobileUserRole}>
+                      {userRole === 'admin' ? 'Administrátor' :
+                        userRole === 'librarian' ? 'Knihovník' : 'Študent'}
+                    </span>
+                  </div>
+                  <Button
+                    appearance="subtle"
+                    icon={<X size={20} />}
+                    onClick={() => setIsUserMenuOpen(false)}
+                    className={styles.closeUserMenu}
+                  />
+                </div>
+
+                <div className={styles.dropdownItems}>
+                  <a href="/profile" className={styles.dropdownLink}>
+                    <UserCircle size={18} />
+                    <span>Môj profil</span>
+                  </a>
+                  <a href="/notifications" className={styles.dropdownLink}>
+                    <Bell size={18} />
+                    <span>Notifikácie</span>
+                    {notificationCount > 0 && (
+                      <Badge size="small" appearance="filled" color="danger">
+                        {notificationCount}
+                      </Badge>
+                    )}
+                  </a>
+                  <a href="/messages" className={styles.dropdownLink}>
+                    <Mail size={18} />
+                    <span>Správy</span>
+                    <Badge size="small" appearance="filled">2</Badge>
+                  </a>
+                  <a href="/settings" className={styles.dropdownLink}>
+                    <Settings size={18} />
+                    <span>Nastavenia</span>
+                  </a>
+                  <a href="/help" className={styles.dropdownLink}>
+                    <HelpCircle size={18} />
+                    <span>Pomoc & Podpora</span>
+                  </a>
+                  <div className={styles.dropdownDivider} />
+                  <a href="/logout" className={styles.dropdownLink}>
+                    <LogOut size={18} />
+                    <span>Odhlásiť sa</span>
+                  </a>
+                </div>
+              </motion.div>
+            </>
           )}
         </AnimatePresence>
       </div>
