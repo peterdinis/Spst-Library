@@ -1,5 +1,7 @@
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+
 builder.Services.AddCors(options => {
     options.AddPolicy("customPolicy", b => {
         b.AllowAnyHeader()
@@ -10,6 +12,8 @@ builder.Services.AddCors(options => {
 });
 
 var app = builder.Build();
+
+app.MapReverseProxy();
 
 app.UseCors();
 
