@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  search-service:
+    build:
+      context: .
+      dockerfile: src/SearchService/Dockerfile
+    ports:
+      - "5008:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - spsif-library-network
+
+  author-service:
+    build:
+      context: .
+      dockerfile: src/AuthorService/Dockerfile
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - spsif-library-network
+
+  category-service:
+    build:
+      context: .
+      dockerfile: src/CategoryService/Dockerfile
+    ports:
+      - "5002:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - spsif-library-network
+
+  publisher-service:
+    build:
+      context: .
+      dockerfile: src/PublisherService/Dockerfile
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - spsif-library-network
+
+  gateway-service:
+    build:
+      context: .
+      dockerfile: src/GatewayService/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - search-service
+      - author-service
+      - category-service
+      - publisher-service
+    networks:
+      - spsif-library-network
+
+networks:
+  spsif-library-network:
+    driver: bridge
