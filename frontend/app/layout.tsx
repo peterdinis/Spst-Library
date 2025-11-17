@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { FluentProvider, webLightTheme } from '@fluentui/react-components';
+import AppFluentProvider from "@/components/providers/FluentProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,9 +28,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <FluentProvider theme={webLightTheme}>
+        <AppFluentProvider>
           {children}
-        </FluentProvider>
+        </AppFluentProvider>
       </body>
     </html>
   );
