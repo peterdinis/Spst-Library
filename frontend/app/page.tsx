@@ -1,9 +1,18 @@
-import { NextPage } from "next";
+import HomeWrapper from '@/components/home/HomeWrapper';
+import LibraryNavigation from '@/components/shared/navigation/Navigation';
+import { NextPage } from 'next';
 
-const Homepage: NextPage = () => {
+const App: NextPage = () => {
   return (
-    <>HOME</>
-  )
-}
+    <div>
+      <LibraryNavigation
+        userRole="student"
+        userName="John Doe"
+      />
 
-export default Homepage;
+      <HomeWrapper />
+    </div>
+  );
+};
+
+export default App;
