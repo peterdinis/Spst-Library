@@ -4,7 +4,9 @@ services:
   search-service:
     build:
       context: .
-      dockerfile: src/SearchService/Dockerfile
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: SearchService
     ports:
       - "5008:8080"
     environment:
@@ -15,7 +17,9 @@ services:
   author-service:
     build:
       context: .
-      dockerfile: src/AuthorService/Dockerfile
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: AuthorService
     ports:
       - "5001:8080"
     environment:
@@ -26,7 +30,9 @@ services:
   category-service:
     build:
       context: .
-      dockerfile: src/CategoryService/Dockerfile
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: CategoryService
     ports:
       - "5002:8080"
     environment:
@@ -37,7 +43,9 @@ services:
   publisher-service:
     build:
       context: .
-      dockerfile: src/PublisherService/Dockerfile
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: PublisherService
     ports:
       - "5003:8080"
     environment:
@@ -48,7 +56,9 @@ services:
   gateway-service:
     build:
       context: .
-      dockerfile: src/GatewayService/Dockerfile
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: GatewayService
     ports:
       - "8080:8080"
     environment:
