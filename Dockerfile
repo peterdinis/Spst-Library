@@ -10,6 +10,7 @@ COPY src/AuthorService/*.csproj src/AuthorService/
 COPY src/CategoryService/*.csproj src/CategoryService/
 COPY src/PublisherService/*.csproj src/PublisherService/
 COPY src/GatewayService/*.csproj src/GatewayService/
+COPY src/BooksService/*.csproj src/BooksService/
 
 # Restore packages
 RUN dotnet restore spst-library.sln
