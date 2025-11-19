@@ -3,3 +3,31 @@
   padding: 0;
   box-sizing: border-box;
 }
+
+.circle {
+  border-radius: 50%;
+  left: calc(50% - 6.25em);
+  top: calc(50% - 12.5em);
+  transform-origin: 50% 12.5em;
+  width: 12.5em;
+  height: 12.5em;
+  position: absolute;
+  box-shadow: 0 1em 2em rgba(0, 0, 0, 0.5);
+}
+
+.one {
+  background: rgba(142, 92, 205, 0.75);
+}
+
+@keyframes spin {
+  0% {
+    transform: rotateZ(0);
+  }
+  100% {
+    transform: rotateZ(360deg);
+  }
+}
+
+.container {
+  animation: spin 10s linear infinite;
+}
