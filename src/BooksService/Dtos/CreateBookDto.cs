@@ -1,5 +1,3 @@
-using System;
-
 namespace BooksService.Dtos
 {
     public class CreateBookDto
