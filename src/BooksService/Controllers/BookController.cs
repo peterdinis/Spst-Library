@@ -3,27 +3,25 @@ using Microsoft.EntityFrameworkCore;
 using BooksService.Data;
 using BooksService.Dtos;
 using BooksService.Entities;
+using BooksService.Interfaces;
+using BooksService.Services;
 
 namespace BooksService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class BooksController : ControllerBase
+    public class BooksController(ApplicationDbContext context, ILogger<BooksController> logger, ICategoryService categoryService) : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        private readonly ILogger<BooksController> _logger;
+        private readonly ApplicationDbContext _context = context;
+        private readonly ILogger<BooksController> _logger = logger;
 
-        public BooksController(ApplicationDbContext context, ILogger<BooksController> logger)
-        {
-            _context = context;
-            _logger = logger;
-        }
+        private readonly ICategoryService _categoryService = categoryService;
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BookDto>>> GetBooks()
         {
             _logger.LogInformation("Getting all books");
-            
+
             var books = await _context.Books
                 .Select(b => MapToDto(b))
                 .ToListAsync();
@@ -53,6 +51,21 @@ namespace BooksService.Controllers
         {
             _logger.LogInformation("Creating new book with title: {BookTitle}", dto.Title);
 
+            // Check if category exists in CategoryService
+            if (!await _categoryService.CategoryExistsAsync(dto.CategoryId))
+            {
+                _logger.LogWarning("Category with ID {CategoryId} does not exist", dto.CategoryId);
+                return BadRequest(new { message = $"Category with ID {dto.CategoryId} does not exist" });
+            }
+
+            // Get category name from CategoryService
+            var category = await _categoryService.GetCategoryAsync(dto.CategoryId);
+            if (category == null)
+            {
+                _logger.LogError("Failed to retrieve category {CategoryId} from CategoryService", dto.CategoryId);
+                return StatusCode(500, new { message = "Error retrieving category information" });
+            }
+
             var book = new Book
             {
                 Title = dto.Title,
@@ -61,7 +74,8 @@ namespace BooksService.Controllers
                 Year = dto.Year,
                 ISBN = dto.ISBN,
                 Pages = dto.Pages,
-                Category = dto.Category,
+                CategoryId = dto.CategoryId,
+                Category = category.Name, // Set from CategoryService
                 Language = dto.Language,
                 Description = dto.Description,
                 PhotoPath = dto.PhotoPath,
@@ -73,7 +87,7 @@ namespace BooksService.Controllers
             {
                 _context.Books.Add(book);
                 await _context.SaveChangesAsync();
-                
+
                 _logger.LogInformation("Book created successfully with ID {BookId}: {BookTitle}", book.Id, book.Title);
             }
             catch (DbUpdateException ex)
@@ -97,6 +111,25 @@ namespace BooksService.Controllers
                 return NotFound(new { message = "Book not found" });
             }
 
+            // Check if category exists when CategoryId is being updated
+            if (book.CategoryId != dto.CategoryId)
+            {
+                if (!await _categoryService.CategoryExistsAsync(dto.CategoryId))
+                {
+                    _logger.LogWarning("Category with ID {CategoryId} does not exist", dto.CategoryId);
+                    return BadRequest(new { message = $"Category with ID {dto.CategoryId} does not exist" });
+                }
+
+                var category = await _categoryService.GetCategoryAsync(dto.CategoryId);
+                if (category == null)
+                {
+                    _logger.LogError("Failed to retrieve category {CategoryId} from CategoryService", dto.CategoryId);
+                    return StatusCode(500, new { message = "Error retrieving category information" });
+                }
+
+                book.Category = category.Name;
+            }
+
             _logger.LogInformation("Updating book from: {OldTitle} to: {NewTitle}", book.Title, dto.Title);
 
             book.Title = dto.Title;
@@ -105,7 +138,7 @@ namespace BooksService.Controllers
             book.Year = dto.Year;
             book.ISBN = dto.ISBN;
             book.Pages = dto.Pages;
-            book.Category = dto.Category;
+            book.CategoryId = dto.CategoryId;
             book.Language = dto.Language;
             book.Description = dto.Description;
             book.PhotoPath = dto.PhotoPath;
@@ -142,7 +175,7 @@ namespace BooksService.Controllers
                 return NotFound(new { message = "Book not found" });
             }
 
-            _logger.LogInformation("Deleting book: {BookTitle} by {BookAuthor} (ID: {BookId})", 
+            _logger.LogInformation("Deleting book: {BookTitle} by {BookAuthor} (ID: {BookId})",
                 book.Title, book.Author, book.Id);
 
             _context.Books.Remove(book);
@@ -161,7 +194,7 @@ namespace BooksService.Controllers
             return NoContent();
         }
 
-        private static BookDto MapToDto(Book book) => new BookDto
+        private static BookDto MapToDto(Book book) => new()
         {
             Id = book.Id,
             Title = book.Title,
@@ -170,6 +203,7 @@ namespace BooksService.Controllers
             Year = book.Year,
             ISBN = book.ISBN,
             Pages = book.Pages,
+            CategoryId = book.CategoryId,
             Category = book.Category,
             Language = book.Language,
             Description = book.Description,
