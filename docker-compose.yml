@@ -14,11 +14,6 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - spsif-library-network
-    healthcheck:
-      test: ["CMD", "rabbitmqctl", "status"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   search-service:
     build:
@@ -35,8 +30,7 @@ services:
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - rabbitmq
     networks:
       - spsif-library-network
 
@@ -55,8 +49,7 @@ services:
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - rabbitmq
     networks:
       - spsif-library-network
 
@@ -75,8 +68,7 @@ services:
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - rabbitmq
     networks:
       - spsif-library-network
 
@@ -95,17 +87,16 @@ services:
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - rabbitmq
     networks:
       - spsif-library-network
 
-  book-service:
+  books-service:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        SERVICE_NAME: BookService
+        SERVICE_NAME: BooksService  # OPRAVENÉ: BooksService namiesto BookService
     ports:
       - "5000:8080"
     environment:
@@ -115,8 +106,7 @@ services:
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - rabbitmq
     networks:
       - spsif-library-network
 
@@ -135,9 +125,8 @@ services:
       - author-service
       - category-service
       - publisher-service
-      - book-service
-      - rabbitmq:
-          condition: service_healthy
+      - books-service  # OPRAVENÉ: books-service namiesto book-service
+      - rabbitmq
     networks:
       - spsif-library-network
 
