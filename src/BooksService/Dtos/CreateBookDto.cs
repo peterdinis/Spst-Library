@@ -1,5 +1,3 @@
-using System;
-
 namespace BooksService.Dtos
 {
     public class CreateBookDto
@@ -11,6 +9,8 @@ namespace BooksService.Dtos
         public string ISBN { get; set; } = null!;
         public int Pages { get; set; }
         public string Category { get; set; } = null!;
+
+        public int CategoryId {get; set;}
         public string Language { get; set; } = null!;
         public string Description { get; set; } = null!;
         public string PhotoPath { get; set; } = null!;
