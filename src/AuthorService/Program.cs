@@ -3,6 +3,8 @@ using AuthorService.Data;
 using AuthorService.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using AuthorService.Services;
+using AuthorService.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<AuthorValidator>();
+builder.Services.AddScoped<IBookService, BookService>();
 
 var app = builder.Build();
 

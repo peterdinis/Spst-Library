@@ -4,6 +4,8 @@ using FluentValidation;
 using AuthorService.Data;
 using AuthorService.Dtos;
 using AuthorService.Entities;
+using AuthorService.Interfaces;
+using AuthorService.Messages;
 
 namespace AuthorService.Controllers
 {
@@ -15,36 +17,78 @@ namespace AuthorService.Controllers
         private readonly ILogger<AuthorsController> _logger;
         private readonly IValidator<CreateAuthorDto> _createValidator;
         private readonly IValidator<UpdateAuthorDto> _updateValidator;
+        private readonly IBookService _bookService;
 
         public AuthorsController(
             ApplicationDbContext context, 
             ILogger<AuthorsController> logger,
             IValidator<CreateAuthorDto> createValidator,
-            IValidator<UpdateAuthorDto> updateValidator)
+            IValidator<UpdateAuthorDto> updateValidator,
+            IBookService bookService)
         {
             _context = context;
             _logger = logger;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
+            _bookService = bookService;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<AuthorDto>>> GetAuthors()
+        public async Task<ActionResult<IEnumerable<AuthorDto>>> GetAuthors([FromQuery] bool includeBooks = false)
         {
-            _logger.LogInformation("Getting all authors");
+            _logger.LogInformation("Getting all authors, IncludeBooks: {IncludeBooks}", includeBooks);
             
             var authors = await _context.Authors
                 .Select(a => MapToDto(a))
                 .ToListAsync();
+
+            if (includeBooks)
+            {
+                foreach (var author in authors)
+                {
+                    try
+                    {
+                        var books = await _bookService.GetBooksByAuthorAsync(author.AuthorId);
+                        author.Books = books;
+                        author.BooksCount = books.Count;
+                    }
+                    catch (TimeoutException ex)
+                    {
+                        _logger.LogWarning(ex, "Timeout while fetching books for author {AuthorId}", author.AuthorId);
+                        author.BooksCount = 0;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error while fetching books for author {AuthorId}", author.AuthorId);
+                        author.BooksCount = 0;
+                    }
+                }
+            }
+            else
+            {
+                // Still get counts for each author
+                foreach (var author in authors)
+                {
+                    try
+                    {
+                        author.BooksCount = await _bookService.GetBooksCountByAuthorAsync(author.AuthorId);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to get books count for author {AuthorId}", author.AuthorId);
+                        author.BooksCount = 0;
+                    }
+                }
+            }
 
             _logger.LogInformation("Retrieved {Count} authors", authors.Count);
             return Ok(authors);
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<AuthorDto>> GetAuthor(int id)
+        public async Task<ActionResult<AuthorDto>> GetAuthor(int id, [FromQuery] bool includeBooks = false)
         {
-            _logger.LogInformation("Getting author with ID {AuthorId}", id);
+            _logger.LogInformation("Getting author with ID {AuthorId}, IncludeBooks: {IncludeBooks}", id, includeBooks);
 
             var author = await _context.Authors.FindAsync(id);
             if (author == null)
@@ -53,8 +97,43 @@ namespace AuthorService.Controllers
                 return NotFound(new { message = "Author not found" });
             }
 
-            _logger.LogInformation("Author with ID {AuthorId} found: {AuthorName}", id, $"{author.FirstName} {author.LastName}");
-            return Ok(MapToDto(author));
+            var authorDto = MapToDto(author);
+
+            if (includeBooks)
+            {
+                try
+                {
+                    var books = await _bookService.GetBooksByAuthorAsync(id);
+                    authorDto.Books = books;
+                    authorDto.BooksCount = books.Count;
+                    _logger.LogInformation("Retrieved {BooksCount} books for author {AuthorId}", books.Count, id);
+                }
+                catch (TimeoutException ex)
+                {
+                    _logger.LogWarning(ex, "Book service timeout while fetching books for author {AuthorId}", id);
+                    return StatusCode(503, new { message = "Book service is temporarily unavailable" });
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error while fetching books for author {AuthorId}", id);
+                    return StatusCode(500, new { message = "Error retrieving books information" });
+                }
+            }
+            else
+            {
+                try
+                {
+                    authorDto.BooksCount = await _bookService.GetBooksCountByAuthorAsync(id);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to get books count for author {AuthorId}", id);
+                    authorDto.BooksCount = 0;
+                }
+            }
+
+            _logger.LogInformation("Author with ID {AuthorId} found: {AuthorName}", id, author.FullName);
+            return Ok(authorDto);
         }
 
         [HttpPost]
@@ -177,6 +256,22 @@ namespace AuthorService.Controllers
                 return NotFound(new { message = "Author not found" });
             }
 
+            // Check if author has books before deletion
+            try
+            {
+                var booksCount = await _bookService.GetBooksCountByAuthorAsync(id);
+                if (booksCount > 0)
+                {
+                    _logger.LogWarning("Cannot delete author {AuthorId} with {BooksCount} associated books", id, booksCount);
+                    return BadRequest(new { message = $"Cannot delete author with {booksCount} associated books" });
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not verify books count for author {AuthorId}, proceeding with deletion", id);
+                // Continue with deletion if we can't verify book count
+            }
+
             _logger.LogInformation("Deleting author: {FirstName} {LastName} (ID: {AuthorId})", 
                 author.FirstName, author.LastName, author.AuthorId);
 
@@ -197,22 +292,70 @@ namespace AuthorService.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<AuthorDto>>> SearchAuthors([FromQuery] string name)
+        public async Task<ActionResult<IEnumerable<AuthorDto>>> SearchAuthors([FromQuery] string name, [FromQuery] bool includeBooks = false)
         {
             if (string.IsNullOrWhiteSpace(name))
             {
                 return BadRequest(new { message = "Search term is required" });
             }
 
-            _logger.LogInformation("Searching authors with term: {SearchTerm}", name);
+            _logger.LogInformation("Searching authors with term: {SearchTerm}, IncludeBooks: {IncludeBooks}", name, includeBooks);
 
             var authors = await _context.Authors
                 .Where(a => a.FirstName.Contains(name) || a.LastName.Contains(name) || (a.FirstName + " " + a.LastName).Contains(name))
                 .Select(a => MapToDto(a))
                 .ToListAsync();
 
+            if (includeBooks)
+            {
+                foreach (var author in authors)
+                {
+                    try
+                    {
+                        var books = await _bookService.GetBooksByAuthorAsync(author.AuthorId);
+                        author.Books = books;
+                        author.BooksCount = books.Count;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to get books for author {AuthorId} during search", author.AuthorId);
+                        author.BooksCount = 0;
+                    }
+                }
+            }
+
             _logger.LogInformation("Found {Count} authors matching search term: {SearchTerm}", authors.Count, name);
             return Ok(authors);
+        }
+
+        [HttpGet("{id}/books")]
+        public async Task<ActionResult<List<AuthorBookDto>>> GetAuthorBooks(int id)
+        {
+            _logger.LogInformation("Getting books for author with ID {AuthorId}", id);
+
+            var author = await _context.Authors.FindAsync(id);
+            if (author == null)
+            {
+                _logger.LogWarning("Author with ID {AuthorId} not found", id);
+                return NotFound(new { message = "Author not found" });
+            }
+
+            try
+            {
+                var books = await _bookService.GetBooksByAuthorAsync(id);
+                _logger.LogInformation("Retrieved {BooksCount} books for author {AuthorId}", books.Count, id);
+                return Ok(books);
+            }
+            catch (TimeoutException ex)
+            {
+                _logger.LogWarning(ex, "Book service timeout while fetching books for author {AuthorId}", id);
+                return StatusCode(503, new { message = "Book service is temporarily unavailable" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while fetching books for author {AuthorId}", id);
+                return StatusCode(500, new { message = "Error retrieving books information" });
+            }
         }
 
         private static AuthorDto MapToDto(Author author) => new AuthorDto
@@ -228,7 +371,9 @@ namespace AuthorService.Controllers
             Website = author.Website,
             IsActive = author.IsActive,
             CreatedDate = author.CreatedDate,
-            LastModified = author.LastModified
+            LastModified = author.LastModified,
+            Age = author.Age,
+            Status = author.Status
         };
     }
 }
