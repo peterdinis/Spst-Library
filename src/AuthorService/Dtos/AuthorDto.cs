@@ -1,5 +1,6 @@
-using System;
+// AuthorService/Dtos/AuthorDto.cs
 using System.ComponentModel.DataAnnotations;
+using AuthorService.Messages;
 
 namespace AuthorService.Dtos
 {
@@ -14,16 +15,16 @@ namespace AuthorService.Dtos
         [Required(ErrorMessage = "Last name is required")]
         [StringLength(50, ErrorMessage = "Last name cannot exceed 50 characters")]
         [Display(Name = "Last Name")]
-        public string LastName { get; set; }  = null!;
+        public string LastName { get; set; } = null!;
 
         [StringLength(500, ErrorMessage = "Biography cannot exceed 500 characters")]
         [Display(Name = "Biography")]
-        public string Biography { get; set; }  = null!;
+        public string Biography { get; set; } = null!;
 
         [EmailAddress(ErrorMessage = "Invalid email address format")]
         [StringLength(100, ErrorMessage = "Email cannot exceed 100 characters")]
         [Display(Name = "Email Address")]
-        public string Email { get; set; }  = null!;
+        public string Email { get; set; } = null!;
 
         [Display(Name = "Date of Birth")]
         [DataType(DataType.Date)]
@@ -35,12 +36,12 @@ namespace AuthorService.Dtos
 
         [StringLength(50, ErrorMessage = "Country cannot exceed 50 characters")]
         [Display(Name = "Country")]
-        public string Country { get; set; }  = null!;
+        public string Country { get; set; } = null!;
 
         [Url(ErrorMessage = "Invalid URL format")]
         [StringLength(200, ErrorMessage = "Website URL cannot exceed 200 characters")]
         [Display(Name = "Website")]
-        public string Website { get; set; }  = null!;
+        public string Website { get; set; } = null!;
     }
 
     // DTO for creating a new author
@@ -75,5 +76,11 @@ namespace AuthorService.Dtos
 
         [Display(Name = "Last Modified")]
         public DateTime LastModified { get; set; }
+
+        // Properties for books from BookService
+        public List<AuthorBookDto> Books { get; set; } = new();
+        public int BooksCount { get; set; }
+        public int? Age { get; set; }
+        public string Status { get; set; } = string.Empty;
     }
 }
