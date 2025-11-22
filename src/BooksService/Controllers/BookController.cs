@@ -3,8 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using BooksService.Data;
 using BooksService.Dtos;
 using BooksService.Entities;
-using BooksService.Interfaces;
-using BooksService.Services;
 
 namespace BooksService.Controllers
 {
