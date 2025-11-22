@@ -2,16 +2,11 @@ using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 using Newtonsoft.Json;
+using BooksService.Interfaces;
 using BooksService.Messages;
 
 namespace BooksService.Services
 {
-    public interface IRabbitMQService
-    {
-        Task<bool> CheckCategoryExists(int categoryId);
-        void Dispose();
-    }
-
     public class RabbitMQService : IRabbitMQService
     {
         private readonly IConnection _connection;
@@ -28,7 +23,7 @@ namespace BooksService.Services
 
             var factory = new ConnectionFactory()
             {
-                HostName = "localhost", // alebo konfigurovateľné
+                HostName = "localhost",
                 UserName = "guest",
                 Password = "guest",
                 Port = 5672
@@ -37,17 +32,17 @@ namespace BooksService.Services
             _connection = factory.CreateConnection();
             _channel = _connection.CreateModel();
 
-            // Deklarovať request queue
+            // Declare request queue
             _channel.QueueDeclare(queue: _requestQueueName,
                                 durable: false,
                                 exclusive: false,
                                 autoDelete: false,
                                 arguments: null);
 
-            // Vytvoriť temporary response queue
+            // Create temporary response queue
             _responseQueueName = _channel.QueueDeclare().QueueName;
 
-            // Nastaviť consumer pre responses
+            // Set up consumer for responses
             var consumer = new EventingBasicConsumer(_channel);
             consumer.Received += OnResponseReceived;
             _channel.BasicConsume(queue: _responseQueueName,
@@ -57,15 +52,14 @@ namespace BooksService.Services
             _logger.LogInformation("RabbitMQ Service initialized");
         }
 
-        public async Task<bool> CheckCategoryExists(int categoryId)
+        public async Task<CategoryExistsResponse> GetCategoryAsync(int categoryId)
         {
             var request = new CategoryExistsRequest
             {
                 CategoryId = categoryId
             };
 
-            var response = await SendRequestAsync(request);
-            return response?.Exists ?? false;
+            return await SendRequestAsync(request);
         }
 
         private async Task<CategoryExistsResponse> SendRequestAsync(CategoryExistsRequest request)
@@ -87,7 +81,7 @@ namespace BooksService.Services
 
             _logger.LogInformation($"Sent category check request for ID: {request.CategoryId}");
 
-            // Timeout po 30 sekundách
+            // Timeout after 30 seconds
             var timeoutTask = Task.Delay(TimeSpan.FromSeconds(30));
             var completedTask = await Task.WhenAny(tcs.Task, timeoutTask);
 
@@ -113,7 +107,7 @@ namespace BooksService.Services
                 {
                     _pendingRequests.Remove(response.RequestId);
                     tcs.SetResult(response);
-                    _logger.LogInformation($"Received category check response for ID: {response.RequestId}");
+                    _logger.LogInformation($"Received category check response for ID: {response.RequestId}, Exists: {response.Exists}");
                 }
             }
             catch (Exception ex)

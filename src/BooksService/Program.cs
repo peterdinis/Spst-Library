@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using BooksService.Data;
 using BooksService.Validators;
 using FluentValidation;
+using BooksService.Services;
+using BooksService.Interfaces;
 using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +15,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<BookValidator>();
+builder.Services.AddScoped<IRabbitMQService, RabbitMQService>();
 
 var app = builder.Build();
 
