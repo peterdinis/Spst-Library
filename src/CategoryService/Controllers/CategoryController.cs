@@ -8,16 +8,10 @@ namespace CategoryService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class CategoriesController : ControllerBase
+    public class CategoriesController(ApplicationDbContext context, ILogger<CategoriesController> logger) : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
-        private readonly ILogger<CategoriesController> _logger;
-
-        public CategoriesController(ApplicationDbContext context, ILogger<CategoriesController> logger)
-        {
-            _context = context;
-            _logger = logger;
-        }
+        private readonly ApplicationDbContext _context = context;
+        private readonly ILogger<CategoriesController> _logger = logger;
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategories()
