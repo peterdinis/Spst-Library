@@ -63,22 +63,31 @@ namespace BooksService.Controllers
             {
                 // Check if category exists in CategoryService using RabbitMQ
                 var categoryResponse = await _rabbitMQService.GetCategoryAsync(dto.CategoryId);
-                
                 if (!categoryResponse.Exists)
                 {
                     _logger.LogWarning("Category with ID {CategoryId} does not exist", dto.CategoryId);
                     return BadRequest(new { message = $"Category with ID {dto.CategoryId} does not exist" });
                 }
 
+                // Check if author exists in AuthorService using RabbitMQ
+                var authorResponse = await _rabbitMQService.GetAuthorAsync(dto.AuthorId);
+                if (!authorResponse.Exists)
+                {
+                    _logger.LogWarning("Author with ID {AuthorId} does not exist", dto.AuthorId);
+                    return BadRequest(new { message = $"Author with ID {dto.AuthorId} does not exist" });
+                }
+
                 var book = new Book
                 {
                     Title = dto.Title,
-                    Author = dto.Author,
+                    AuthorId = dto.AuthorId,
+                    Author = authorResponse.AuthorName, // Set author name from AuthorService
                     Publisher = dto.Publisher,
                     Year = dto.Year,
                     ISBN = dto.ISBN,
                     Pages = dto.Pages,
                     CategoryId = dto.CategoryId,
+                    Category = categoryResponse.CategoryTitle, // Set category name from CategoryService
                     Language = dto.Language,
                     Description = dto.Description,
                     PhotoPath = dto.PhotoPath,
@@ -95,8 +104,8 @@ namespace BooksService.Controllers
             }
             catch (TimeoutException ex)
             {
-                _logger.LogWarning(ex, "Category service timeout while creating book");
-                return StatusCode(503, new { message = "Category service is temporarily unavailable" });
+                _logger.LogWarning(ex, "External service timeout while creating book");
+                return StatusCode(503, new { message = "External service is temporarily unavailable" });
             }
             catch (DbUpdateException ex)
             {
@@ -128,18 +137,30 @@ namespace BooksService.Controllers
                 if (book.CategoryId != dto.CategoryId)
                 {
                     var categoryResponse = await _rabbitMQService.GetCategoryAsync(dto.CategoryId);
-                    
                     if (!categoryResponse.Exists)
                     {
                         _logger.LogWarning("Category with ID {CategoryId} does not exist", dto.CategoryId);
                         return BadRequest(new { message = $"Category with ID {dto.CategoryId} does not exist" });
                     }
+                    book.Category = categoryResponse.CategoryTitle;
+                }
+
+                // Check if author exists when AuthorId is being updated
+                if (book.AuthorId != dto.AuthorId)
+                {
+                    var authorResponse = await _rabbitMQService.GetAuthorAsync(dto.AuthorId);
+                    if (!authorResponse.Exists)
+                    {
+                        _logger.LogWarning("Author with ID {AuthorId} does not exist", dto.AuthorId);
+                        return BadRequest(new { message = $"Author with ID {dto.AuthorId} does not exist" });
+                    }
+                    book.Author = authorResponse.AuthorName;
                 }
 
                 _logger.LogInformation("Updating book from: {OldTitle} to: {NewTitle}", book.Title, dto.Title);
 
                 book.Title = dto.Title;
-                book.Author = dto.Author;
+                book.AuthorId = dto.AuthorId;
                 book.Publisher = dto.Publisher;
                 book.Year = dto.Year;
                 book.ISBN = dto.ISBN;
@@ -157,8 +178,8 @@ namespace BooksService.Controllers
             }
             catch (TimeoutException ex)
             {
-                _logger.LogWarning(ex, "Category service timeout while updating book with ID {BookId}", id);
-                return StatusCode(503, new { message = "Category service is temporarily unavailable" });
+                _logger.LogWarning(ex, "External service timeout while updating book with ID {BookId}", id);
+                return StatusCode(503, new { message = "External service is temporarily unavailable" });
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -213,6 +234,7 @@ namespace BooksService.Controllers
             Id = book.Id,
             Title = book.Title,
             Author = book.Author,
+            AuthorId = book.AuthorId,
             Publisher = book.Publisher,
             Year = book.Year,
             ISBN = book.ISBN,

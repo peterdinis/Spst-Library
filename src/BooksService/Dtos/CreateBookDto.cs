@@ -11,6 +11,8 @@ namespace BooksService.Dtos
         public string Category { get; set; } = null!;
 
         public int CategoryId {get; set;}
+
+        public int AuthorId { get; set; }
         public string Language { get; set; } = null!;
         public string Description { get; set; } = null!;
         public string PhotoPath { get; set; } = null!;
