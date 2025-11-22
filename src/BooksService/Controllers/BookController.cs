@@ -4,18 +4,26 @@ using BooksService.Data;
 using BooksService.Dtos;
 using BooksService.Entities;
 using BooksService.Interfaces;
-using BooksService.Services;
 
 namespace BooksService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class BooksController(ApplicationDbContext context, ILogger<BooksController> logger, ICategoryService categoryService) : ControllerBase
+    public class BooksController : ControllerBase
     {
-        private readonly ApplicationDbContext _context = context;
-        private readonly ILogger<BooksController> _logger = logger;
+        private readonly ApplicationDbContext _context;
+        private readonly ILogger<BooksController> _logger;
+        private readonly IRabbitMQService _rabbitMQService;
 
-        private readonly ICategoryService _categoryService = categoryService;
+        public BooksController(
+            ApplicationDbContext context, 
+            ILogger<BooksController> logger, 
+            IRabbitMQService rabbitMQService)
+        {
+            _context = context;
+            _logger = logger;
+            _rabbitMQService = rabbitMQService;
+        }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BookDto>>> GetBooks()
@@ -51,52 +59,55 @@ namespace BooksService.Controllers
         {
             _logger.LogInformation("Creating new book with title: {BookTitle}", dto.Title);
 
-            // Check if category exists in CategoryService
-            if (!await _categoryService.CategoryExistsAsync(dto.CategoryId))
-            {
-                _logger.LogWarning("Category with ID {CategoryId} does not exist", dto.CategoryId);
-                return BadRequest(new { message = $"Category with ID {dto.CategoryId} does not exist" });
-            }
-
-            // Get category name from CategoryService
-            var category = await _categoryService.GetCategoryAsync(dto.CategoryId);
-            if (category == null)
-            {
-                _logger.LogError("Failed to retrieve category {CategoryId} from CategoryService", dto.CategoryId);
-                return StatusCode(500, new { message = "Error retrieving category information" });
-            }
-
-            var book = new Book
-            {
-                Title = dto.Title,
-                Author = dto.Author,
-                Publisher = dto.Publisher,
-                Year = dto.Year,
-                ISBN = dto.ISBN,
-                Pages = dto.Pages,
-                CategoryId = dto.CategoryId,
-                Category = category.Name, // Set from CategoryService
-                Language = dto.Language,
-                Description = dto.Description,
-                PhotoPath = dto.PhotoPath,
-                IsAvailable = true,
-                AddedToLibrary = DateTime.UtcNow
-            };
-
             try
             {
+                // Check if category exists in CategoryService using RabbitMQ
+                var categoryResponse = await _rabbitMQService.GetCategoryAsync(dto.CategoryId);
+                
+                if (!categoryResponse.Exists)
+                {
+                    _logger.LogWarning("Category with ID {CategoryId} does not exist", dto.CategoryId);
+                    return BadRequest(new { message = $"Category with ID {dto.CategoryId} does not exist" });
+                }
+
+                var book = new Book
+                {
+                    Title = dto.Title,
+                    Author = dto.Author,
+                    Publisher = dto.Publisher,
+                    Year = dto.Year,
+                    ISBN = dto.ISBN,
+                    Pages = dto.Pages,
+                    CategoryId = dto.CategoryId,
+                    Language = dto.Language,
+                    Description = dto.Description,
+                    PhotoPath = dto.PhotoPath,
+                    IsAvailable = true,
+                    AddedToLibrary = DateTime.UtcNow
+                };
+
                 _context.Books.Add(book);
                 await _context.SaveChangesAsync();
 
                 _logger.LogInformation("Book created successfully with ID {BookId}: {BookTitle}", book.Id, book.Title);
+
+                return CreatedAtAction(nameof(GetBook), new { id = book.Id }, MapToDto(book));
+            }
+            catch (TimeoutException ex)
+            {
+                _logger.LogWarning(ex, "Category service timeout while creating book");
+                return StatusCode(503, new { message = "Category service is temporarily unavailable" });
             }
             catch (DbUpdateException ex)
             {
                 _logger.LogError(ex, "Database error while creating book with title: {BookTitle}", dto.Title);
                 return StatusCode(500, new { message = "Database error", details = ex.Message });
             }
-
-            return CreatedAtAction(nameof(GetBook), new { id = book.Id }, MapToDto(book));
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while creating book with title: {BookTitle}", dto.Title);
+                return StatusCode(500, new { message = "Internal server error" });
+            }
         }
 
         [HttpPut("{id}")]
@@ -111,43 +122,43 @@ namespace BooksService.Controllers
                 return NotFound(new { message = "Book not found" });
             }
 
-            // Check if category exists when CategoryId is being updated
-            if (book.CategoryId != dto.CategoryId)
-            {
-                if (!await _categoryService.CategoryExistsAsync(dto.CategoryId))
-                {
-                    _logger.LogWarning("Category with ID {CategoryId} does not exist", dto.CategoryId);
-                    return BadRequest(new { message = $"Category with ID {dto.CategoryId} does not exist" });
-                }
-
-                var category = await _categoryService.GetCategoryAsync(dto.CategoryId);
-                if (category == null)
-                {
-                    _logger.LogError("Failed to retrieve category {CategoryId} from CategoryService", dto.CategoryId);
-                    return StatusCode(500, new { message = "Error retrieving category information" });
-                }
-
-                book.Category = category.Name;
-            }
-
-            _logger.LogInformation("Updating book from: {OldTitle} to: {NewTitle}", book.Title, dto.Title);
-
-            book.Title = dto.Title;
-            book.Author = dto.Author;
-            book.Publisher = dto.Publisher;
-            book.Year = dto.Year;
-            book.ISBN = dto.ISBN;
-            book.Pages = dto.Pages;
-            book.CategoryId = dto.CategoryId;
-            book.Language = dto.Language;
-            book.Description = dto.Description;
-            book.PhotoPath = dto.PhotoPath;
-            book.IsAvailable = dto.IsAvailable;
-
             try
             {
+                // Check if category exists when CategoryId is being updated
+                if (book.CategoryId != dto.CategoryId)
+                {
+                    var categoryResponse = await _rabbitMQService.GetCategoryAsync(dto.CategoryId);
+                    
+                    if (!categoryResponse.Exists)
+                    {
+                        _logger.LogWarning("Category with ID {CategoryId} does not exist", dto.CategoryId);
+                        return BadRequest(new { message = $"Category with ID {dto.CategoryId} does not exist" });
+                    }
+                }
+
+                _logger.LogInformation("Updating book from: {OldTitle} to: {NewTitle}", book.Title, dto.Title);
+
+                book.Title = dto.Title;
+                book.Author = dto.Author;
+                book.Publisher = dto.Publisher;
+                book.Year = dto.Year;
+                book.ISBN = dto.ISBN;
+                book.Pages = dto.Pages;
+                book.CategoryId = dto.CategoryId;
+                book.Language = dto.Language;
+                book.Description = dto.Description;
+                book.PhotoPath = dto.PhotoPath;
+                book.IsAvailable = dto.IsAvailable;
+
                 await _context.SaveChangesAsync();
                 _logger.LogInformation("Book with ID {BookId} updated successfully", id);
+
+                return NoContent();
+            }
+            catch (TimeoutException ex)
+            {
+                _logger.LogWarning(ex, "Category service timeout while updating book with ID {BookId}", id);
+                return StatusCode(503, new { message = "Category service is temporarily unavailable" });
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -159,8 +170,11 @@ namespace BooksService.Controllers
                 _logger.LogError(ex, "Database error while updating book with ID {BookId}", id);
                 return StatusCode(500, new { message = "Database error", details = ex.Message });
             }
-
-            return NoContent();
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error while updating book with ID {BookId}", id);
+                return StatusCode(500, new { message = "Internal server error" });
+            }
         }
 
         [HttpDelete("{id}")]
