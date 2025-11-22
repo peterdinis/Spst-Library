@@ -1,0 +1,10 @@
+using BooksService.Messages;
+
+namespace BooksService.Interfaces
+{
+    public interface IRabbitMQService
+    {
+        Task<CategoryExistsResponse> GetCategoryAsync(int categoryId);
+        void Dispose();
+    }
+}

@@ -2,9 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using BooksService.Data;
 using BooksService.Validators;
 using FluentValidation;
-using FluentValidation.AspNetCore;
-using BooksService.Interfaces;
 using BooksService.Services;
+using BooksService.Interfaces;
+using FluentValidation.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,12 +15,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<BookValidator>();
-
-builder.Services.AddHttpClient<ICategoryService, CategoryService>(client =>
-{
-    client.BaseAddress = new Uri(builder.Configuration["Services:CategoryService"]);
-    client.DefaultRequestHeaders.Add("Accept", "application/json");
-});
+builder.Services.AddScoped<IRabbitMQService, RabbitMQService>();
 
 var app = builder.Build();
 
