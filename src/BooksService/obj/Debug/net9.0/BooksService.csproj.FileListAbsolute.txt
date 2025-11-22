@@ -157,3 +157,11 @@
 /home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/FluentValidation.dll
 /home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/FluentValidation.AspNetCore.dll
 /home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/FluentValidation.DependencyInjectionExtensions.dll
+/home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/Microsoft.Extensions.Configuration.dll
+/home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/Microsoft.Extensions.Configuration.Binder.dll
+/home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/Microsoft.Extensions.Diagnostics.dll
+/home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/Microsoft.Extensions.Diagnostics.Abstractions.dll
+/home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/Microsoft.Extensions.Http.dll
+/home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll
+/home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/Newtonsoft.Json.dll
+/home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/RabbitMQ.Client.dll
