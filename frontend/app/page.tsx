@@ -1,11 +1,7 @@
-import { NextPage } from 'next';
+import { NextPage } from "next";
 
-const App: NextPage = () => {
-  return (
-    <div>
-      HOME
-    </div>
-  );
-};
+const Homepage: NextPage = () => {
+  return <h1>Welcome to the Homepage</h1>;
+}
 
-export default App;
+export default Homepage;
