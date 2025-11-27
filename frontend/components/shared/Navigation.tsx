@@ -3,7 +3,7 @@
 import { FC, useState, useTransition } from "react";
 import { BookOpen, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {motion, AnimatePresence} from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { usePathname, useRouter } from "next/navigation";
 import { ModeToggle } from "./ModeToggle";
 
@@ -68,10 +68,9 @@ const Navigation: FC = () => {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleNavigation(link.to)}
                 className={`text-sm font-medium transition-colors hover:text-primary relative
-                  ${
-                    pathname === link.to
-                      ? "text-primary"
-                      : "text-foreground/80"
+                  ${pathname === link.to
+                    ? "text-primary"
+                    : "text-foreground/80"
                   }
                   ${isPending ? "opacity-50 pointer-events-none" : ""}
                 `}
@@ -96,6 +95,7 @@ const Navigation: FC = () => {
             >
               Prihlásenie
             </Button>
+            <ModeToggle />
           </nav>
 
           {/* Mobile Menu Button */}
@@ -129,10 +129,9 @@ const Navigation: FC = () => {
                       onClick={() => handleNavigation(link.to)}
                       className={`
                         text-sm font-medium transition-colors py-2 text-left
-                        ${
-                          pathname === link.to
-                            ? "text-primary underline decoration-2 underline-offset-4"
-                            : "text-foreground/80 hover:text-primary"
+                        ${pathname === link.to
+                          ? "text-primary underline decoration-2 underline-offset-4"
+                          : "text-foreground/80 hover:text-primary"
                         }
                         ${isPending ? "opacity-50 pointer-events-none" : ""}
                       `}
@@ -140,8 +139,6 @@ const Navigation: FC = () => {
                       {link.label}
                     </motion.button>
                   ))}
-
-                  <ModeToggle />
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -157,6 +154,9 @@ const Navigation: FC = () => {
                       Prihlásenie
                     </Button>
                   </motion.div>
+                </div>
+                <div className="mt-5">
+                  <ModeToggle />
                 </div>
               </nav>
             </motion.div>
