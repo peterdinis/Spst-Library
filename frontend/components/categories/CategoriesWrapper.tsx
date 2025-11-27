@@ -1,13 +1,13 @@
 "use client";
 
-import { FC, JSX, useState } from "react";
+import { FC, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { Search, BookOpen, Library, Users, Clock, ArrowRight, Filter } from "lucide-react";
+import { Search, BookOpen, Filter, ArrowRight, Library } from "lucide-react";
 
 interface Category {
   id: number;
@@ -15,8 +15,6 @@ interface Category {
   description: string;
   bookCount: number;
   availableBooks: number;
-  icon: JSX.Element;
-  color: string;
   popular: boolean;
 }
 
@@ -34,8 +32,6 @@ const CategoriesWrapper: FC = () => {
       description: "Klasické a moderné romány z celého sveta",
       bookCount: 156,
       availableBooks: 128,
-      icon: <BookOpen className="w-6 h-6" />,
-      color: "bg-blue-500/20 text-blue-600 border-blue-200",
       popular: true
     },
     {
@@ -44,8 +40,6 @@ const CategoriesWrapper: FC = () => {
       description: "Napínavé príbehy plné záhad a vyšetrovania",
       bookCount: 89,
       availableBooks: 67,
-      icon: <Library className="w-6 h-6" />,
-      color: "bg-green-500/20 text-green-600 border-green-200",
       popular: true
     },
     {
@@ -54,8 +48,6 @@ const CategoriesWrapper: FC = () => {
       description: "Svety plné čarov, príšer a dobrodružstiev",
       bookCount: 134,
       availableBooks: 112,
-      icon: <Users className="w-6 h-6" />,
-      color: "bg-purple-500/20 text-purple-600 border-purple-200",
       popular: true
     },
     {
@@ -64,8 +56,6 @@ const CategoriesWrapper: FC = () => {
       description: "Vízie budúcnosti a vesmírnych dobrodružstiev",
       bookCount: 78,
       availableBooks: 65,
-      icon: <Clock className="w-6 h-6" />,
-      color: "bg-orange-500/20 text-orange-600 border-orange-200",
       popular: false
     },
     {
@@ -74,8 +64,6 @@ const CategoriesWrapper: FC = () => {
       description: "Príbehy z minulosti a historické udalosti",
       bookCount: 92,
       availableBooks: 78,
-      icon: <BookOpen className="w-6 h-6" />,
-      color: "bg-amber-500/20 text-amber-600 border-amber-200",
       popular: false
     },
     {
@@ -84,8 +72,6 @@ const CategoriesWrapper: FC = () => {
       description: "Životné príbehy významných osobností",
       bookCount: 67,
       availableBooks: 54,
-      icon: <Users className="w-6 h-6" />,
-      color: "bg-red-500/20 text-red-600 border-red-200",
       popular: false
     },
     {
@@ -94,8 +80,6 @@ const CategoriesWrapper: FC = () => {
       description: "Básnické zbierky a verše",
       bookCount: 45,
       availableBooks: 38,
-      icon: <Library className="w-6 h-6" />,
-      color: "bg-pink-500/20 text-pink-600 border-pink-200",
       popular: false
     },
     {
@@ -104,8 +88,6 @@ const CategoriesWrapper: FC = () => {
       description: "Príbehy z cest a objavovania sveta",
       bookCount: 53,
       availableBooks: 42,
-      icon: <Clock className="w-6 h-6" />,
-      color: "bg-cyan-500/20 text-cyan-600 border-cyan-200",
       popular: true
     },
     {
@@ -114,8 +96,6 @@ const CategoriesWrapper: FC = () => {
       description: "Divadelné hry a dramatické texty",
       bookCount: 38,
       availableBooks: 31,
-      icon: <BookOpen className="w-6 h-6" />,
-      color: "bg-indigo-500/20 text-indigo-600 border-indigo-200",
       popular: false
     }
   ];
@@ -155,23 +135,18 @@ const CategoriesWrapper: FC = () => {
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.9 },
+    hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
-      scale: 1,
       transition: {
-        duration: 0.5,
-        ease: "easeOut"
+        duration: 0.5
       }
     }
   };
 
-  const totalBooks = categories.reduce((sum, category) => sum + category.bookCount, 0);
-  const totalAvailable = categories.reduce((sum, category) => sum + category.availableBooks, 0);
-
   return (
-    <section className="py-16 bg-gradient-to-b from-background to-muted/20">
+    <section className="py-16 bg-background">
       <div className="container mx-auto px-4">
         {/* Header */}
         <motion.div
@@ -188,38 +163,11 @@ const CategoriesWrapper: FC = () => {
           </p>
         </motion.div>
 
-        {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
-        >
-          <Card className="bg-blue-500/10 border-blue-200">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">{categories.length}</div>
-              <div className="text-sm text-blue-600 font-medium">Kategórií</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-green-500/10 border-green-200">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-green-600 mb-2">{totalBooks}</div>
-              <div className="text-sm text-green-600 font-medium">Celkom kníh</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-purple-500/10 border-purple-200">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">{totalAvailable}</div>
-              <div className="text-sm text-purple-600 font-medium">Dostupné knihy</div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
         {/* Search and Filters */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
           className="mb-8"
         >
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -275,55 +223,46 @@ const CategoriesWrapper: FC = () => {
                     key={category.id}
                     variants={itemVariants}
                     layout
-                    whileHover={{ 
-                      y: -8, 
-                      scale: 1.02,
-                      transition: { duration: 0.2 }
-                    }}
+                    whileHover={{ y: -5, transition: { duration: 0.2 } }}
                   >
-                    <Card className={`h-full border-2 hover:shadow-xl transition-all duration-300 cursor-pointer ${category.color}`}>
-                      <CardContent className="p-6">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className={`p-3 rounded-lg ${category.color.split(' ')[0]}`}>
-                            {category.icon}
+                    <Card className="h-full hover:shadow-lg transition-shadow duration-300">
+                      <CardHeader className="pb-3">
+                        <div className="flex justify-between items-start mb-2">
+                          <Badge variant={category.popular ? "default" : "secondary"}>
+                            {category.popular ? "Populárne" : "Štandardné"}
+                          </Badge>
+                          <div className="text-sm text-muted-foreground">
+                            {category.availableBooks}/{category.bookCount} dostupných
                           </div>
-                          {category.popular && (
-                            <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-700 border-yellow-300">
-                              Populárne
-                            </Badge>
-                          )}
                         </div>
-
-                        <h3 className="text-xl font-bold mb-2">{category.name}</h3>
-                        <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
+                        <CardTitle className="text-xl flex items-center gap-2">
+                          <BookOpen className="h-5 w-5 text-primary" />
+                          {category.name}
+                        </CardTitle>
+                        <CardDescription className="mt-2">
                           {category.description}
-                        </p>
-
-                        <div className="flex justify-between items-center mb-4">
-                          <div className="text-sm">
-                            <div className="font-semibold">{category.bookCount} kníh</div>
-                            <div className="text-muted-foreground">
-                              {category.availableBooks} dostupných
-                            </div>
-                          </div>
-                          <div className="w-16 bg-muted rounded-full h-2">
-                            <div 
-                              className="bg-green-500 h-2 rounded-full"
-                              style={{ 
-                                width: `${(category.availableBooks / category.bookCount) * 100}%` 
-                              }}
-                            />
-                          </div>
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="pb-3">
+                        <div className="flex justify-between items-center text-sm text-muted-foreground mb-3">
+                          <span>Celkový počet kníh: {category.bookCount}</span>
+                          <span>Dostupnosť: {Math.round((category.availableBooks / category.bookCount) * 100)}%</span>
                         </div>
-
-                        <Button 
-                          variant="outline" 
-                          className="w-full flex items-center gap-2 group"
-                        >
+                        <div className="w-full bg-muted rounded-full h-2">
+                          <div 
+                            className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                            style={{ 
+                              width: `${(category.availableBooks / category.bookCount) * 100}%` 
+                            }}
+                          />
+                        </div>
+                      </CardContent>
+                      <CardFooter>
+                        <Button className="w-full flex items-center gap-2 group">
                           Prezrieť kategóriu
                           <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                         </Button>
-                      </CardContent>
+                      </CardFooter>
                     </Card>
                   </motion.div>
                 ))}
@@ -334,7 +273,7 @@ const CategoriesWrapper: FC = () => {
                 animate={{ opacity: 1 }}
                 className="text-center py-12"
               >
-                <Library className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                 <h3 className="text-xl font-semibold mb-2">Nenašli sa žiadne kategórie</h3>
                 <p className="text-muted-foreground">
                   Skúste zmeniť vyhľadávací výraz alebo filtrovanie.
@@ -394,31 +333,36 @@ const CategoriesWrapper: FC = () => {
           </motion.div>
         )}
 
-        {/* Quick Stats */}
+        {/* Stats */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.6 }}
           className="text-center mt-12"
         >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl mx-auto">
-            <div className="text-center p-4 bg-muted/50 rounded-lg">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
+            <div className="text-center">
               <div className="text-2xl font-bold text-primary">{categories.length}</div>
               <div className="text-sm text-muted-foreground">Kategórií</div>
             </div>
-            <div className="text-center p-4 bg-muted/50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{totalBooks}</div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {categories.reduce((sum, cat) => sum + cat.bookCount, 0)}
+              </div>
               <div className="text-sm text-muted-foreground">Celkom kníh</div>
             </div>
-            <div className="text-center p-4 bg-muted/50 rounded-lg">
+            <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">
                 {categories.filter(c => c.popular).length}
               </div>
               <div className="text-sm text-muted-foreground">Populárnych</div>
             </div>
-            <div className="text-center p-4 bg-muted/50 rounded-lg">
+            <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
-                {Math.round((totalAvailable / totalBooks) * 100)}%
+                {Math.round(
+                  (categories.reduce((sum, cat) => sum + cat.availableBooks, 0) / 
+                   categories.reduce((sum, cat) => sum + cat.bookCount, 0)) * 100
+                )}%
               </div>
               <div className="text-sm text-muted-foreground">Dostupnosť</div>
             </div>
