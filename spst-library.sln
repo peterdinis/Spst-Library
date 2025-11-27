@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CategoryService", "src\Cate
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthorService", "src\AuthorService\AuthorService.csproj", "{B98FD154-C1A4-4BF3-9C13-04EF17FD5FFD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PublisherService", "src\PublisherService\PublisherService.csproj", "{43494AEA-F4F2-431A-AB62-BAF3486F4D73}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

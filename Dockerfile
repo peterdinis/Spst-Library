@@ -9,14 +9,12 @@ COPY *.sln ./
 RUN mkdir -p src/SearchService && \
     mkdir -p src/AuthorService && \
     mkdir -p src/CategoryService && \
-    mkdir -p src/PublisherService && \
     mkdir -p src/GatewayService && \
     mkdir -p src/BooksService
 
 COPY src/SearchService/*.csproj src/SearchService/
 COPY src/AuthorService/*.csproj src/AuthorService/
 COPY src/CategoryService/*.csproj src/CategoryService/
-COPY src/PublisherService/*.csproj src/PublisherService/
 COPY src/GatewayService/*.csproj src/GatewayService/
 COPY src/BooksService/*.csproj src/BooksService/
 
