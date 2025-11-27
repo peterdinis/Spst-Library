@@ -1,7 +1,16 @@
+import Hero from "@/components/home/Hero";
+import Services from "@/components/home/Services";
+import Footer from "@/components/shared/Footer";
 import { NextPage } from "next";
 
 const Homepage: NextPage = () => {
-  return <h1>Welcome to the Homepage</h1>;
+  return (
+    <>
+      <Hero />
+      <Services />
+      <Footer />
+    </>
+  )
 }
 
 export default Homepage;
