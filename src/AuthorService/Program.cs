@@ -5,6 +5,8 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using AuthorService.Services;
 using AuthorService.Interfaces;
+using Microsoft.AspNetCore.OData;
+using Microsoft.OData.ModelBuilder;
 
 var builder = WebApplication.CreateBuilder(args);
 
