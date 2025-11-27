@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Ubuntu } from "next/font/google";
 import "./globals.css";
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import Navigation from "@/components/shared/Navigation";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const ubuntu = Ubuntu({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
+  variable: "--font-ubuntu",
 });
 
 export const metadata: Metadata = {
@@ -22,11 +21,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-          {children}
+    <html lang="en" className={ubuntu.variable} suppressHydrationWarning>
+      <body className="font-sans">
+         <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <Navigation />
+            {children}
+          </ThemeProvider>
       </body>
     </html>
   );
