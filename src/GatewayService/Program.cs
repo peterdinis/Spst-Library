@@ -24,6 +24,14 @@ app.UseRouting();
 
 app.UseCors("customPolicy"); // Use the named policy
 
+app.Map("/debug", async (HttpContext context) => {
+    var config = context.RequestServices.GetRequiredService<IProxyConfigProvider>();
+    return Results.Json(new {
+        routes = config.GetConfig().Routes,
+        clusters = config.GetConfig().Clusters
+    });
+});
+
 app.UseAuthentication(); 
 app.UseAuthorization();
 
