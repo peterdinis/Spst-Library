@@ -1,6 +1,8 @@
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddReverseProxy().LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+// Add services
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
 builder.Services.AddCors(options => {
     options.AddPolicy("customPolicy", b => {
@@ -11,11 +13,20 @@ builder.Services.AddCors(options => {
     });
 });
 
+// Add authentication and authorization if needed
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
+
+// Middleware in correct order
+app.UseRouting();
+
+app.UseCors("customPolicy"); // Use the named policy
+
+app.UseAuthentication(); 
+app.UseAuthorization();
 
 app.MapReverseProxy();
 
-app.UseCors();
-
-app.UseAuthentication();
-app.UseAuthorization();
+app.Run();
