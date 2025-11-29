@@ -1,16 +1,16 @@
-namespace SchoolLibraryIdentity.Controllers
+using IdentityService.Entities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+
+namespace IdentityService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(Roles = "Admin")]
-    public class UsersController : ControllerBase
+    public class UsersController(UserManager<ApplicationUser> userManager) : ControllerBase
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-
-        public UsersController(UserManager<ApplicationUser> userManager)
-        {
-            _userManager = userManager;
-        }
+        private readonly UserManager<ApplicationUser> _userManager = userManager;
 
         [HttpGet]
         public async Task<IActionResult> GetAllUsers()

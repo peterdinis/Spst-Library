@@ -1,4 +1,9 @@
-namespace SchoolLibraryIdentity.Controllers
+using IdentityService.Entities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+
+namespace IdentityService.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -26,8 +31,6 @@ namespace SchoolLibraryIdentity.Controllers
                 UserName = model.Email,
                 Email = model.Email,
                 FullName = model.FullName,
-                StudentId = model.StudentId,
-                TeacherId = model.TeacherId
             };
 
             var result = await _userManager.CreateAsync(user, model.Password);
