@@ -5,8 +5,8 @@ services:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-      - "5672:5672"   # AMQP protocol
-      - "15672:15672" # Management UI
+      - "5672:5672"
+      - "15672:15672"
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
@@ -14,6 +14,11 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - spsif-library-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   search-service:
     build:
@@ -21,18 +26,27 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: SearchService
+    container_name: search-service
     ports:
       - "5008:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
       - RABBITMQ__HOST=rabbitmq
       - RABBITMQ__PORT=5672
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - spsif-library-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   author-service:
     build:
@@ -40,18 +54,27 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: AuthorService
+    container_name: author-service
     ports:
       - "5001:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
       - RABBITMQ__HOST=rabbitmq
       - RABBITMQ__PORT=5672
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - spsif-library-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   category-service:
     build:
@@ -59,18 +82,27 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: CategoryService
+    container_name: category-service
     ports:
       - "5002:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
       - RABBITMQ__HOST=rabbitmq
       - RABBITMQ__PORT=5672
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - spsif-library-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   publisher-service:
     build:
@@ -78,37 +110,55 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: PublisherService
+    container_name: publisher-service
     ports:
       - "5003:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
       - RABBITMQ__HOST=rabbitmq
       - RABBITMQ__PORT=5672
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - spsif-library-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   books-service:
     build:
       context: .
       dockerfile: Dockerfile
       args:
-        SERVICE_NAME: BooksService  # OPRAVENÉ: BooksService namiesto BookService
+        SERVICE_NAME: BooksService
+    container_name: books-service
     ports:
       - "5000:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
       - RABBITMQ__HOST=rabbitmq
       - RABBITMQ__PORT=5672
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - spsif-library-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   gateway-service:
     build:
@@ -116,17 +166,24 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: GatewayService
+    container_name: gateway-service
     ports:
       - "8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - ClientApp=http://localhost:3000
     depends_on:
-      - search-service
-      - author-service
-      - category-service
-      - publisher-service
-      - books-service  # OPRAVENÉ: books-service namiesto book-service
-      - rabbitmq
+      search-service:
+        condition: service_healthy
+      author-service:
+        condition: service_healthy
+      category-service:
+        condition: service_healthy
+      publisher-service:
+        condition: service_healthy
+      books-service:
+        condition: service_healthy
     networks:
       - spsif-library-network
 
