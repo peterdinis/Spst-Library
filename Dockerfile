@@ -12,9 +12,16 @@ WORKDIR "/src/src/${SERVICE_NAME}"
 RUN dotnet build "${SERVICE_NAME}.csproj" -c Release -o /app/build
 
 FROM build AS publish
+ARG SERVICE_NAME
 RUN dotnet publish "${SERVICE_NAME}.csproj" -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+ARG SERVICE_NAME
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "${SERVICE_NAME}.dll"]
+
+# Set environment variable for the DLL name
+ENV SERVICE_DLL="${SERVICE_NAME}.dll"
+
+# Use shell form to allow variable expansion
+ENTRYPOINT sh -c "dotnet ${SERVICE_DLL}"

@@ -14,6 +14,11 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - spsif-library-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   search-service:
     build:
@@ -32,9 +37,16 @@ services:
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - spsif-library-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   author-service:
     build:
@@ -53,9 +65,16 @@ services:
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - spsif-library-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   category-service:
     build:
@@ -74,9 +93,16 @@ services:
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - spsif-library-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   publisher-service:
     build:
@@ -95,9 +121,16 @@ services:
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - spsif-library-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   books-service:
     build:
@@ -116,9 +149,16 @@ services:
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - spsif-library-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   gateway-service:
     build:
@@ -132,12 +172,18 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
+      - ClientApp=http://localhost:3000
     depends_on:
-      - search-service
-      - author-service
-      - category-service
-      - publisher-service
-      - books-service
+      search-service:
+        condition: service_healthy
+      author-service:
+        condition: service_healthy
+      category-service:
+        condition: service_healthy
+      publisher-service:
+        condition: service_healthy
+      books-service:
+        condition: service_healthy
     networks:
       - spsif-library-network
 
