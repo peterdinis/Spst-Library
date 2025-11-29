@@ -23,5 +23,5 @@ COPY --from=publish /app/publish .
 # Set environment variable for the DLL name
 ENV SERVICE_DLL="${SERVICE_NAME}.dll"
 
-# Use shell form to allow variable expansion
-ENTRYPOINT sh -c "dotnet ${SERVICE_DLL}"
+# Use JSON form for proper signal handling
+ENTRYPOINT ["sh", "-c", "dotnet ${SERVICE_DLL}"]
