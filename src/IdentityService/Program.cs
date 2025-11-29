@@ -55,19 +55,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Seed roles and default admin
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    await SeedData.Initialize(services);
-}
-
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
 app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 app.UseAuthentication();
