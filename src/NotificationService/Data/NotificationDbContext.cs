@@ -7,8 +7,6 @@ namespace NotificationService.Data
     {
         public DbSet<Notification> Notifications => Set<Notification>();
 
-        public DbSet<NotificationRequest> NotificationRequests => Set<NotificationRequest>();
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Notification>(entity =>

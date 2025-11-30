@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace NotificationService.Entities
+namespace NotificationService.Models
 {
     public class NotificationRequest
     {
