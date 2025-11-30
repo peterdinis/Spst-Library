@@ -2,26 +2,31 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG SERVICE_NAME
 WORKDIR /src
 
-# Copy project file
+# Copy solution and project files first for better caching
+COPY ["NuGet.config", "."]
+COPY ["Directory.Build.props", "."]
 COPY ["src/${SERVICE_NAME}/${SERVICE_NAME}.csproj", "src/${SERVICE_NAME}/"]
-RUN dotnet restore "src/${SERVICE_NAME}/${SERVICE_NAME}.csproj"
+COPY ["src/Shared/Shared.csproj", "src/Shared/"]
 
-# Copy everything else and build
+# Restore dependencies
+RUN dotnet restore "src/${SERVICE_NAME}/${SERVICE_NAME}.csproj" --runtime linux-x64
+
+# Copy everything else
 COPY . .
+
+# Build and publish in single stage
 WORKDIR "/src/src/${SERVICE_NAME}"
-RUN dotnet build "${SERVICE_NAME}.csproj" -c Release -o /app/build
+RUN dotnet publish "${SERVICE_NAME}.csproj" \
+    -c Release \
+    -o /app/publish \
+    --runtime linux-x64 \
+    --self-contained false \
+    --no-restore
 
-FROM build AS publish
-ARG SERVICE_NAME
-RUN dotnet publish "${SERVICE_NAME}.csproj" -c Release -o /app/publish
-
+# Runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
-ARG SERVICE_NAME
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 
-# Set environment variable for the DLL name
-ENV SERVICE_DLL="${SERVICE_NAME}.dll"
-
-# Use JSON form for proper signal handling
-ENTRYPOINT ["sh", "-c", "dotnet ${SERVICE_DLL}"]
+# Use direct dotnet command for better performance
+ENTRYPOINT ["dotnet", "GatewayService.dll"]

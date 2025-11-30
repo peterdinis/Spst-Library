@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:3-management-alpine
     container_name: rabbitmq
     ports:
       - "5672:5672"
@@ -18,7 +18,7 @@ services:
       test: rabbitmq-diagnostics -q ping
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 3
 
   author-service:
     build:
@@ -26,6 +26,9 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: AuthorService
+      cache_from:
+        - mcr.microsoft.com/dotnet/sdk:9.0
+        - mcr.microsoft.com/dotnet/aspnet:9.0
     container_name: author-service
     ports:
       - "5001:8080"
@@ -36,17 +39,20 @@ services:
       - RABBITMQ__PORT=5672
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
+      - DOTNET_READYTORUN=1
+      - DOTNET_TieredCompilation=1
+      - DOTNET_TieredPGO=1
     depends_on:
       rabbitmq:
         condition: service_healthy
     networks:
       - spsif-library-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   category-service:
     build:
@@ -54,6 +60,9 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: CategoryService
+      cache_from:
+        - mcr.microsoft.com/dotnet/sdk:9.0
+        - mcr.microsoft.com/dotnet/aspnet:9.0
     container_name: category-service
     ports:
       - "5002:8080"
@@ -64,17 +73,20 @@ services:
       - RABBITMQ__PORT=5672
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
+      - DOTNET_READYTORUN=1
+      - DOTNET_TieredCompilation=1
+      - DOTNET_TieredPGO=1
     depends_on:
       rabbitmq:
         condition: service_healthy
     networks:
       - spsif-library-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   books-service:
     build:
@@ -82,6 +94,9 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: BooksService
+      cache_from:
+        - mcr.microsoft.com/dotnet/sdk:9.0
+        - mcr.microsoft.com/dotnet/aspnet:9.0
     container_name: books-service
     ports:
       - "5000:8080"
@@ -92,17 +107,20 @@ services:
       - RABBITMQ__PORT=5672
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
+      - DOTNET_READYTORUN=1
+      - DOTNET_TieredCompilation=1
+      - DOTNET_TieredPGO=1
     depends_on:
       rabbitmq:
         condition: service_healthy
     networks:
       - spsif-library-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
   gateway-service:
     build:
@@ -110,6 +128,9 @@ services:
       dockerfile: Dockerfile
       args:
         SERVICE_NAME: GatewayService
+      cache_from:
+        - mcr.microsoft.com/dotnet/sdk:9.0
+        - mcr.microsoft.com/dotnet/aspnet:9.0
     container_name: gateway-service
     ports:
       - "8080:8080"
@@ -117,6 +138,9 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - ClientApp=http://localhost:3000
+      - DOTNET_READYTORUN=1
+      - DOTNET_TieredCompilation=1
+      - DOTNET_TieredPGO=1
     depends_on:
       author-service:
         condition: service_healthy
@@ -126,6 +150,12 @@ services:
         condition: service_healthy
     networks:
       - spsif-library-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   rabbitmq_data:
