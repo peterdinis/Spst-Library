@@ -1,3 +1,4 @@
+using IdentityService.Dtos;
 using IdentityService.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -26,9 +27,7 @@ namespace IdentityService.Controllers
                     Id = user.Id,
                     Email = user.Email!,
                     FullName = user.FullName,
-                    Roles = roles.ToList(),
-                    StudentId = user.StudentId,
-                    TeacherId = user.TeacherId
+                    Roles = [.. roles],
                 });
             }
 
@@ -49,9 +48,7 @@ namespace IdentityService.Controllers
                 Id = user.Id,
                 Email = user.Email!,
                 FullName = user.FullName,
-                Roles = roles.ToList(),
-                StudentId = user.StudentId,
-                TeacherId = user.TeacherId
+                Roles = [.. roles],
             });
         }
 
