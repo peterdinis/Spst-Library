@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   rabbitmq:
-    image: rabbitmq:3-management
+    image: rabbitmq:3-management-alpine
     container_name: rabbitmq
     ports:
       - "5672:5672"
@@ -18,7 +18,7 @@ services:
       test: rabbitmq-diagnostics -q ping
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 3
 
   author-service:
     build:
@@ -36,17 +36,13 @@ services:
       - RABBITMQ__PORT=5672
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
+      - DOTNET_READYTORUN=1
+      - DOTNET_TieredCompilation=1
+      - DOTNET_TieredPGO=1
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - rabbitmq
     networks:
       - spsif-library-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
 
   category-service:
     build:
@@ -64,17 +60,13 @@ services:
       - RABBITMQ__PORT=5672
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
+      - DOTNET_READYTORUN=1
+      - DOTNET_TieredCompilation=1
+      - DOTNET_TieredPGO=1
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - rabbitmq
     networks:
       - spsif-library-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
 
   books-service:
     build:
@@ -92,17 +84,13 @@ services:
       - RABBITMQ__PORT=5672
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
+      - DOTNET_READYTORUN=1
+      - DOTNET_TieredCompilation=1
+      - DOTNET_TieredPGO=1
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - rabbitmq
     networks:
       - spsif-library-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
 
   gateway-service:
     build:
@@ -116,14 +104,13 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      - ClientApp=http://localhost:3000
+      - DOTNET_READYTORUN=1
+      - DOTNET_TieredCompilation=1
+      - DOTNET_TieredPGO=1
     depends_on:
-      author-service:
-        condition: service_healthy
-      category-service:
-        condition: service_healthy
-      books-service:
-        condition: service_healthy
+      - author-service
+      - category-service
+      - books-service
     networks:
       - spsif-library-network
 
