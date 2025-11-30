@@ -23,7 +23,7 @@ services:
   author-service:
     build:
       context: .
-      dockerfile: Dockerfile.optimized
+      dockerfile: Dockerfile
       args:
         SERVICE_NAME: AuthorService
     container_name: author-service
@@ -40,21 +40,14 @@ services:
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - rabbitmq
     networks:
       - spsif-library-network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
-      interval: 15s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
 
   category-service:
     build:
       context: .
-      dockerfile: Dockerfile.optimized
+      dockerfile: Dockerfile
       args:
         SERVICE_NAME: CategoryService
     container_name: category-service
@@ -71,21 +64,14 @@ services:
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - rabbitmq
     networks:
       - spsif-library-network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
-      interval: 15s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
 
   books-service:
     build:
       context: .
-      dockerfile: Dockerfile.optimized
+      dockerfile: Dockerfile
       args:
         SERVICE_NAME: BooksService
     container_name: books-service
@@ -102,21 +88,14 @@ services:
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
     depends_on:
-      rabbitmq:
-        condition: service_healthy
+      - rabbitmq
     networks:
       - spsif-library-network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
-      interval: 15s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
 
   gateway-service:
     build:
       context: .
-      dockerfile: Dockerfile.optimized
+      dockerfile: Dockerfile
       args:
         SERVICE_NAME: GatewayService
     container_name: gateway-service
@@ -125,25 +104,15 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
-      - ClientApp=http://localhost:3000
       - DOTNET_READYTORUN=1
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
     depends_on:
-      author-service:
-        condition: service_healthy
-      category-service:
-        condition: service_healthy
-      books-service:
-        condition: service_healthy
+      - author-service
+      - category-service
+      - books-service
     networks:
       - spsif-library-network
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
-      interval: 15s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
 
 volumes:
   rabbitmq_data:
