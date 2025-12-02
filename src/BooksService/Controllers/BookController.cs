@@ -4,6 +4,10 @@ using BooksService.Data;
 using BooksService.Dtos;
 using BooksService.Entities;
 using BooksService.Interfaces;
+using Polly;
+using Polly.Timeout;
+using Polly.Retry;
+using Polly.CircuitBreaker;
 
 namespace BooksService.Controllers
 {
@@ -14,6 +18,7 @@ namespace BooksService.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ILogger<BooksController> _logger;
         private readonly IRabbitMQService _rabbitMQService;
+        private readonly IAsyncPolicy _resiliencePolicy;
 
         public BooksController(
             ApplicationDbContext context, 
@@ -23,6 +28,9 @@ namespace BooksService.Controllers
             _context = context;
             _logger = logger;
             _rabbitMQService = rabbitMQService;
+            
+            // Definovanie resilience policy s Polly
+            _resiliencePolicy = CreateResiliencePolicy();
         }
 
         [HttpGet]
@@ -61,16 +69,23 @@ namespace BooksService.Controllers
 
             try
             {
-                // Check if category exists in CategoryService using RabbitMQ
-                var categoryResponse = await _rabbitMQService.GetCategoryAsync(dto.CategoryId);
+                // Použitie resilience policy pre komunikáciu s externými službami
+                var categoryResponse = await _resiliencePolicy.ExecuteAsync(async () => 
+                {
+                    return await _rabbitMQService.GetCategoryAsync(dto.CategoryId);
+                });
+                
                 if (!categoryResponse.Exists)
                 {
                     _logger.LogWarning("Category with ID {CategoryId} does not exist", dto.CategoryId);
                     return BadRequest(new { message = $"Category with ID {dto.CategoryId} does not exist" });
                 }
 
-                // Check if author exists in AuthorService using RabbitMQ
-                var authorResponse = await _rabbitMQService.GetAuthorAsync(dto.AuthorId);
+                var authorResponse = await _resiliencePolicy.ExecuteAsync(async () => 
+                {
+                    return await _rabbitMQService.GetAuthorAsync(dto.AuthorId);
+                });
+                
                 if (!authorResponse.Exists)
                 {
                     _logger.LogWarning("Author with ID {AuthorId} does not exist", dto.AuthorId);
@@ -81,13 +96,13 @@ namespace BooksService.Controllers
                 {
                     Title = dto.Title,
                     AuthorId = dto.AuthorId,
-                    Author = authorResponse.AuthorName, // Set author name from AuthorService
+                    Author = authorResponse.AuthorName,
                     Publisher = dto.Publisher,
                     Year = dto.Year,
                     ISBN = dto.ISBN,
                     Pages = dto.Pages,
                     CategoryId = dto.CategoryId,
-                    Category = categoryResponse.CategoryTitle, // Set category name from CategoryService
+                    Category = categoryResponse.CategoryTitle,
                     Language = dto.Language,
                     Description = dto.Description,
                     PhotoPath = dto.PhotoPath,
@@ -102,10 +117,15 @@ namespace BooksService.Controllers
 
                 return CreatedAtAction(nameof(GetBook), new { id = book.Id }, MapToDto(book));
             }
-            catch (TimeoutException ex)
+            catch (TimeoutRejectedException ex)
             {
                 _logger.LogWarning(ex, "External service timeout while creating book");
                 return StatusCode(503, new { message = "External service is temporarily unavailable" });
+            }
+            catch (BrokenCircuitException ex)
+            {
+                _logger.LogWarning(ex, "Circuit breaker is open for external service");
+                return StatusCode(503, new { message = "External service is currently unavailable. Please try again later." });
             }
             catch (DbUpdateException ex)
             {
@@ -136,7 +156,11 @@ namespace BooksService.Controllers
                 // Check if category exists when CategoryId is being updated
                 if (book.CategoryId != dto.CategoryId)
                 {
-                    var categoryResponse = await _rabbitMQService.GetCategoryAsync(dto.CategoryId);
+                    var categoryResponse = await _resiliencePolicy.ExecuteAsync(async () => 
+                    {
+                        return await _rabbitMQService.GetCategoryAsync(dto.CategoryId);
+                    });
+                    
                     if (!categoryResponse.Exists)
                     {
                         _logger.LogWarning("Category with ID {CategoryId} does not exist", dto.CategoryId);
@@ -148,7 +172,11 @@ namespace BooksService.Controllers
                 // Check if author exists when AuthorId is being updated
                 if (book.AuthorId != dto.AuthorId)
                 {
-                    var authorResponse = await _rabbitMQService.GetAuthorAsync(dto.AuthorId);
+                    var authorResponse = await _resiliencePolicy.ExecuteAsync(async () => 
+                    {
+                        return await _rabbitMQService.GetAuthorAsync(dto.AuthorId);
+                    });
+                    
                     if (!authorResponse.Exists)
                     {
                         _logger.LogWarning("Author with ID {AuthorId} does not exist", dto.AuthorId);
@@ -176,10 +204,15 @@ namespace BooksService.Controllers
 
                 return NoContent();
             }
-            catch (TimeoutException ex)
+            catch (TimeoutRejectedException ex)
             {
                 _logger.LogWarning(ex, "External service timeout while updating book with ID {BookId}", id);
                 return StatusCode(503, new { message = "External service is temporarily unavailable" });
+            }
+            catch (BrokenCircuitException ex)
+            {
+                _logger.LogWarning(ex, "Circuit breaker is open for external service");
+                return StatusCode(503, new { message = "External service is currently unavailable. Please try again later." });
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -247,5 +280,55 @@ namespace BooksService.Controllers
             IsAvailable = book.IsAvailable,
             AddedToLibrary = book.AddedToLibrary
         };
+
+        private IAsyncPolicy CreateResiliencePolicy()
+        {
+            // Retry policy: 3 pokusy s exponenciálnym backoff-om
+            var retryPolicy = Policy
+                .Handle<Exception>(ex => ex is not BrokenCircuitException)
+                .WaitAndRetryAsync(
+                    retryCount: 3,
+                    sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+                    onRetry: (exception, timeSpan, retryCount, context) =>
+                    {
+                        _logger.LogWarning(
+                            "Retry {RetryCount} after {TimeSpan} due to: {ExceptionMessage}",
+                            retryCount, timeSpan, exception.Message);
+                    });
+
+            // Timeout policy: 5 sekúnd timeout
+            var timeoutPolicy = Policy.TimeoutAsync(
+                timeout: TimeSpan.FromSeconds(5),
+                timeoutStrategy: TimeoutStrategy.Pessimistic,
+                onTimeoutAsync: (context, timeSpan, task) =>
+                {
+                    _logger.LogWarning("Timeout after {TimeSpan}", timeSpan);
+                    return Task.CompletedTask;
+                });
+
+            // Circuit breaker: otvorí sa po 5 zlyhaniach za 30 sekúnd
+            var circuitBreakerPolicy = Policy
+                .Handle<Exception>()
+                .CircuitBreakerAsync(
+                    exceptionsAllowedBeforeBreaking: 5,
+                    durationOfBreak: TimeSpan.FromSeconds(30),
+                    onBreak: (exception, duration) =>
+                    {
+                        _logger.LogWarning(
+                            "Circuit breaker opened for {Duration} due to: {ExceptionMessage}",
+                            duration, exception.Message);
+                    },
+                    onReset: () =>
+                    {
+                        _logger.LogInformation("Circuit breaker reset");
+                    },
+                    onHalfOpen: () =>
+                    {
+                        _logger.LogInformation("Circuit breaker half-open");
+                    });
+
+            // Kombinácia všetkých policy: timeout → circuit breaker → retry
+            return Policy.WrapAsync(timeoutPolicy, circuitBreakerPolicy, retryPolicy);
+        }
     }
 }
