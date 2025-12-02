@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FluentValidation;
+using Polly.CircuitBreaker;
 using AuthorService.Data;
 using AuthorService.Dtos;
 using AuthorService.Entities;
 using AuthorService.Interfaces;
 using AuthorService.Messages;
+using AuthorService.Services;
 
 namespace AuthorService.Controllers
 {
@@ -18,19 +20,22 @@ namespace AuthorService.Controllers
         private readonly IValidator<CreateAuthorDto> _createValidator;
         private readonly IValidator<UpdateAuthorDto> _updateValidator;
         private readonly IBookService _bookService;
+        private readonly IResiliencePolicyService _policyService;
 
         public AuthorsController(
             ApplicationDbContext context, 
             ILogger<AuthorsController> logger,
             IValidator<CreateAuthorDto> createValidator,
             IValidator<UpdateAuthorDto> updateValidator,
-            IBookService bookService)
+            IBookService bookService,
+            IResiliencePolicyService policyService)
         {
             _context = context;
             _logger = logger;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
             _bookService = bookService;
+            _policyService = policyService;
         }
 
         [HttpGet]
@@ -48,30 +53,30 @@ namespace AuthorService.Controllers
                 {
                     try
                     {
-                        var books = await _bookService.GetBooksByAuthorAsync(author.AuthorId);
-                        author.Books = books;
-                        author.BooksCount = books.Count;
-                    }
-                    catch (TimeoutException ex)
-                    {
-                        _logger.LogWarning(ex, "Timeout while fetching books for author {AuthorId}", author.AuthorId);
-                        author.BooksCount = 0;
+                        var policy = _policyService.GetPolicy<List<AuthorBookDto>>();
+                        var books = await policy.ExecuteAsync(async () =>
+                            await _bookService.GetBooksByAuthorAsync(author.AuthorId));
+
+                        author.Books = books ?? new List<AuthorBookDto>();
+                        author.BooksCount = books?.Count ?? 0;
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex, "Error while fetching books for author {AuthorId}", author.AuthorId);
+                        _logger.LogWarning(ex, "Failed to get books for author {AuthorId}", author.AuthorId);
+                        author.Books = new List<AuthorBookDto>();
                         author.BooksCount = 0;
                     }
                 }
             }
             else
             {
-                // Still get counts for each author
                 foreach (var author in authors)
                 {
                     try
                     {
-                        author.BooksCount = await _bookService.GetBooksCountByAuthorAsync(author.AuthorId);
+                        var policy = _policyService.GetPolicy<int>();
+                        author.BooksCount = await policy.ExecuteAsync(async () =>
+                            await _bookService.GetBooksCountByAuthorAsync(author.AuthorId));
                     }
                     catch (Exception ex)
                     {
@@ -103,27 +108,36 @@ namespace AuthorService.Controllers
             {
                 try
                 {
-                    var books = await _bookService.GetBooksByAuthorAsync(id);
-                    authorDto.Books = books;
-                    authorDto.BooksCount = books.Count;
-                    _logger.LogInformation("Retrieved {BooksCount} books for author {AuthorId}", books.Count, id);
+                    var policy = _policyService.GetPolicy<List<AuthorBookDto>>();
+                    var books = await policy.ExecuteAsync(async () =>
+                        await _bookService.GetBooksByAuthorAsync(id));
+
+                    authorDto.Books = books ?? new List<AuthorBookDto>();
+                    authorDto.BooksCount = books?.Count ?? 0;
+                    _logger.LogInformation("Retrieved {BooksCount} books for author {AuthorId}", authorDto.BooksCount, id);
                 }
-                catch (TimeoutException ex)
+                catch (BrokenCircuitException ex)
                 {
-                    _logger.LogWarning(ex, "Book service timeout while fetching books for author {AuthorId}", id);
-                    return StatusCode(503, new { message = "Book service is temporarily unavailable" });
+                    _logger.LogError(ex, "Circuit is open for book service for author {AuthorId}", id);
+                    return StatusCode(503, new { 
+                        message = "Book service is temporarily unavailable due to high failure rate",
+                        details = "Circuit breaker is open"
+                    });
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error while fetching books for author {AuthorId}", id);
-                    return StatusCode(500, new { message = "Error retrieving books information" });
+                    authorDto.Books = new List<AuthorBookDto>();
+                    authorDto.BooksCount = 0;
                 }
             }
             else
             {
                 try
                 {
-                    authorDto.BooksCount = await _bookService.GetBooksCountByAuthorAsync(id);
+                    var policy = _policyService.GetPolicy<int>();
+                    authorDto.BooksCount = await policy.ExecuteAsync(async () =>
+                        await _bookService.GetBooksCountByAuthorAsync(id));
                 }
                 catch (Exception ex)
                 {
@@ -154,12 +168,10 @@ namespace AuthorService.Controllers
             {
                 FirstName = dto.FirstName.Trim(),
                 LastName = dto.LastName.Trim(),
-                Biography = dto.Biography?.Trim() ?? null!,
                 Email = dto.Email.Trim(),
                 DateOfBirth = dto.DateOfBirth,
                 DateOfDeath = dto.DateOfDeath,
                 Country = dto.Country.Trim(),
-                Website = dto.Website?.Trim() ?? null!,
                 IsActive = true,
                 CreatedDate = DateTime.UtcNow,
                 LastModified = DateTime.UtcNow
@@ -216,12 +228,12 @@ namespace AuthorService.Controllers
             // Update properties
             author.FirstName = dto.FirstName.Trim();
             author.LastName = dto.LastName.Trim();
-            author.Biography = dto.Biography?.Trim() ?? null!;
+            author.Biography = dto.Biography?.Trim();
             author.Email = dto.Email.Trim();
             author.DateOfBirth = dto.DateOfBirth;
             author.DateOfDeath = dto.DateOfDeath;
             author.Country = dto.Country.Trim();
-            author.Website = dto.Website?.Trim() ?? null!;
+            author.Website = dto.Website?.Trim();
             author.IsActive = dto.IsActive;
             author.LastModified = DateTime.UtcNow;
 
@@ -259,7 +271,10 @@ namespace AuthorService.Controllers
             // Check if author has books before deletion
             try
             {
-                var booksCount = await _bookService.GetBooksCountByAuthorAsync(id);
+                var policy = _policyService.GetPolicy<int>();
+                var booksCount = await policy.ExecuteAsync(async () =>
+                    await _bookService.GetBooksCountByAuthorAsync(id));
+                
                 if (booksCount > 0)
                 {
                     _logger.LogWarning("Cannot delete author {AuthorId} with {BooksCount} associated books", id, booksCount);
@@ -312,13 +327,17 @@ namespace AuthorService.Controllers
                 {
                     try
                     {
-                        var books = await _bookService.GetBooksByAuthorAsync(author.AuthorId);
-                        author.Books = books;
-                        author.BooksCount = books.Count;
+                        var policy = _policyService.GetPolicy<List<AuthorBookDto>>();
+                        var books = await policy.ExecuteAsync(async () =>
+                            await _bookService.GetBooksByAuthorAsync(author.AuthorId));
+
+                        author.Books = books ?? new List<AuthorBookDto>();
+                        author.BooksCount = books?.Count ?? 0;
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning(ex, "Failed to get books for author {AuthorId} during search", author.AuthorId);
+                        _logger.LogWarning(ex, "Failed to get books for author {AuthorId}", author.AuthorId);
+                        author.Books = new List<AuthorBookDto>();
                         author.BooksCount = 0;
                     }
                 }
@@ -342,14 +361,22 @@ namespace AuthorService.Controllers
 
             try
             {
-                var books = await _bookService.GetBooksByAuthorAsync(id);
-                _logger.LogInformation("Retrieved {BooksCount} books for author {AuthorId}", books.Count, id);
-                return Ok(books);
+                var policy = _policyService.GetPolicy<List<AuthorBookDto>>();
+                var books = await policy.ExecuteAsync(async () =>
+                    await _bookService.GetBooksByAuthorAsync(id));
+
+                _logger.LogInformation("Retrieved {BooksCount} books for author {AuthorId}", 
+                    books?.Count ?? 0, id);
+                
+                return Ok(books ?? new List<AuthorBookDto>());
             }
-            catch (TimeoutException ex)
+            catch (BrokenCircuitException ex)
             {
-                _logger.LogWarning(ex, "Book service timeout while fetching books for author {AuthorId}", id);
-                return StatusCode(503, new { message = "Book service is temporarily unavailable" });
+                _logger.LogError(ex, "Circuit is open for book service for author {AuthorId}", id);
+                return StatusCode(503, new { 
+                    message = "Book service is temporarily unavailable due to high failure rate",
+                    details = "Circuit breaker is open"
+                });
             }
             catch (Exception ex)
             {
