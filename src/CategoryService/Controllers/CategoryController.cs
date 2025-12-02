@@ -4,6 +4,10 @@ using CategoryService.Data;
 using CategoryService.Dtos;
 using CategoryService.Entities;
 using CategoryService.Interfaces;
+using Polly;
+using Polly.Timeout;
+using Polly.Retry;
+using Polly.CircuitBreaker;
 
 namespace CategoryService.Controllers
 {
@@ -14,6 +18,7 @@ namespace CategoryService.Controllers
         private readonly ApplicationDbContext _context;
         private readonly ILogger<CategoriesController> _logger;
         private readonly IBookService _bookService;
+        private readonly IAsyncPolicy _resiliencePolicy;
 
         public CategoriesController(
             ApplicationDbContext context, 
@@ -23,6 +28,7 @@ namespace CategoryService.Controllers
             _context = context;
             _logger = logger;
             _bookService = bookService;
+            _resiliencePolicy = CreateResiliencePolicy();
         }
 
         [HttpGet]
@@ -40,19 +46,29 @@ namespace CategoryService.Controllers
                 {
                     try
                     {
-                        var books = await _bookService.GetBooksByCategoryAsync(category.Id);
+                        var books = await _resiliencePolicy.ExecuteAsync(async () => 
+                            await _bookService.GetBooksByCategoryAsync(category.Id));
+                        
                         category.Books = books;
                         category.BooksCount = books.Count;
                     }
-                    catch (TimeoutException ex)
+                    catch (TimeoutRejectedException ex)
                     {
                         _logger.LogWarning(ex, "Timeout while fetching books for category {CategoryId}", category.Id);
                         category.BooksCount = 0;
+                        category.Books = [];
+                    }
+                    catch (BrokenCircuitException ex)
+                    {
+                        _logger.LogWarning(ex, "Circuit breaker open while fetching books for category {CategoryId}", category.Id);
+                        category.BooksCount = 0;
+                        category.Books = [];
                     }
                     catch (Exception ex)
                     {
                         _logger.LogError(ex, "Error while fetching books for category {CategoryId}", category.Id);
                         category.BooksCount = 0;
+                        category.Books = [];
                     }
                 }
             }
@@ -63,7 +79,8 @@ namespace CategoryService.Controllers
                 {
                     try
                     {
-                        category.BooksCount = await _bookService.GetBooksCountByCategoryAsync(category.Id);
+                        category.BooksCount = await _resiliencePolicy.ExecuteAsync(async () => 
+                            await _bookService.GetBooksCountByCategoryAsync(category.Id));
                     }
                     catch (Exception ex)
                     {
@@ -95,27 +112,44 @@ namespace CategoryService.Controllers
             {
                 try
                 {
-                    var books = await _bookService.GetBooksByCategoryAsync(id);
+                    var books = await _resiliencePolicy.ExecuteAsync(async () => 
+                        await _bookService.GetBooksByCategoryAsync(id));
+                    
                     categoryDto.Books = books;
                     categoryDto.BooksCount = books.Count;
                     _logger.LogInformation("Retrieved {BooksCount} books for category {CategoryId}", books.Count, id);
                 }
-                catch (TimeoutException ex)
+                catch (TimeoutRejectedException ex)
                 {
                     _logger.LogWarning(ex, "Book service timeout while fetching books for category {CategoryId}", id);
-                    return StatusCode(503, new { message = "Book service is temporarily unavailable" });
+                    return StatusCode(503, new { 
+                        message = "Book service is temporarily unavailable",
+                        category = categoryDto 
+                    });
+                }
+                catch (BrokenCircuitException ex)
+                {
+                    _logger.LogWarning(ex, "Circuit breaker open for book service while fetching books for category {CategoryId}", id);
+                    return StatusCode(503, new { 
+                        message = "Book service is currently unavailable. Please try again later.",
+                        category = categoryDto 
+                    });
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error while fetching books for category {CategoryId}", id);
-                    return StatusCode(500, new { message = "Error retrieving books information" });
+                    return StatusCode(500, new { 
+                        message = "Error retrieving books information",
+                        category = categoryDto 
+                    });
                 }
             }
             else
             {
                 try
                 {
-                    categoryDto.BooksCount = await _bookService.GetBooksCountByCategoryAsync(id);
+                    categoryDto.BooksCount = await _resiliencePolicy.ExecuteAsync(async () => 
+                        await _bookService.GetBooksCountByCategoryAsync(id));
                 }
                 catch (Exception ex)
                 {
@@ -206,17 +240,29 @@ namespace CategoryService.Controllers
             // Check if category has books before deletion
             try
             {
-                var booksCount = await _bookService.GetBooksCountByCategoryAsync(id);
+                var booksCount = await _resiliencePolicy.ExecuteAsync(async () => 
+                    await _bookService.GetBooksCountByCategoryAsync(id));
+                
                 if (booksCount > 0)
                 {
                     _logger.LogWarning("Cannot delete category {CategoryId} with {BooksCount} associated books", id, booksCount);
                     return BadRequest(new { message = $"Cannot delete category with {booksCount} associated books" });
                 }
             }
+            catch (TimeoutRejectedException ex)
+            {
+                _logger.LogWarning(ex, "Timeout while verifying books count for category {CategoryId}", id);
+                return StatusCode(503, new { message = "Cannot verify book service availability. Deletion postponed." });
+            }
+            catch (BrokenCircuitException ex)
+            {
+                _logger.LogWarning(ex, "Circuit breaker open while verifying books count for category {CategoryId}", id);
+                return StatusCode(503, new { message = "Book service is unavailable. Please try again later." });
+            }
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "Could not verify books count for category {CategoryId}, proceeding with deletion", id);
-                // Continue with deletion if we can't verify book count
+                // Continue with deletion if we can't verify book count, but log as warning
             }
 
             _logger.LogInformation("Deleting category: {CategoryTitle} (ID: {CategoryId})", category.Title, category.Id);
@@ -243,5 +289,59 @@ namespace CategoryService.Controllers
             Title = category.Title,
             Description = category.Description
         };
+
+        private IAsyncPolicy CreateResiliencePolicy()
+        {
+            // Retry policy: 2 pokusy s exponenciálnym backoff-om (pre kategórie môžeme byť menej agresívni)
+            var retryPolicy = Policy
+                .Handle<Exception>(ex => ex is not BrokenCircuitException)
+                .WaitAndRetryAsync(
+                    retryCount: 2,
+                    sleepDurationProvider: retryAttempt => TimeSpan.FromSeconds(Math.Pow(1.5, retryAttempt)),
+                    onRetry: (exception, timeSpan, retryCount, context) =>
+                    {
+                        _logger.LogWarning(
+                            "Retry {RetryCount} after {TimeSpan} due to: {ExceptionMessage}",
+                            retryCount, timeSpan, exception.Message);
+                    });
+
+            // Timeout policy: 3 sekundy timeout (pre zoznamy kníh môže byť dlhší)
+            var timeoutPolicy = Policy.TimeoutAsync(
+                timeout: TimeSpan.FromSeconds(3),
+                timeoutStrategy: TimeoutStrategy.Pessimistic,
+                onTimeoutAsync: (context, timeSpan, task) =>
+                {
+                    _logger.LogWarning("Timeout after {TimeSpan} for book service operation", timeSpan);
+                    return Task.CompletedTask;
+                });
+
+            // Circuit breaker: otvorí sa po 3 zlyhaniach za 20 sekúnd
+            var circuitBreakerPolicy = Policy
+                .Handle<Exception>()
+                .CircuitBreakerAsync(
+                    exceptionsAllowedBeforeBreaking: 3,
+                    durationOfBreak: TimeSpan.FromSeconds(20),
+                    onBreak: (exception, duration) =>
+                    {
+                        _logger.LogWarning(
+                            "Circuit breaker opened for book service for {Duration} due to: {ExceptionType}",
+                            duration, exception.GetType().Name);
+                    },
+                    onReset: () =>
+                    {
+                        _logger.LogInformation("Circuit breaker for book service reset");
+                    },
+                    onHalfOpen: () =>
+                    {
+                        _logger.LogInformation("Circuit breaker for book service half-open");
+                    });
+
+            // Fallback policy pre zoznam kategórií
+            var fallbackPolicy = Policy<object>
+                .Handle<Exception>();
+                
+            // Kombinácia politík pre jednotlivé operácie
+            return Policy.WrapAsync(timeoutPolicy, circuitBreakerPolicy, retryPolicy);
+        }
     }
 }

@@ -16,6 +16,7 @@ builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CategoryValidator>();
 builder.Services.AddScoped<IBookService, BookService>();
+builder.Services.AddSingleton<IResiliencePolicyService, ResiliencePolicyService>();
 
 var app = builder.Build();
 
