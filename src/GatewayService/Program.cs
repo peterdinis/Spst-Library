@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +31,6 @@ app.Use(async (context, next) => {
     logger.LogInformation($"Method: {context.Request.Method}");
     logger.LogInformation($"Path: {context.Request.Path}");
     logger.LogInformation($"QueryString: {context.Request.QueryString}");
-    logger.LogInformation($"Headers: {string.Join(", ", context.Request.Headers.Select(h => $"{h.Key}={h.Value}"))}");
     
     await next();
     
@@ -49,40 +47,18 @@ app.MapGet("/health", () => {
 });
 
 // Debug endpoint
-app.MapGet("/debug", (HttpContext context) => {
+app.MapGet("/debug/routes", (HttpContext context) => {
     var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
     
     try {
-        logger.LogInformation("Debug endpoint called");
-        
-        // Check if ReverseProxy is configured
-        var configProvider = context.RequestServices.GetService<IProxyConfigProvider>();
-        if (configProvider == null) {
-            return Results.Json(new { error = "IProxyConfigProvider not available" });
-        }
-        
-        var config = configProvider.GetConfig();
-        
-        var routes = config.Routes.Select(r => new {
-            r.RouteId,
-            Match = r.Match?.Path,
-            r.ClusterId
-        }).ToList();
-        
-        var clusters = config.Clusters.Select(c => new {
-            c.ClusterId,
-            Destinations = c.Destinations.Select(d => new {
-                d.Key,
-                Address = d.Value.Address
-            }).ToList()
-        }).ToList();
+        var config = app.Services.GetRequiredService<IReverseProxyConfig>();
+        var destinations = app.Services.GetRequiredService<IReverseProxyDestinations>();
         
         return Results.Json(new {
             status = "Debug information",
-            routesCount = routes.Count,
-            clustersCount = clusters.Count,
-            routes = routes,
-            clusters = clusters
+            configLoaded = config != null,
+            destinationsLoaded = destinations != null,
+            timestamp = DateTime.UtcNow
         });
     }
     catch (Exception ex) {
