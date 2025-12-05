@@ -6,10 +6,14 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion"
 import { usePathname, useRouter } from "next/navigation";
 import { ModeToggle } from "./ModeToggle";
+import { useAuth } from "@/components/providers/AuthContext";
+import UserMenu from "./UserMenu";
+import NotificationDropdown from "./NotificationDropdown";
 
 const Navigation: FC = () => {
   const pathname = usePathname();
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -86,16 +90,24 @@ const Navigation: FC = () => {
               </motion.button>
             ))}
 
-            <Button
-              variant="default"
-              size="sm"
-              className="ml-4"
-              onClick={() => handleNavigation("/login")}
-              disabled={isPending}
-            >
-              Prihlásenie
-            </Button>
-            <ModeToggle />
+            <div className="flex items-center gap-2 ml-4">
+              {isAuthenticated ? (
+                <>
+                  <NotificationDropdown />
+                  <UserMenu />
+                </>
+              ) : (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => handleNavigation("/login")}
+                  disabled={isPending}
+                >
+                  Prihlásenie
+                </Button>
+              )}
+              <ModeToggle />
+            </div>
           </nav>
 
           {/* Mobile Menu Button */}
