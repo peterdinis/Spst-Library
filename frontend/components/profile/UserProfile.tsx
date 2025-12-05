@@ -24,6 +24,7 @@ const UserProfile: FC = () => {
         fullName: user?.fullName || '',
         phone: user?.phone || '',
         address: user?.address || '',
+        avatar: user?.avatar || '',
     });
 
     if (!user) {
@@ -52,6 +53,7 @@ const UserProfile: FC = () => {
             fullName: user.fullName,
             phone: user.phone || '',
             address: user.address || '',
+            avatar: user.avatar || '',
         });
         setIsEditing(false);
     };
@@ -167,6 +169,22 @@ const UserProfile: FC = () => {
                                         />
                                     ) : (
                                         <p className="text-muted-foreground">{user.phone || 'Neuvedené'}</p>
+                                    )}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium flex items-center gap-2">
+                                        <User className="h-4 w-4" />
+                                        Avatar URL
+                                    </label>
+                                    {isEditing ? (
+                                        <Input
+                                            value={formData.avatar}
+                                            onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
+                                            placeholder="https://example.com/avatar.jpg"
+                                        />
+                                    ) : (
+                                        <p className="text-muted-foreground">{user.avatar || 'Neuvedené'}</p>
                                     )}
                                 </div>
 

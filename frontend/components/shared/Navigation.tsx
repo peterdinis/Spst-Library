@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useState, useTransition } from "react";
+import { FC, useState } from "react";
 import { BookOpen, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion"
@@ -15,7 +15,6 @@ const Navigation: FC = () => {
   const router = useRouter();
   const { isAuthenticated, isAdmin } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -31,21 +30,8 @@ const Navigation: FC = () => {
     : baseNavLinks;
 
   const handleNavigation = (href: string) => {
-    // Check if browser supports View Transitions API
-    if (document.startViewTransition) {
-      document.startViewTransition(() => {
-        startTransition(() => {
-          router.push(href);
-          setIsMenuOpen(false);
-        });
-      });
-    } else {
-      // Fallback for browsers without View Transitions support
-      startTransition(() => {
-        router.push(href);
-        setIsMenuOpen(false);
-      });
-    }
+    router.push(href);
+    setIsMenuOpen(false);
   };
 
   return (
@@ -80,7 +66,6 @@ const Navigation: FC = () => {
                     ? "text-primary"
                     : "text-foreground/80"
                   }
-                  ${isPending ? "opacity-50 pointer-events-none" : ""}
                 `}
               >
                 {link.label}
@@ -105,7 +90,6 @@ const Navigation: FC = () => {
                   variant="default"
                   size="sm"
                   onClick={() => handleNavigation("/login")}
-                  disabled={isPending}
                 >
                   Prihlásenie
                 </Button>
@@ -149,7 +133,6 @@ const Navigation: FC = () => {
                           ? "text-primary underline decoration-2 underline-offset-4"
                           : "text-foreground/80 hover:text-primary"
                         }
-                        ${isPending ? "opacity-50 pointer-events-none" : ""}
                       `}
                     >
                       {link.label}
@@ -165,7 +148,6 @@ const Navigation: FC = () => {
                       size="sm"
                       className="w-full mt-1"
                       onClick={() => handleNavigation("/login")}
-                      disabled={isPending}
                     >
                       Prihlásenie
                     </Button>
