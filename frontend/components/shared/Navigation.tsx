@@ -13,18 +13,22 @@ import NotificationDropdown from "./NotificationDropdown";
 const Navigation: FC = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  const navLinks = [
+  const baseNavLinks = [
     { to: "/", label: "Domov" },
     { to: "/books", label: "Knihy" },
     { to: "/categories", label: "Kategórie" },
     { to: "/authors", label: "Spisovatelia" },
   ];
+
+  const navLinks = isAdmin
+    ? [...baseNavLinks, { to: "/admin", label: "Admin" }]
+    : baseNavLinks;
 
   const handleNavigation = (href: string) => {
     // Check if browser supports View Transitions API
