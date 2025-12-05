@@ -1,6 +1,7 @@
 "use client";
 
-import { FC, useState } from "react";
+import { FC, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,122 +9,41 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Search, BookOpen, User, Calendar, Filter, X } from "lucide-react";
-
-interface Book {
-  id: number;
-  title: string;
-  author: string;
-  year: number;
-  genre: string;
-  available: boolean;
-  description: string;
-}
+import { Book } from "@/lib/types";
+import { mockBooks } from "@/lib/mockData";
 
 const BooksWrapper: FC = () => {
+  const router = useRouter();
+  const [books, setBooks] = useState<Book[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState<string>("all");
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [availability, setAvailability] = useState<string>("all");
-  const [yearRange, setYearRange] = useState<[number, number]>([1800, 2024]);
   const booksPerPage = 6;
 
-  // Mock data
-  const books: Book[] = [
-    {
-      id: 1,
-      title: "Veľký Gatsby",
-      author: "F. Scott Fitzgerald",
-      year: 1925,
-      genre: "Román",
-      available: true,
-      description: "Klasický americký román o sne, láske a spoločenskej triede."
-    },
-    {
-      id: 2,
-      title: "Starec a more",
-      author: "Ernest Hemingway",
-      year: 1952,
-      genre: "Dobrodružný",
-      available: true,
-      description: "Príbeh o love starejka a jeho boji s obrovskou rybou."
-    },
-    {
-      id: 3,
-      title: "1984",
-      author: "George Orwell",
-      year: 1949,
-      genre: "Sci-fi",
-      available: false,
-      description: "Antiutopický román o totalitnej spoločnosti."
-    },
-    {
-      id: 4,
-      title: "Pýcha a predsudok",
-      author: "Jane Austen",
-      year: 1813,
-      genre: "Romantika",
-      available: true,
-      description: "Romantický príbeh z anglickej spoločnosti 19. storočia."
-    },
-    {
-      id: 5,
-      title: "Zločin a trest",
-      author: "Fjodor Dostojevskij",
-      year: 1866,
-      genre: "Psychologický",
-      available: true,
-      description: "Psychologická štúdia o morálke a výčitkách svedomia."
-    },
-    {
-      id: 6,
-      title: "Harry Potter a Kameň mudrcov",
-      author: "J.K. Rowling",
-      year: 1997,
-      genre: "Fantasy",
-      available: false,
-      description: "Prvý diel série o mladom čarodejníkovi."
-    },
-    {
-      id: 7,
-      title: "Malý princ",
-      author: "Antoine de Saint-Exupéry",
-      year: 1943,
-      genre: "Filozofická",
-      available: true,
-      description: "Filozofická rozprávka o priateľstve a živote."
-    },
-    {
-      id: 8,
-      title: "Vražda v Orient exprese",
-      author: "Agatha Christie",
-      year: 1934,
-      genre: "Detektívka",
-      available: true,
-      description: "Slávna detektívka s Herculom Poirotom."
-    }
-  ];
+  useEffect(() => {
+    setBooks(mockBooks);
+  }, []);
 
-  // Get all unique genres
-  const genres = ["all", ...new Set(books.map(book => book.genre))];
+  // Get all unique categories
+  const categories = ["all", ...new Set(books.map(book => book.categoryName))];
 
   // Filter books based on search and filters
   const filteredBooks = books.filter(book => {
-    const matchesSearch = 
+    const matchesSearch =
       book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.genre.toLowerCase().includes(searchTerm.toLowerCase());
+      book.authorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      book.categoryName.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesGenre = selectedGenre === "all" || book.genre === selectedGenre;
-    
-    const matchesAvailability = 
-      availability === "all" || 
-      (availability === "available" && book.available) ||
-      (availability === "unavailable" && !book.available);
+    const matchesCategory = selectedCategory === "all" || book.categoryName === selectedCategory;
 
-    const matchesYear = book.year >= yearRange[0] && book.year <= yearRange[1];
+    const matchesAvailability =
+      availability === "all" ||
+      (availability === "available" && book.availableCopies > 0) ||
+      (availability === "unavailable" && book.availableCopies === 0);
 
-    return matchesSearch && matchesGenre && matchesAvailability && matchesYear;
+    return matchesSearch && matchesCategory && matchesAvailability;
   });
 
   // Pagination
@@ -142,13 +62,12 @@ const BooksWrapper: FC = () => {
   };
 
   const clearFilters = () => {
-    setSelectedGenre("all");
+    setSelectedCategory("all");
     setAvailability("all");
-    setYearRange([1800, 2024]);
     setCurrentPage(1);
   };
 
-  const hasActiveFilters = selectedGenre !== "all" || availability !== "all" || yearRange[0] > 1800 || yearRange[1] < 2024;
+  const hasActiveFilters = selectedCategory !== "all" || availability !== "all";
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -185,7 +104,7 @@ const BooksWrapper: FC = () => {
             Knižný Katalóg
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Preskúmajte našu rozsiahlu zbierku kníh. Vyhľadávajte podľa názvu, autora alebo žánru.
+            Preskúmajte našu rozsiahlu zbierku kníh. Vyhľadávajte podľa názvu, autora alebo kategórie.
           </p>
         </motion.div>
 
@@ -201,7 +120,7 @@ const BooksWrapper: FC = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
                 type="text"
-                placeholder="Hľadať knihy, autorov, žánre..."
+                placeholder="Hľadať knihy, autorov, kategórie..."
                 value={searchTerm}
                 onChange={handleSearch}
                 className="pl-10 pr-4 py-2 w-full"
@@ -209,8 +128,8 @@ const BooksWrapper: FC = () => {
             </div>
             <div className="flex gap-2">
               {hasActiveFilters && (
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   onClick={clearFilters}
                   className="flex items-center gap-2"
                 >
@@ -218,8 +137,8 @@ const BooksWrapper: FC = () => {
                   Vymazať filtre
                 </Button>
               )}
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={handleFilterToggle}
                 className="flex items-center gap-2"
               >
@@ -239,21 +158,21 @@ const BooksWrapper: FC = () => {
                 transition={{ duration: 0.3 }}
                 className="mt-4 p-6 border rounded-lg bg-background"
               >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Genre Filter */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Category Filter */}
                   <div>
-                    <label className="text-sm font-medium mb-2 block">Žáner</label>
+                    <label className="text-sm font-medium mb-2 block">Kategória</label>
                     <select
-                      value={selectedGenre}
+                      value={selectedCategory}
                       onChange={(e) => {
-                        setSelectedGenre(e.target.value);
+                        setSelectedCategory(e.target.value);
                         setCurrentPage(1);
                       }}
                       className="w-full p-2 border rounded-md bg-background"
                     >
-                      {genres.map(genre => (
-                        <option key={genre} value={genre}>
-                          {genre === "all" ? "Všetky žánre" : genre}
+                      {categories.map(category => (
+                        <option key={category} value={category}>
+                          {category === "all" ? "Všetky kategórie" : category}
                         </option>
                       ))}
                     </select>
@@ -275,39 +194,6 @@ const BooksWrapper: FC = () => {
                       <option value="unavailable">Vypožičané</option>
                     </select>
                   </div>
-
-                  {/* Year Range Filter */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">
-                      Rok vydania: {yearRange[0]} - {yearRange[1]}
-                    </label>
-                    <div className="flex gap-2">
-                      <Input
-                        type="number"
-                        placeholder="Od"
-                        value={yearRange[0]}
-                        onChange={(e) => {
-                          setYearRange([Number(e.target.value), yearRange[1]]);
-                          setCurrentPage(1);
-                        }}
-                        min={1800}
-                        max={2024}
-                        className="w-full"
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Do"
-                        value={yearRange[1]}
-                        onChange={(e) => {
-                          setYearRange([yearRange[0], Number(e.target.value)]);
-                          setCurrentPage(1);
-                        }}
-                        min={1800}
-                        max={2024}
-                        className="w-full"
-                      />
-                    </div>
-                  </div>
                 </div>
               </motion.div>
             )}
@@ -321,30 +207,21 @@ const BooksWrapper: FC = () => {
             animate={{ opacity: 1, y: 0 }}
             className="mb-6 flex flex-wrap gap-2"
           >
-            {selectedGenre !== "all" && (
+            {selectedCategory !== "all" && (
               <Badge variant="secondary" className="flex items-center gap-1">
-                Žáner: {selectedGenre}
-                <X 
-                  className="h-3 w-3 cursor-pointer" 
-                  onClick={() => setSelectedGenre("all")}
+                Kategória: {selectedCategory}
+                <X
+                  className="h-3 w-3 cursor-pointer"
+                  onClick={() => setSelectedCategory("all")}
                 />
               </Badge>
             )}
             {availability !== "all" && (
               <Badge variant="secondary" className="flex items-center gap-1">
                 {availability === "available" ? "Dostupné" : "Vypožičané"}
-                <X 
-                  className="h-3 w-3 cursor-pointer" 
+                <X
+                  className="h-3 w-3 cursor-pointer"
                   onClick={() => setAvailability("all")}
-                />
-              </Badge>
-            )}
-            {(yearRange[0] > 1800 || yearRange[1] < 2024) && (
-              <Badge variant="secondary" className="flex items-center gap-1">
-                Rok: {yearRange[0]} - {yearRange[1]}
-                <X 
-                  className="h-3 w-3 cursor-pointer" 
-                  onClick={() => setYearRange([1800, 2024])}
                 />
               </Badge>
             )}
@@ -367,19 +244,21 @@ const BooksWrapper: FC = () => {
                     variants={itemVariants}
                     layout
                     whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                    onClick={() => router.push(`/books/${book.id}`)}
+                    className="cursor-pointer"
                   >
                     <Card className="h-full hover:shadow-lg transition-shadow duration-300">
                       <CardHeader className="pb-3">
                         <div className="flex justify-between items-start mb-2">
-                          <Badge variant={book.available ? "default" : "secondary"}>
-                            {book.available ? "Dostupné" : "Vypožičané"}
+                          <Badge variant={book.availableCopies > 0 ? "success" : "destructive"}>
+                            {book.availableCopies > 0 ? `Dostupné: ${book.availableCopies}` : "Vypožičané"}
                           </Badge>
-                          <Badge variant="outline">{book.genre}</Badge>
+                          <Badge variant="outline">{book.categoryName}</Badge>
                         </div>
                         <CardTitle className="text-xl line-clamp-2">{book.title}</CardTitle>
                         <CardDescription className="flex items-center gap-2 mt-2">
                           <User className="h-4 w-4" />
-                          {book.author}
+                          {book.authorName}
                         </CardDescription>
                       </CardHeader>
                       <CardContent className="pb-3">
@@ -388,15 +267,19 @@ const BooksWrapper: FC = () => {
                         </p>
                         <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
                           <Calendar className="h-3 w-3" />
-                          Rok vydania: {book.year}
+                          Rok vydania: {book.publishedYear}
                         </div>
                       </CardContent>
                       <CardFooter>
-                        <Button 
-                          className="w-full" 
-                          disabled={!book.available}
+                        <Button
+                          className="w-full"
+                          disabled={book.availableCopies === 0}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/books/${book.id}`);
+                          }}
                         >
-                          {book.available ? "Požičať si" : "Nedostupné"}
+                          {book.availableCopies > 0 ? "Zobraziť detail" : "Nedostupné"}
                         </Button>
                       </CardFooter>
                     </Card>
@@ -429,8 +312,8 @@ const BooksWrapper: FC = () => {
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
-                  <PaginationPrevious 
-                    href="#" 
+                  <PaginationPrevious
+                    href="#"
                     onClick={(e) => {
                       e.preventDefault();
                       setCurrentPage(prev => Math.max(prev - 1, 1));
@@ -438,7 +321,7 @@ const BooksWrapper: FC = () => {
                     className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
                   />
                 </PaginationItem>
-                
+
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <PaginationItem key={page}>
                     <PaginationLink
@@ -453,10 +336,10 @@ const BooksWrapper: FC = () => {
                     </PaginationLink>
                   </PaginationItem>
                 ))}
-                
+
                 <PaginationItem>
-                  <PaginationNext 
-                    href="#" 
+                  <PaginationNext
+                    href="#"
                     onClick={(e) => {
                       e.preventDefault();
                       setCurrentPage(prev => Math.min(prev + 1, totalPages));
@@ -483,21 +366,21 @@ const BooksWrapper: FC = () => {
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-600">
-                {filteredBooks.filter(b => b.available).length}
+                {filteredBooks.filter(b => b.availableCopies > 0).length}
               </div>
               <div className="text-sm text-muted-foreground">Dostupné</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-orange-600">
-                {filteredBooks.filter(b => !b.available).length}
+                {filteredBooks.filter(b => b.availableCopies === 0).length}
               </div>
               <div className="text-sm text-muted-foreground">Vypožičané</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
-                {new Set(filteredBooks.map(b => b.genre)).size}
+                {new Set(filteredBooks.map(b => b.categoryName)).size}
               </div>
-              <div className="text-sm text-muted-foreground">Žánrov</div>
+              <div className="text-sm text-muted-foreground">Kategórií</div>
             </div>
           </div>
         </motion.div>
