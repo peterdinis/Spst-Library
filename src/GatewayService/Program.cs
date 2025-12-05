@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,37 +38,11 @@ app.Use(async (context, next) => {
     logger.LogInformation("=== REQUEST COMPLETE ===");
 });
 
-// Simple health check first
-app.MapGet("/health", () => {
-    return Results.Ok(new { 
-        status = "Gateway is running", 
-        timestamp = DateTime.UtcNow 
-    });
-});
-
-// Debug endpoint
-app.MapGet("/debug/routes", (HttpContext context) => {
-    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-    
-    try {
-        var config = app.Services.GetRequiredService<IReverseProxyConfig>();
-        var destinations = app.Services.GetRequiredService<IReverseProxyDestinations>();
-        
-        return Results.Json(new {
-            status = "Debug information",
-            configLoaded = config != null,
-            destinationsLoaded = destinations != null,
-            timestamp = DateTime.UtcNow
-        });
-    }
-    catch (Exception ex) {
-        logger.LogError(ex, "Error in debug endpoint");
-        return Results.Json(new { 
-            error = ex.Message,
-            stackTrace = ex.StackTrace
-        });
-    }
-});
+// Simple health check
+app.MapGet("/health", () => Results.Ok(new { 
+    status = "Gateway is running", 
+    timestamp = DateTime.UtcNow 
+}));
 
 // CORS must be before MapReverseProxy
 app.UseCors("customPolicy");
