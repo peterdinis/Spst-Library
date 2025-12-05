@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,40 +24,56 @@ builder.Services.AddCors(options => {
 
 var app = builder.Build();
 
-// Detailed request logging
 app.Use(async (context, next) => {
     var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+    
+    // Fixed: Use constant template strings with placeholders
     logger.LogInformation("=== INCOMING REQUEST ===");
-    logger.LogInformation($"Method: {context.Request.Method}");
-    logger.LogInformation($"Path: {context.Request.Path}");
-    logger.LogInformation($"QueryString: {context.Request.QueryString}");
+    logger.LogInformation("Method: {Method}", context.Request.Method);
+    logger.LogInformation("Path: {Path}", context.Request.Path);
+    logger.LogInformation("QueryString: {QueryString}", context.Request.QueryString);
     
     await next();
     
-    logger.LogInformation($"Response Status: {context.Response.StatusCode}");
+    logger.LogInformation("Response Status: {StatusCode}", context.Response.StatusCode);
     logger.LogInformation("=== REQUEST COMPLETE ===");
 });
 
-// Simple health check first
-app.MapGet("/health", () => {
-    return Results.Ok(new { 
-        status = "Gateway is running", 
-        timestamp = DateTime.UtcNow 
-    });
-});
+// Simple health check
+app.MapGet("/health", () => Results.Ok(new { 
+    status = "Gateway is running", 
+    timestamp = DateTime.UtcNow 
+}));
 
-// Debug endpoint
-app.MapGet("/debug/routes", (HttpContext context) => {
-    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-    
+// Debug endpoint with constant template strings
+app.MapGet("/debug", (IProxyConfigProvider proxyConfigProvider, ILogger<Program> logger) => {
     try {
-        var config = app.Services.GetRequiredService<IReverseProxyConfig>();
-        var destinations = app.Services.GetRequiredService<IReverseProxyDestinations>();
+        var config = proxyConfigProvider.GetConfig();
         
+        logger.LogInformation("Debug endpoint accessed. Routes: {RouteCount}, Clusters: {ClusterCount}", 
+            config.Routes.Count, config.Clusters.Count);
+        
+        var routes = config.Routes.Select(route => new {
+            routeId = route.RouteId,
+            match = route.Match?.Path,
+            clusterId = route.ClusterId,
+            order = route.Order
+        }).ToList();
+
+        var clusters = config.Clusters.Select(cluster => new {
+            clusterId = cluster.ClusterId,
+            destinations = cluster.Destinations?.Select(d => new {
+                id = d.Key,
+                address = d.Value.Address
+            })
+        }).ToList();
+
         return Results.Json(new {
-            status = "Debug information",
-            configLoaded = config != null,
-            destinationsLoaded = destinations != null,
+            status = "Gateway configuration",
+            routesCount = routes.Count,
+            clustersCount = clusters.Count,
+            routes = routes,
+            clusters = clusters,
             timestamp = DateTime.UtcNow
         });
     }
@@ -65,8 +81,9 @@ app.MapGet("/debug/routes", (HttpContext context) => {
         logger.LogError(ex, "Error in debug endpoint");
         return Results.Json(new { 
             error = ex.Message,
-            stackTrace = ex.StackTrace
-        });
+            details = ex.GetType().Name,
+            timestamp = DateTime.UtcNow
+        }, statusCode: 500);
     }
 });
 
