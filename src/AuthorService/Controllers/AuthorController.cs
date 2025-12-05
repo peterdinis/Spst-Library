@@ -23,7 +23,7 @@ namespace AuthorService.Controllers
         private readonly IResiliencePolicyService _policyService;
 
         public AuthorsController(
-            ApplicationDbContext context, 
+            ApplicationDbContext context,
             ILogger<AuthorsController> logger,
             IValidator<CreateAuthorDto> createValidator,
             IValidator<UpdateAuthorDto> updateValidator,
@@ -42,7 +42,7 @@ namespace AuthorService.Controllers
         public async Task<ActionResult<IEnumerable<AuthorDto>>> GetAuthors([FromQuery] bool includeBooks = false)
         {
             _logger.LogInformation("Getting all authors, IncludeBooks: {IncludeBooks}", includeBooks);
-            
+
             var authors = await _context.Authors
                 .Select(a => MapToDto(a))
                 .ToListAsync();
@@ -119,7 +119,8 @@ namespace AuthorService.Controllers
                 catch (BrokenCircuitException ex)
                 {
                     _logger.LogError(ex, "Circuit is open for book service for author {AuthorId}", id);
-                    return StatusCode(503, new { 
+                    return StatusCode(503, new
+                    {
                         message = "Book service is temporarily unavailable due to high failure rate",
                         details = "Circuit breaker is open"
                     });
@@ -157,7 +158,7 @@ namespace AuthorService.Controllers
             var validationResult = await _createValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
             {
-                _logger.LogWarning("Validation failed for creating author: {Errors}", 
+                _logger.LogWarning("Validation failed for creating author: {Errors}",
                     string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)));
                 return BadRequest(new { errors = validationResult.Errors.Select(e => e.ErrorMessage) });
             }
@@ -181,13 +182,13 @@ namespace AuthorService.Controllers
             {
                 _context.Authors.Add(author);
                 await _context.SaveChangesAsync();
-                
-                _logger.LogInformation("Author created successfully with ID {AuthorId}: {FirstName} {LastName}", 
+
+                _logger.LogInformation("Author created successfully with ID {AuthorId}: {FirstName} {LastName}",
                     author.AuthorId, author.FirstName, author.LastName);
             }
             catch (DbUpdateException ex)
             {
-                _logger.LogError(ex, "Database error while creating author: {FirstName} {LastName}", 
+                _logger.LogError(ex, "Database error while creating author: {FirstName} {LastName}",
                     dto.FirstName, dto.LastName);
                 return StatusCode(500, new { message = "Database error", details = ex.Message });
             }
@@ -202,7 +203,7 @@ namespace AuthorService.Controllers
             var validationResult = await _updateValidator.ValidateAsync(dto);
             if (!validationResult.IsValid)
             {
-                _logger.LogWarning("Validation failed for updating author with ID {AuthorId}: {Errors}", 
+                _logger.LogWarning("Validation failed for updating author with ID {AuthorId}: {Errors}",
                     id, string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)));
                 return BadRequest(new { errors = validationResult.Errors.Select(e => e.ErrorMessage) });
             }
@@ -222,7 +223,7 @@ namespace AuthorService.Controllers
                 return NotFound(new { message = "Author not found" });
             }
 
-            _logger.LogInformation("Updating author from: {OldFirstName} {OldLastName} to: {NewFirstName} {NewLastName}", 
+            _logger.LogInformation("Updating author from: {OldFirstName} {OldLastName} to: {NewFirstName} {NewLastName}",
                 author.FirstName, author.LastName, dto.FirstName, dto.LastName);
 
             // Update properties
@@ -274,7 +275,7 @@ namespace AuthorService.Controllers
                 var policy = _policyService.GetPolicy<int>();
                 var booksCount = await policy.ExecuteAsync(async () =>
                     await _bookService.GetBooksCountByAuthorAsync(id));
-                
+
                 if (booksCount > 0)
                 {
                     _logger.LogWarning("Cannot delete author {AuthorId} with {BooksCount} associated books", id, booksCount);
@@ -287,7 +288,7 @@ namespace AuthorService.Controllers
                 // Continue with deletion if we can't verify book count
             }
 
-            _logger.LogInformation("Deleting author: {FirstName} {LastName} (ID: {AuthorId})", 
+            _logger.LogInformation("Deleting author: {FirstName} {LastName} (ID: {AuthorId})",
                 author.FirstName, author.LastName, author.AuthorId);
 
             _context.Authors.Remove(author);
@@ -307,21 +308,102 @@ namespace AuthorService.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<ActionResult<IEnumerable<AuthorDto>>> SearchAuthors([FromQuery] string name, [FromQuery] bool includeBooks = false)
+        public async Task<ActionResult<IEnumerable<AuthorDto>>> SearchAuthors(
+    [FromQuery] string? name,
+    [FromQuery] string? country,
+    [FromQuery] bool? isActive,
+    [FromQuery] DateTime? bornAfter,
+    [FromQuery] DateTime? bornBefore,
+    [FromQuery] string? sortBy = "name",
+    [FromQuery] string? sortOrder = "asc",
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 20,
+    [FromQuery] bool includeBooks = false)
         {
-            if (string.IsNullOrWhiteSpace(name))
+            _logger.LogInformation(
+                "Searching authors with filters - Name: {Name}, Country: {Country}, IsActive: {IsActive}, " +
+                "BornAfter: {BornAfter}, BornBefore: {BornBefore}, Page: {Page}, PageSize: {PageSize}, IncludeBooks: {IncludeBooks}",
+                name, country, isActive, bornAfter, bornBefore, page, pageSize, includeBooks);
+
+            // Validate pagination parameters
+            if (page < 1)
             {
-                return BadRequest(new { message = "Search term is required" });
+                _logger.LogWarning("Invalid page number: {Page}", page);
+                return BadRequest(new { message = "Page must be greater than 0" });
             }
 
-            _logger.LogInformation("Searching authors with term: {SearchTerm}, IncludeBooks: {IncludeBooks}", name, includeBooks);
+            if (pageSize < 1 || pageSize > 100)
+            {
+                _logger.LogWarning("Invalid page size: {PageSize}", pageSize);
+                return BadRequest(new { message = "Page size must be between 1 and 100" });
+            }
 
-            var authors = await _context.Authors
-                .Where(a => a.FirstName.Contains(name) || a.LastName.Contains(name) || (a.FirstName + " " + a.LastName).Contains(name))
+            // Build query
+            var query = _context.Authors.AsQueryable();
+
+            // Apply filters
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                var searchTerm = name.Trim().ToLower();
+                query = query.Where(a =>
+                    a.FirstName.ToLower().Contains(searchTerm) ||
+                    a.LastName.ToLower().Contains(searchTerm) ||
+                    (a.FirstName + " " + a.LastName).ToLower().Contains(searchTerm) ||
+                    (a.Biography != null && a.Biography.ToLower().Contains(searchTerm)));
+            }
+
+            if (!string.IsNullOrWhiteSpace(country))
+            {
+                var countryTerm = country.Trim().ToLower();
+                query = query.Where(a => a.Country.ToLower().Contains(countryTerm));
+            }
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(a => a.IsActive == isActive.Value);
+            }
+
+            if (bornAfter.HasValue)
+            {
+                query = query.Where(a => a.DateOfBirth >= bornAfter.Value);
+            }
+
+            if (bornBefore.HasValue)
+            {
+                query = query.Where(a => a.DateOfBirth <= bornBefore.Value);
+            }
+
+            // Get total count for pagination metadata
+            var totalCount = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            // Apply sorting
+            query = sortBy?.ToLower() switch
+            {
+                "name" => sortOrder?.ToLower() == "desc"
+                    ? query.OrderByDescending(a => a.LastName).ThenByDescending(a => a.FirstName)
+                    : query.OrderBy(a => a.LastName).ThenBy(a => a.FirstName),
+                "country" => sortOrder?.ToLower() == "desc"
+                    ? query.OrderByDescending(a => a.Country).ThenBy(a => a.LastName)
+                    : query.OrderBy(a => a.Country).ThenBy(a => a.LastName),
+                "birthdate" => sortOrder?.ToLower() == "desc"
+                    ? query.OrderByDescending(a => a.DateOfBirth)
+                    : query.OrderBy(a => a.DateOfBirth),
+                "created" => sortOrder?.ToLower() == "desc"
+                    ? query.OrderByDescending(a => a.CreatedDate)
+                    : query.OrderBy(a => a.CreatedDate),
+                _ => query.OrderBy(a => a.LastName).ThenBy(a => a.FirstName)
+            };
+
+            // Apply pagination
+            var authors = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .Select(a => MapToDto(a))
                 .ToListAsync();
 
-            if (includeBooks)
+            // Get books information if requested
+            if (includeBooks && authors.Any())
             {
                 foreach (var author in authors)
                 {
@@ -342,11 +424,58 @@ namespace AuthorService.Controllers
                     }
                 }
             }
+            else if (!includeBooks)
+            {
+                // Get books count for each author if books not included
+                foreach (var author in authors)
+                {
+                    try
+                    {
+                        var policy = _policyService.GetPolicy<int>();
+                        author.BooksCount = await policy.ExecuteAsync(async () =>
+                            await _bookService.GetBooksCountByAuthorAsync(author.AuthorId));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to get books count for author {AuthorId}", author.AuthorId);
+                        author.BooksCount = 0;
+                    }
+                }
+            }
 
-            _logger.LogInformation("Found {Count} authors matching search term: {SearchTerm}", authors.Count, name);
-            return Ok(authors);
+            // Prepare response with pagination metadata
+            var response = new
+            {
+                Data = authors,
+                Pagination = new
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalCount = totalCount,
+                    TotalPages = totalPages,
+                    HasPreviousPage = page > 1,
+                    HasNextPage = page < totalPages
+                },
+                Filters = new
+                {
+                    Name = name,
+                    Country = country,
+                    IsActive = isActive,
+                    BornAfter = bornAfter,
+                    BornBefore = bornBefore,
+                    SortBy = sortBy,
+                    SortOrder = sortOrder,
+                    IncludeBooks = includeBooks
+                }
+            };
+
+            _logger.LogInformation(
+                "Search completed. Found {TotalCount} authors, returning {PageCount} on page {Page}. Total pages: {TotalPages}",
+                totalCount, authors.Count, page, totalPages);
+
+            return Ok(response);
         }
-
+        
         [HttpGet("{id}/books")]
         public async Task<ActionResult<List<AuthorBookDto>>> GetAuthorBooks(int id)
         {
@@ -365,15 +494,16 @@ namespace AuthorService.Controllers
                 var books = await policy.ExecuteAsync(async () =>
                     await _bookService.GetBooksByAuthorAsync(id));
 
-                _logger.LogInformation("Retrieved {BooksCount} books for author {AuthorId}", 
+                _logger.LogInformation("Retrieved {BooksCount} books for author {AuthorId}",
                     books?.Count ?? 0, id);
-                
+
                 return Ok(books ?? new List<AuthorBookDto>());
             }
             catch (BrokenCircuitException ex)
             {
                 _logger.LogError(ex, "Circuit is open for book service for author {AuthorId}", id);
-                return StatusCode(503, new { 
+                return StatusCode(503, new
+                {
                     message = "Book service is temporarily unavailable due to high failure rate",
                     details = "Circuit breaker is open"
                 });
