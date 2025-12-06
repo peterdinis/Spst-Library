@@ -50,6 +50,16 @@ public class OrdersController : ControllerBase
         return Ok(orders);
     }
 
+    [HttpGet("user/{userId}")]
+    public async Task<ActionResult<IEnumerable<OrderDto>>> GetOrdersByUserId(
+        string userId,
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var orders = await _orderService.GetAllOrdersAsync(pageNumber, pageSize, userId);
+        return Ok(orders);
+    }
+
     [HttpPost("{id}/return")]
     public async Task<ActionResult<OrderDto>> ReturnOrder(int id)
     {
