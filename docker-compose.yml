@@ -137,6 +137,7 @@ services:
       - author-service
       - category-service
       - books-service
+      - order-service
     networks:
       - spsif-library-network
 
