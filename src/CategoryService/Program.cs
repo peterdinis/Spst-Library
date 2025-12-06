@@ -5,6 +5,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using CategoryService.Interfaces;
 using CategoryService.Services;
+using CategoryService.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,11 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<CategoryValidator>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddSingleton<IResiliencePolicyService, ResiliencePolicyService>();
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<CreateCategoryDtoValidator>();
+builder.Services.AddScoped<UpdateCategoryDtoValidator>();
 
 var app = builder.Build();
 
