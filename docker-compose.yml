@@ -14,11 +14,6 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - spsif-library-network
-    healthcheck:
-      test: rabbitmq-diagnostics -q ping
-      interval: 10s
-      timeout: 5s
-      retries: 3
 
   authors-service:
     build:
@@ -39,10 +34,9 @@ services:
       - DOTNET_READYTORUN=1
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
-    depends_on:
-      - rabbitmq
     networks:
       - spsif-library-network
+    restart: on-failure
 
   categories-service:
     build:
@@ -63,10 +57,9 @@ services:
       - DOTNET_READYTORUN=1
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
-    depends_on:
-      - rabbitmq
     networks:
       - spsif-library-network
+    restart: on-failure
 
   books-service:
     build:
@@ -87,10 +80,9 @@ services:
       - DOTNET_READYTORUN=1
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
-    depends_on:
-      - rabbitmq
     networks:
       - spsif-library-network
+    restart: on-failure
 
   gateway-service:
     build:
@@ -102,21 +94,18 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
+      - ClientApp=http://localhost:3000
       - DOTNET_READYTORUN=1
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
-    depends_on:
-      - authors-service
-      - categories-service
-      - books-service
     networks:
       - spsif-library-network
+    restart: on-failure
 
 volumes:
   rabbitmq_data:
-
 
 networks:
   spsif-library-network:
