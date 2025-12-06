@@ -21,7 +21,7 @@ namespace CategoryService.Controllers
         private readonly IAsyncPolicy _resiliencePolicy;
 
         public CategoriesController(
-            ApplicationDbContext context, 
+            ApplicationDbContext context,
             ILogger<CategoriesController> logger,
             IBookService bookService)
         {
@@ -35,7 +35,7 @@ namespace CategoryService.Controllers
         public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategories([FromQuery] bool includeBooks = false)
         {
             _logger.LogInformation("Getting all categories, IncludeBooks: {IncludeBooks}", includeBooks);
-            
+
             var categories = await _context.Categories
                 .Select(c => MapToDto(c))
                 .ToListAsync();
@@ -46,9 +46,9 @@ namespace CategoryService.Controllers
                 {
                     try
                     {
-                        var books = await _resiliencePolicy.ExecuteAsync(async () => 
+                        var books = await _resiliencePolicy.ExecuteAsync(async () =>
                             await _bookService.GetBooksByCategoryAsync(category.Id));
-                        
+
                         category.Books = books;
                         category.BooksCount = books.Count;
                     }
@@ -79,7 +79,7 @@ namespace CategoryService.Controllers
                 {
                     try
                     {
-                        category.BooksCount = await _resiliencePolicy.ExecuteAsync(async () => 
+                        category.BooksCount = await _resiliencePolicy.ExecuteAsync(async () =>
                             await _bookService.GetBooksCountByCategoryAsync(category.Id));
                     }
                     catch (Exception ex)
@@ -112,9 +112,9 @@ namespace CategoryService.Controllers
             {
                 try
                 {
-                    var books = await _resiliencePolicy.ExecuteAsync(async () => 
+                    var books = await _resiliencePolicy.ExecuteAsync(async () =>
                         await _bookService.GetBooksByCategoryAsync(id));
-                    
+
                     categoryDto.Books = books;
                     categoryDto.BooksCount = books.Count;
                     _logger.LogInformation("Retrieved {BooksCount} books for category {CategoryId}", books.Count, id);
@@ -122,25 +122,28 @@ namespace CategoryService.Controllers
                 catch (TimeoutRejectedException ex)
                 {
                     _logger.LogWarning(ex, "Book service timeout while fetching books for category {CategoryId}", id);
-                    return StatusCode(503, new { 
+                    return StatusCode(503, new
+                    {
                         message = "Book service is temporarily unavailable",
-                        category = categoryDto 
+                        category = categoryDto
                     });
                 }
                 catch (BrokenCircuitException ex)
                 {
                     _logger.LogWarning(ex, "Circuit breaker open for book service while fetching books for category {CategoryId}", id);
-                    return StatusCode(503, new { 
+                    return StatusCode(503, new
+                    {
                         message = "Book service is currently unavailable. Please try again later.",
-                        category = categoryDto 
+                        category = categoryDto
                     });
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error while fetching books for category {CategoryId}", id);
-                    return StatusCode(500, new { 
+                    return StatusCode(500, new
+                    {
                         message = "Error retrieving books information",
-                        category = categoryDto 
+                        category = categoryDto
                     });
                 }
             }
@@ -148,7 +151,7 @@ namespace CategoryService.Controllers
             {
                 try
                 {
-                    categoryDto.BooksCount = await _resiliencePolicy.ExecuteAsync(async () => 
+                    categoryDto.BooksCount = await _resiliencePolicy.ExecuteAsync(async () =>
                         await _bookService.GetBooksCountByCategoryAsync(id));
                 }
                 catch (Exception ex)
@@ -177,7 +180,7 @@ namespace CategoryService.Controllers
             {
                 _context.Categories.Add(category);
                 await _context.SaveChangesAsync();
-                
+
                 _logger.LogInformation("Category created successfully with ID {CategoryId}", category.Id);
             }
             catch (DbUpdateException ex)
@@ -240,9 +243,9 @@ namespace CategoryService.Controllers
             // Check if category has books before deletion
             try
             {
-                var booksCount = await _resiliencePolicy.ExecuteAsync(async () => 
+                var booksCount = await _resiliencePolicy.ExecuteAsync(async () =>
                     await _bookService.GetBooksCountByCategoryAsync(id));
-                
+
                 if (booksCount > 0)
                 {
                     _logger.LogWarning("Cannot delete category {CategoryId} with {BooksCount} associated books", id, booksCount);
@@ -281,6 +284,120 @@ namespace CategoryService.Controllers
             }
 
             return NoContent();
+        }
+
+        [HttpGet("search")]
+        public async Task<ActionResult<IEnumerable<CategoryDto>>> SearchCategories(
+    [FromQuery] string? keyword,
+    [FromQuery] bool includeBooks = false,
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 20)
+        {
+            _logger.LogInformation("Searching categories with keyword: {Keyword}, Page: {Page}, PageSize: {PageSize}",
+                keyword, page, pageSize);
+
+            // Validácia parametrov
+            if (page < 1)
+                page = 1;
+
+            if (pageSize < 1 || pageSize > 100)
+                pageSize = 20;
+
+            // Vytvorenie základného query
+            var query = _context.Categories.AsQueryable();
+
+            // Aplikovanie filtra podľa keyword
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                var searchTerm = keyword.ToLower().Trim();
+                query = query.Where(c =>
+                    c.Title.ToLower().Contains(searchTerm) ||
+                    (c.Description != null && c.Description.ToLower().Contains(searchTerm)));
+            }
+
+            // Výpočet celkového počtu záznamov pre pagination
+            var totalCount = await query.CountAsync();
+            var totalPages = (int)Math.Ceiling((double)totalCount / pageSize);
+
+            // Aplikovanie pagination
+            var categories = await query
+                .OrderBy(c => c.Title)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(c => MapToDto(c))
+                .ToListAsync();
+
+            // Načítanie kníh pre kategórie ak je to potrebné
+            if (includeBooks)
+            {
+                foreach (var category in categories)
+                {
+                    try
+                    {
+                        var books = await _resiliencePolicy.ExecuteAsync(async () =>
+                            await _bookService.GetBooksByCategoryAsync(category.Id));
+
+                        category.Books = books;
+                        category.BooksCount = books.Count;
+                    }
+                    catch (TimeoutRejectedException ex)
+                    {
+                        _logger.LogWarning(ex, "Timeout while fetching books for category {CategoryId}", category.Id);
+                        category.BooksCount = 0;
+                        category.Books = [];
+                    }
+                    catch (BrokenCircuitException ex)
+                    {
+                        _logger.LogWarning(ex, "Circuit breaker open while fetching books for category {CategoryId}", category.Id);
+                        category.BooksCount = 0;
+                        category.Books = [];
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error while fetching books for category {CategoryId}", category.Id);
+                        category.BooksCount = 0;
+                        category.Books = [];
+                    }
+                }
+            }
+            else
+            {
+                // Načítanie počtu kníh pre kategórie
+                foreach (var category in categories)
+                {
+                    try
+                    {
+                        category.BooksCount = await _resiliencePolicy.ExecuteAsync(async () =>
+                            await _bookService.GetBooksCountByCategoryAsync(category.Id));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to get books count for category {CategoryId}", category.Id);
+                        category.BooksCount = 0;
+                    }
+                }
+            }
+
+            // Vytvorenie pagination response
+            var paginationMetadata = new
+            {
+                totalCount,
+                totalPages,
+                currentPage = page,
+                pageSize,
+                hasPrevious = page > 1,
+                hasNext = page < totalPages
+            };
+
+            Response.Headers.Add("X-Pagination", System.Text.Json.JsonSerializer.Serialize(paginationMetadata));
+
+            _logger.LogInformation("Search completed. Found {Count} categories on page {Page}", categories.Count, page);
+
+            return Ok(new
+            {
+                categories,
+                pagination = paginationMetadata
+            });
         }
 
         private static CategoryDto MapToDto(Category category) => new CategoryDto
@@ -339,7 +456,7 @@ namespace CategoryService.Controllers
             // Fallback policy pre zoznam kategórií
             var fallbackPolicy = Policy<object>
                 .Handle<Exception>();
-                
+
             // Kombinácia politík pre jednotlivé operácie
             return Policy.WrapAsync(timeoutPolicy, circuitBreakerPolicy, retryPolicy);
         }
