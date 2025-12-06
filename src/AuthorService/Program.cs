@@ -5,6 +5,7 @@ using FluentValidation;
 using FluentValidation.AspNetCore;
 using AuthorService.Services;
 using AuthorService.Interfaces;
+using AuthorService.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,8 @@ builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<AuthorValidator>();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddSingleton<IResiliencePolicyService, ResiliencePolicyService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
 
 var app = builder.Build();
 
