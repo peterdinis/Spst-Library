@@ -1,14 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using FluentValidation;
 using Polly.CircuitBreaker;
-using CategoryService.Data;
 using CategoryService.Dtos;
 using CategoryService.Entities;
 using CategoryService.Interfaces;
 using Polly;
+using CategoryService.Repositories;
 using Polly.Timeout;
-using Polly.Retry;
-using CategoryService.Validation;
 
 namespace CategoryService.Controllers
 {
@@ -140,12 +138,6 @@ namespace CategoryService.Controllers
                 _logger.LogWarning("Validation failed for updating category with ID {CategoryId}: {Errors}",
                     id, string.Join(", ", validationResult.Errors.Select(e => e.ErrorMessage)));
                 return BadRequest(new { errors = validationResult.Errors.Select(e => e.ErrorMessage) });
-            }
-
-            if (id != dto.Id)
-            {
-                _logger.LogWarning("ID mismatch in URL ({UrlId}) and body ({BodyId})", id, dto.Id);
-                return BadRequest(new { message = "ID in URL does not match ID in body" });
             }
 
             _logger.LogInformation("Updating category with ID {CategoryId}", id);
@@ -375,26 +367,23 @@ namespace CategoryService.Controllers
                     var books = await _resiliencePolicy.ExecuteAsync(async () =>
                         await _bookService.GetBooksByCategoryAsync(category.Id));
 
-                    category.Books = books ?? new List<CategoryDto.BookDto>();
+                    category.Books = books;
                     category.BooksCount = books?.Count ?? 0;
                 }
                 catch (TimeoutRejectedException ex)
                 {
                     _logger.LogWarning(ex, "Timeout while fetching books for category {CategoryId}", category.Id);
                     category.BooksCount = 0;
-                    category.Books = new List<CategoryDto.BookDto>();
                 }
                 catch (BrokenCircuitException ex)
                 {
                     _logger.LogWarning(ex, "Circuit breaker open while fetching books for category {CategoryId}", category.Id);
                     category.BooksCount = 0;
-                    category.Books = new List<CategoryDto.BookDto>();
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error while fetching books for category {CategoryId}", category.Id);
                     category.BooksCount = 0;
-                    category.Books = new List<CategoryDto.BookDto>();
                 }
             }
         }
@@ -422,8 +411,6 @@ namespace CategoryService.Controllers
             {
                 var books = await _resiliencePolicy.ExecuteAsync(async () =>
                     await _bookService.GetBooksByCategoryAsync(id));
-
-                categoryDto.Books = books ?? new List<CategoryDto.BookDto>();
                 categoryDto.BooksCount = books?.Count ?? 0;
                 _logger.LogInformation("Retrieved {BooksCount} books for category {CategoryId}", categoryDto.BooksCount, id);
             }
@@ -440,7 +427,6 @@ namespace CategoryService.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while fetching books for category {CategoryId}", id);
-                categoryDto.Books = new List<CategoryDto.BookDto>();
                 categoryDto.BooksCount = 0;
             }
         }
