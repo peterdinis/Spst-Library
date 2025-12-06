@@ -84,6 +84,32 @@ services:
       - spsif-library-network
     restart: on-failure
 
+  order-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: OrderService
+    container_name: order-service
+    ports:
+      - "5003:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - RABBITMQ__HOST=rabbitmq
+      - RABBITMQ__PORT=5672
+      - RABBITMQ__USERNAME=guest
+      - RABBITMQ__PASSWORD=guest
+      - BooksService__Url=http://books-service:8080
+      - DOTNET_READYTORUN=1
+      - DOTNET_TieredCompilation=1
+      - DOTNET_TieredPGO=1
+    depends_on:
+      - rabbitmq
+      - books-service
+    networks:
+      - spsif-library-network
+
   gateway-service:
     build:
       context: .
@@ -100,12 +126,18 @@ services:
       - DOTNET_READYTORUN=1
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
+    depends_on:
+      - author-service
+      - category-service
+      - books-service
+      - order-service
     networks:
       - spsif-library-network
     restart: on-failure
 
 volumes:
   rabbitmq_data:
+
 
 networks:
   spsif-library-network:
