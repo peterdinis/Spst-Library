@@ -1,5 +1,7 @@
 # 📚 SPŠT Library - Modern Digital Library System
 
+🚧 This project is currently under development 🚧
+
 An intuitive web application for modern school libraries with advanced user management and library catalog systems.
 
 ## 🎯 Role-Based Functionality
@@ -38,6 +40,4 @@ An intuitive web application for modern school libraries with advanced user mana
 - **🐳 Docker** - Containerization for easy deployment
 - **🔗 API Gateway** - Unified entry point for all services
 - **📦 Entity Framework Core** - Modern data access layer
-- **🗄️ PostgreSQL** - Relational database system
-- **🔍 Redis** - Caching and session storage
-- **📧 Email Service** - Notifications and reminders
+- **🗄️ Sqlite** - Sqlite(for development) latest Postgresql for production
