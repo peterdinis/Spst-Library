@@ -110,6 +110,54 @@ services:
     networks:
       - spsif-library-network
 
+  identity-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: IdentityService
+    container_name: identity-service
+    ports:
+      - "5004:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - RABBITMQ__HOST=rabbitmq
+      - RABBITMQ__PORT=5672
+      - RABBITMQ__USERNAME=guest
+      - RABBITMQ__PASSWORD=guest
+      - DOTNET_READYTORUN=1
+      - DOTNET_TieredCompilation=1
+      - DOTNET_TieredPGO=1
+    networks:
+      - spsif-library-network
+    restart: on-failure
+
+  notifications-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: NotificationsService
+    container_name: notifications-service
+    ports:
+      - "5005:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - RABBITMQ__HOST=rabbitmq
+      - RABBITMQ__PORT=5672
+      - RABBITMQ__USERNAME=guest
+      - RABBITMQ__PASSWORD=guest
+      - DOTNET_READYTORUN=1
+      - DOTNET_TieredCompilation=1
+      - DOTNET_TieredPGO=1
+    depends_on:
+      - rabbitmq
+    networks:
+      - spsif-library-network
+    restart: on-failure
+
   gateway-service:
     build:
       context: .
@@ -131,6 +179,8 @@ services:
       - category-service
       - books-service
       - order-service
+      - identity-service
+      - notifications-service
     networks:
       - spsif-library-network
     restart: on-failure
