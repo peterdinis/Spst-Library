@@ -367,22 +367,34 @@ namespace CategoryService.Controllers
                     var books = await _resiliencePolicy.ExecuteAsync(async () =>
                         await _bookService.GetBooksByCategoryAsync(category.Id));
 
-                    category.Books = books;
-                    category.BooksCount = books?.Count ?? 0;
+                    // Konvertovať z Messages.BookDto na Dtos.BookDto
+                    category.Books = books?.Select(b => new BookDto
+                    {
+                        Id = b.Id,
+                        Title = b.Title,
+                        Author = b.Author,
+                        Year = b.Year,
+                        IsAvailable = b.IsAvailable
+                    }).ToList() ?? new List<BookDto>();
+                    
+                    category.BooksCount = category.Books.Count;
                 }
                 catch (TimeoutRejectedException ex)
                 {
                     _logger.LogWarning(ex, "Timeout while fetching books for category {CategoryId}", category.Id);
+                    category.Books = new List<BookDto>();
                     category.BooksCount = 0;
                 }
                 catch (BrokenCircuitException ex)
                 {
                     _logger.LogWarning(ex, "Circuit breaker open while fetching books for category {CategoryId}", category.Id);
+                    category.Books = new List<BookDto>();
                     category.BooksCount = 0;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error while fetching books for category {CategoryId}", category.Id);
+                    category.Books = new List<BookDto>();
                     category.BooksCount = 0;
                 }
             }
@@ -411,22 +423,39 @@ namespace CategoryService.Controllers
             {
                 var books = await _resiliencePolicy.ExecuteAsync(async () =>
                     await _bookService.GetBooksByCategoryAsync(id));
-                categoryDto.BooksCount = books?.Count ?? 0;
+                
+                // Konvertovať z Messages.BookDto na Dtos.BookDto
+                categoryDto.Books = books?.Select(b => new BookDto
+                {
+                    Id = b.Id,
+                    Title = b.Title,
+                    Author = b.Author,
+                    Year = b.Year,
+                    IsAvailable = b.IsAvailable
+                }).ToList() ?? new List<BookDto>();
+                
+                categoryDto.BooksCount = categoryDto.Books.Count;
+                
                 _logger.LogInformation("Retrieved {BooksCount} books for category {CategoryId}", categoryDto.BooksCount, id);
             }
             catch (TimeoutRejectedException ex)
             {
                 _logger.LogWarning(ex, "Book service timeout while fetching books for category {CategoryId}", id);
+                categoryDto.Books = new List<BookDto>();
+                categoryDto.BooksCount = 0;
                 throw;
             }
             catch (BrokenCircuitException ex)
             {
                 _logger.LogWarning(ex, "Circuit breaker open for book service while fetching books for category {CategoryId}", id);
+                categoryDto.Books = new List<BookDto>();
+                categoryDto.BooksCount = 0;
                 throw;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while fetching books for category {CategoryId}", id);
+                categoryDto.Books = new List<BookDto>();
                 categoryDto.BooksCount = 0;
             }
         }
