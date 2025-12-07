@@ -2,7 +2,7 @@ import BooksWrapper from "@/components/books/BooksWrapper";
 import { NextPage } from "next";
 
 const BooksPage: NextPage = () => {
-    return <BooksWrapper />
-}
+	return <BooksWrapper />;
+};
 
-export default BooksPage
+export default BooksPage;
