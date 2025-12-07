@@ -22,7 +22,7 @@ const Hero: FC = () => {
 
 	return (
 		<section>
-			<div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-white dark:bg-[#030303]">
+			<div className="relative min-h-screen -mt-16 w-full flex items-center justify-center overflow-hidden bg-white dark:bg-[#030303]">
 				{/* Soft glow orb */}
 				<motion.div
 					initial={{ opacity: 0 }}
