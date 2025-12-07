@@ -3,6 +3,8 @@ import { Ubuntu } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/shared/Navigation";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+import { AuthProvider } from "@/components/providers/AuthContext";
+import QueryProvider from "@/components/providers/QueryProvider";
 
 const ubuntu = Ubuntu({
   subsets: ["latin"],
@@ -86,8 +88,6 @@ export const metadata: Metadata = {
   category: "education",
 };
 
-import { AuthProvider } from "@/components/providers/AuthContext";
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -96,29 +96,8 @@ export default function RootLayout({
   return (
     <html lang="sk" className={ubuntu.variable} suppressHydrationWarning>
       <head>
-        {/* Pridať favicon pre rôzne zariadenia */}
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link
-          rel="icon"
-          href="/icon?<generated>"
-          type="image/<generated>"
-          sizes="<generated>"
-        />
-        <link
-          rel="apple-touch-icon"
-          href="/apple-icon?<generated>"
-          type="image/<generated>"
-          sizes="<generated>"
-        />
-
-        {/* Pridať manifest pre PWA */}
-        <link rel="manifest" href="/manifest.json" />
-
-        {/* Pridať theme color pre mobilné zariadenia */}
         <meta name="theme-color" content="#1e40af" media="(prefers-color-scheme: light)" />
         <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)" />
-
-        {/* Pridať viewport pre lepšiu responzivitu */}
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1, maximum-scale=5"
@@ -132,10 +111,12 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AuthProvider>
-            <Navigation />
+              <QueryProvider>
+                <Navigation />
             <main className="min-h-screen pt-16">
               {children}
             </main>
+              </QueryProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>
