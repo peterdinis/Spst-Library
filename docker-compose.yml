@@ -14,6 +14,11 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - spsif-library-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   author-service:
     build:
@@ -36,6 +41,9 @@ services:
       - DOTNET_TieredPGO=1
     networks:
       - spsif-library-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     restart: on-failure
 
   category-service:
@@ -59,6 +67,9 @@ services:
       - DOTNET_TieredPGO=1
     networks:
       - spsif-library-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     restart: on-failure
 
   books-service:
@@ -82,6 +93,9 @@ services:
       - DOTNET_TieredPGO=1
     networks:
       - spsif-library-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     restart: on-failure
 
   order-service:
@@ -105,18 +119,29 @@ services:
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
     depends_on:
-      - rabbitmq
-      - books-service
+      rabbitmq:
+        condition: service_healthy
+      books-service:
+        condition: service_started
     networks:
       - spsif-library-network
 
+<<<<<<< HEAD
   identity-service:
+=======
+  admin-service:
+>>>>>>> main
     build:
       context: .
       dockerfile: Dockerfile
       args:
+<<<<<<< HEAD
         SERVICE_NAME: IdentityService
     container_name: identity-service
+=======
+        SERVICE_NAME: AdminService
+    container_name: admin-service
+>>>>>>> main
     ports:
       - "5004:8080"
     environment:
@@ -126,6 +151,7 @@ services:
       - RABBITMQ__PORT=5672
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
+<<<<<<< HEAD
       - DOTNET_READYTORUN=1
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
@@ -149,11 +175,30 @@ services:
       - RABBITMQ__PORT=5672
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
+=======
+      - Services__Authors=http://authors-service:8080
+      - Services__Categories=http://categories-service:8080
+      - Services__Books=http://books-service:8080
+      - Services__Orders=http://order-service:8080
+>>>>>>> main
       - DOTNET_READYTORUN=1
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
     depends_on:
+<<<<<<< HEAD
       - rabbitmq
+=======
+      rabbitmq:
+        condition: service_healthy
+      authors-service:
+        condition: service_started
+      categories-service:
+        condition: service_started
+      books-service:
+        condition: service_started
+      order-service:
+        condition: service_started
+>>>>>>> main
     networks:
       - spsif-library-network
     restart: on-failure
@@ -171,16 +216,25 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - ClientApp=http://localhost:3000
+      - Services__Authors=http://authors-service:8080
+      - Services__Categories=http://categories-service:8080
+      - Services__Books=http://books-service:8080
+      - Services__Orders=http://order-service:8080
+      - Services__Admin=http://admin-service:8080
       - DOTNET_READYTORUN=1
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
     depends_on:
-      - author-service
-      - category-service
+      - authors-service
+      - categories-service
       - books-service
       - order-service
+<<<<<<< HEAD
       - identity-service
       - notifications-service
+=======
+      - admin-service
+>>>>>>> main
     networks:
       - spsif-library-network
     restart: on-failure
