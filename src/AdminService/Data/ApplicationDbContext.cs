@@ -5,18 +5,11 @@ using AdminService.Entities;
 
 namespace AdminService.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationAdmin>
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : IdentityDbContext<ApplicationAdmin>(options)
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
-        {
-        }
-
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
-            
-            // Přejmenování tabulek
             builder.Entity<ApplicationAdmin>().ToTable("Users");
             builder.Entity<IdentityRole>().ToTable("Roles");
             builder.Entity<IdentityUserRole<string>>().ToTable("UserRoles");
