@@ -118,5 +118,102 @@ namespace AdminService.Controllers
         {
             return StatusCode(403, new { message = "Access denied" });
         }
+
+        // Generate a new admin code for the current user
+        [HttpPost("generate-admin-code")]
+        [Authorize]
+        public async Task<IActionResult> GenerateAdminCode([FromBody] GenerateAdminCodeDto request)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Unauthorized();
+
+            // Optional: Check if user has specific role to generate admin codes
+            var roles = await _userManager.GetRolesAsync(user);
+            if (!roles.Contains("Admin") && !roles.Contains("SuperAdmin"))
+            {
+                return StatusCode(403, new { message = "Insufficient permissions to generate admin codes" });
+            }
+
+            user.GenerateAdminCode(request.ExpiryHours ?? 24);
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                return Ok(new
+                {
+                    message = "Admin code generated successfully",
+                    adminCode = user.AdminCode,
+                    expiresAt = user.AdminCodeExpiry
+                });
+            }
+
+            return BadRequest(result.Errors);
+        }
+
+        // Validate an admin code
+        [HttpPost("validate-admin-code")]
+        [Authorize]
+        public async Task<IActionResult> ValidateAdminCode([FromBody] ValidateAdminCodeDto request)
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Unauthorized();
+
+            if (string.IsNullOrEmpty(request.AdminCode))
+                return BadRequest(new { message = "Admin code is required" });
+
+            if (user.IsAdminCodeValid(request.AdminCode))
+            {
+                // Optional: Clear the code after successful validation
+                if (request.ClearAfterValidation)
+                {
+                    user.ClearAdminCode();
+                    await _userManager.UpdateAsync(user);
+                }
+
+                return Ok(new { message = "Admin code is valid" });
+            }
+
+            if (user.IsAdminCodeExpired())
+                return BadRequest(new { message = "Admin code has expired" });
+
+            return BadRequest(new { message = "Invalid admin code" });
+        }
+
+        // Get current admin code status
+        [HttpGet("admin-code-status")]
+        [Authorize]
+        public async Task<IActionResult> GetAdminCodeStatus()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Unauthorized();
+
+            return Ok(new
+            {
+                hasCode = !string.IsNullOrEmpty(user.AdminCode),
+                isExpired = user.IsAdminCodeExpired(),
+                expiresAt = user.AdminCodeExpiry
+            });
+        }
+
+        // Clear admin code
+        [HttpPost("clear-admin-code")]
+        [Authorize]
+        public async Task<IActionResult> ClearAdminCode()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+                return Unauthorized();
+
+            user.ClearAdminCode();
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+                return Ok(new { message = "Admin code cleared successfully" });
+
+            return BadRequest(result.Errors);
+        }
     }
 }
