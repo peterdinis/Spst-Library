@@ -1,6 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+<<<<<<< HEAD
+=======
+	reactStrictMode: true,
+>>>>>>> main
 	images: {
 		remotePatterns: [
 			{
