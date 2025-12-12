@@ -191,45 +191,6 @@ services:
       - spsif-library-network
     restart: on-failure
 
-  gateway-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        SERVICE_NAME: GatewayService
-    container_name: gateway-service
-    ports:
-      - "8080:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080
-      - ClientApp=http://localhost:3000
-      - Services__Authors=http://author-service:8080
-      - Services__Categories=http://category-service:8080
-      - Services__Books=http://books-service:8080
-      - Services__Orders=http://order-service:8080
-      - Services__Admin=http://admin-service:8080
-      - Services__Notifications=http://notifications-service:8080
-      - DOTNET_READYTORUN=1
-      - DOTNET_TieredCompilation=1
-      - DOTNET_TieredPGO=1
-    depends_on:
-      author-service:
-        condition: service_started
-      category-service:
-        condition: service_started
-      books-service:
-        condition: service_started
-      order-service:
-        condition: service_started
-      admin-service:
-        condition: service_started
-      notifications-service:
-        condition: service_started
-    networks:
-      - spsif-library-network
-    restart: on-failure
-
 volumes:
   rabbitmq_data:
 
