@@ -24,14 +24,16 @@ builder.Services.AddCors(options => {
 
 var app = builder.Build();
 
+// Debug middleware
 app.Use(async (context, next) => {
     var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
     
-    // Fixed: Use constant template strings with placeholders
     logger.LogInformation("=== INCOMING REQUEST ===");
     logger.LogInformation("Method: {Method}", context.Request.Method);
     logger.LogInformation("Path: {Path}", context.Request.Path);
     logger.LogInformation("QueryString: {QueryString}", context.Request.QueryString);
+    logger.LogInformation("OriginalPath: {OriginalPath}", context.Request.Path.Value);
+    logger.LogInformation("OriginalQueryString: {OriginalQueryString}", context.Request.QueryString.Value);
     
     await next();
     
@@ -45,35 +47,33 @@ app.MapGet("/health", () => Results.Ok(new {
     timestamp = DateTime.UtcNow 
 }));
 
-// Debug endpoint with constant template strings
+// Debug endpoint
 app.MapGet("/debug", (IProxyConfigProvider proxyConfigProvider, ILogger<Program> logger) => {
     try {
         var config = proxyConfigProvider.GetConfig();
         
-        logger.LogInformation("Debug endpoint accessed. Routes: {RouteCount}, Clusters: {ClusterCount}", 
-            config.Routes.Count, config.Clusters.Count);
-        
         var routes = config.Routes.Select(route => new {
-            routeId = route.RouteId,
-            match = route.Match?.Path,
-            clusterId = route.ClusterId,
-            order = route.Order
+            route.RouteId,
+            route.Match?.Path,
+            route.ClusterId,
+            route.Order,
+            Transforms = route.Transforms?.Select(t => t.GetType().Name)
         }).ToList();
 
         var clusters = config.Clusters.Select(cluster => new {
-            clusterId = cluster.ClusterId,
-            destinations = cluster.Destinations?.Select(d => new {
-                id = d.Key,
-                address = d.Value.Address
-            })
+            cluster.ClusterId,
+            Destinations = cluster.Destinations?.Select(d => new {
+                d.Key,
+                Address = d.Value.Address
+            }).ToList()
         }).ToList();
 
         return Results.Json(new {
             status = "Gateway configuration",
             routesCount = routes.Count,
             clustersCount = clusters.Count,
-            routes = routes,
-            clusters = clusters,
+            routes,
+            clusters,
             timestamp = DateTime.UtcNow
         });
     }
