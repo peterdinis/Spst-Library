@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import { sk } from "date-fns/locale";
-import { useNotifications } from "@/lib/hooks/useNotifications";
+import { useNotifications } from "@/hooks/useNotifications";
 
 const NotificationDropdown: FC = () => {
 	const { notifications, unreadCount, markAsRead, markAllAsRead } =
