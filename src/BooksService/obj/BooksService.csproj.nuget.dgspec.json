@@ -79,7 +79,7 @@
             },
             "Newtonsoft.Json": {
               "target": "Package",
-              "version": "[12.0.3, )"
+              "version": "[13.0.4, )"
             },
             "Polly": {
               "target": "Package",
@@ -109,7 +109,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/9.0.110/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/9.0.112/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
