@@ -10,8 +10,6 @@ import React, {
 import {
 	User,
 	AuthContextType,
-	LoginFormData,
-	RegisterFormData,
 } from "@/lib/types";
 import { mockAuthApi, initializeMockData } from "@/lib/mockApi";
 

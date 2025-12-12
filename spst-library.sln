@@ -11,19 +11,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CategoryService", "src\Cate
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthorService", "src\AuthorService\AuthorService.csproj", "{B98FD154-C1A4-4BF3-9C13-04EF17FD5FFD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GatewayService", "src\GatewayService\GatewayService.csproj", "{36E74AA7-138A-477E-9A13-6D1A02318FB3}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityService", "src\IdentityService\IdentityService.csproj", "{7433C389-D0A9-43C9-AC2D-96BEF9494C0C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NotificationService", "src\NotificationService\NotificationService.csproj", "{C1B6CEF5-21BA-40B4-8D3E-4CDC5ACBBCED}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrderService", "src\OrderService\OrderService.csproj", "{8810605E-0F84-431B-BEC5-B3EC4F2773D2}"
 EndProject
-<<<<<<< HEAD
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminService", "src\AdminService\AdminService.csproj", "{B7A10885-59C6-4389-86C0-2D2D0D99AE4C}"
-=======
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdminService", "src\AdminService\AdminService.csproj", "{14A1B895-42FB-4E67-9372-19BD70803F9C}"
->>>>>>> main
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
