@@ -55,7 +55,7 @@
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[9.0.1, )"
+              "version": "[9.0.11, )"
             },
             "Microsoft.EntityFrameworkCore.Design": {
               "target": "Package",

@@ -1,7 +1,7 @@
 {
   "version": 2,
-  "dgSpecHash": "1sOeLjj65dw=",
-  "success": false,
+  "dgSpecHash": "98X+lv7axk0=",
+  "success": true,
   "projectFilePath": "/home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/AdminService/AdminService.csproj",
   "expectedPackageFiles": [
     "/home/peterdinis/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
@@ -19,9 +19,9 @@
     "/home/peterdinis/.nuget/packages/microsoft.codeanalysis.workspaces.common/4.8.0/microsoft.codeanalysis.workspaces.common.4.8.0.nupkg.sha512",
     "/home/peterdinis/.nuget/packages/microsoft.codeanalysis.workspaces.msbuild/4.8.0/microsoft.codeanalysis.workspaces.msbuild.4.8.0.nupkg.sha512",
     "/home/peterdinis/.nuget/packages/microsoft.data.sqlite.core/9.0.11/microsoft.data.sqlite.core.9.0.11.nupkg.sha512",
-    "/home/peterdinis/.nuget/packages/microsoft.entityframeworkcore/9.0.1/microsoft.entityframeworkcore.9.0.1.nupkg.sha512",
-    "/home/peterdinis/.nuget/packages/microsoft.entityframeworkcore.abstractions/9.0.1/microsoft.entityframeworkcore.abstractions.9.0.1.nupkg.sha512",
-    "/home/peterdinis/.nuget/packages/microsoft.entityframeworkcore.analyzers/9.0.1/microsoft.entityframeworkcore.analyzers.9.0.1.nupkg.sha512",
+    "/home/peterdinis/.nuget/packages/microsoft.entityframeworkcore/9.0.11/microsoft.entityframeworkcore.9.0.11.nupkg.sha512",
+    "/home/peterdinis/.nuget/packages/microsoft.entityframeworkcore.abstractions/9.0.11/microsoft.entityframeworkcore.abstractions.9.0.11.nupkg.sha512",
+    "/home/peterdinis/.nuget/packages/microsoft.entityframeworkcore.analyzers/9.0.11/microsoft.entityframeworkcore.analyzers.9.0.11.nupkg.sha512",
     "/home/peterdinis/.nuget/packages/microsoft.entityframeworkcore.design/9.0.11/microsoft.entityframeworkcore.design.9.0.11.nupkg.sha512",
     "/home/peterdinis/.nuget/packages/microsoft.entityframeworkcore.relational/9.0.11/microsoft.entityframeworkcore.relational.9.0.11.nupkg.sha512",
     "/home/peterdinis/.nuget/packages/microsoft.entityframeworkcore.sqlite/9.0.11/microsoft.entityframeworkcore.sqlite.9.0.11.nupkg.sha512",
@@ -59,15 +59,5 @@
     "/home/peterdinis/.nuget/packages/system.text.json/9.0.11/system.text.json.9.0.11.nupkg.sha512",
     "/home/peterdinis/.nuget/packages/system.threading.channels/7.0.0/system.threading.channels.7.0.0.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "NU1605",
-      "level": "Error",
-      "message": "Warning As Error: Detected package downgrade: Microsoft.EntityFrameworkCore from 9.0.11 to 9.0.1. Reference the package directly from the project to select a different version. \n AdminService -> Microsoft.AspNetCore.Identity.EntityFrameworkCore 9.0.11 -> Microsoft.EntityFrameworkCore.Relational 9.0.11 -> Microsoft.EntityFrameworkCore (>= 9.0.11) \n AdminService -> Microsoft.EntityFrameworkCore (>= 9.0.1)",
-      "libraryId": "Microsoft.EntityFrameworkCore",
-      "targetGraphs": [
-        "net9.0"
-      ]
-    }
-  ]
+  "logs": []
 }
