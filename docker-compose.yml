@@ -126,22 +126,16 @@ services:
     networks:
       - spsif-library-network
 
-<<<<<<< HEAD
   identity-service:
-=======
   admin-service:
->>>>>>> main
     build:
       context: .
       dockerfile: Dockerfile
       args:
-<<<<<<< HEAD
         SERVICE_NAME: IdentityService
     container_name: identity-service
-=======
         SERVICE_NAME: AdminService
     container_name: admin-service
->>>>>>> main
     ports:
       - "5004:8080"
     environment:
@@ -151,7 +145,6 @@ services:
       - RABBITMQ__PORT=5672
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
-<<<<<<< HEAD
       - DOTNET_READYTORUN=1
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
@@ -175,19 +168,15 @@ services:
       - RABBITMQ__PORT=5672
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
-=======
       - Services__Authors=http://authors-service:8080
       - Services__Categories=http://categories-service:8080
       - Services__Books=http://books-service:8080
       - Services__Orders=http://order-service:8080
->>>>>>> main
       - DOTNET_READYTORUN=1
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
     depends_on:
-<<<<<<< HEAD
       - rabbitmq
-=======
       rabbitmq:
         condition: service_healthy
       authors-service:
@@ -198,7 +187,6 @@ services:
         condition: service_started
       order-service:
         condition: service_started
->>>>>>> main
     networks:
       - spsif-library-network
     restart: on-failure
@@ -229,12 +217,9 @@ services:
       - categories-service
       - books-service
       - order-service
-<<<<<<< HEAD
       - identity-service
       - notifications-service
-=======
       - admin-service
->>>>>>> main
     networks:
       - spsif-library-network
     restart: on-failure
