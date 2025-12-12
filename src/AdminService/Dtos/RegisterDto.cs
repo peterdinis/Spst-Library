@@ -15,6 +15,10 @@ namespace AdminService.Dtos
         [Required]
         public string FullName { get; set; } = string.Empty;
 
+        [Required]
+        
+        public string AdminCode {get; set;} = string.Empty;
+
         public string? Role { get; set; }
     }
 }
