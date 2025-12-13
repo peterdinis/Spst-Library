@@ -12,9 +12,6 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - spsif-library-network
-    # Odstránený healthcheck - kontajner sa považuje za spustený okamžite
-
-  # Identity Service musí bežať ako prvé, pretože ostatné služby ho môžu potrebovať
   identity-service:
     build:
       context: .
