@@ -216,7 +216,7 @@ services:
 
 volumes:
   rabbitmq_data:
-  identity_data:  # Pridané pre Identity Service
+  identity_data: 
 
 networks:
   spsif-library-network:
