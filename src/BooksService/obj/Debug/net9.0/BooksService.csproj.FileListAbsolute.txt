@@ -67,7 +67,6 @@
 /home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/System.Composition.Hosting.dll
 /home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/System.Composition.Runtime.dll
 /home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/System.Composition.TypedParts.dll
-/home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/System.Text.Json.dll
 /home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/cs/Microsoft.CodeAnalysis.resources.dll
 /home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/de/Microsoft.CodeAnalysis.resources.dll
 /home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/es/Microsoft.CodeAnalysis.resources.dll
@@ -165,3 +164,7 @@
 /home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/Microsoft.Extensions.Options.ConfigurationExtensions.dll
 /home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/Newtonsoft.Json.dll
 /home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/RabbitMQ.Client.dll
+/home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/Microsoft.Extensions.Http.Polly.dll
+/home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/Polly.dll
+/home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/Polly.Core.dll
+/home/peterdinis/Desktop/CV/csharp-apps/spst-library/src/BooksService/bin/Debug/net9.0/Polly.Extensions.Http.dll
