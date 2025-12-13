@@ -18,6 +18,37 @@ services:
       timeout: 10s
       retries: 5
 
+  # Identity Service musí bežať ako prvé, pretože ostatné služby ho môžu potrebovať
+  identity-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        SERVICE_NAME: IdentityService
+    container_name: identity-service
+    ports:
+      - "5055:8080"  # Nový port pre Identity Service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - RABBITMQ__HOST=rabbitmq
+      - RABBITMQ__PORT=5672
+      - RABBITMQ__USERNAME=guest
+      - RABBITMQ__PASSWORD=guest
+      - DOTNET_READYTORUN=1
+      - DOTNET_TieredCompilation=1
+      - DOTNET_TieredPGO=1
+      # Connection string pre databázu (SQLite v tomto prípade)
+      - ConnectionStrings__DefaultConnection=Data Source=identity.db
+    networks:
+      - spsif-library-network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+    volumes:
+      - identity_data:/app/data  # Ak potrebujete perzistentné údaje
+
   author-service:
     build:
       context: .
@@ -37,7 +68,8 @@ services:
       - DOTNET_READYTORUN=1
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
-      # Ak potrebuje pristupovať k iným službám
+      # Pridajte IdentityService URL
+      - IdentityService__BaseUrl=http://identity-service:8080
       - BooksService__BaseUrl=http://books-service:8080
       - CategoryService__BaseUrl=http://category-service:8080
     networks:
@@ -45,6 +77,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      identity-service:
+        condition: service_started
     restart: on-failure
 
   category-service:
@@ -66,13 +100,16 @@ services:
       - DOTNET_READYTORUN=1
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
-      # Ak potrebuje pristupovať k BooksService
+      # Pridajte IdentityService URL
+      - IdentityService__BaseUrl=http://identity-service:8080
       - BooksService__BaseUrl=http://books-service:8080
     networks:
       - spsif-library-network
     depends_on:
       rabbitmq:
         condition: service_healthy
+      identity-service:
+        condition: service_started
     restart: on-failure
 
   books-service:
@@ -94,7 +131,8 @@ services:
       - DOTNET_READYTORUN=1
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
-      # Endpointy pre závislé služby
+      # Pridajte IdentityService URL
+      - IdentityService__BaseUrl=http://identity-service:8080
       - AuthorService__BaseUrl=http://author-service:8080
       - CategoryService__BaseUrl=http://category-service:8080
       - OrderService__BaseUrl=http://order-service:8080
@@ -103,6 +141,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      identity-service:
+        condition: service_started
     restart: on-failure
 
   order-service:
@@ -121,7 +161,8 @@ services:
       - RABBITMQ__PORT=5672
       - RABBITMQ__USERNAME=guest
       - RABBITMQ__PASSWORD=guest
-      # Korektné endpointy pre komunikáciu medzi službami
+      # Pridajte IdentityService URL
+      - IdentityService__BaseUrl=http://identity-service:8080
       - BooksService__BaseUrl=http://books-service:8080
       - BooksService__Url=http://books-service:8080/api/books
       - BooksService__InternalUrl=http://books-service:8080
@@ -131,6 +172,8 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      identity-service:
+        condition: service_started
       books-service:
         condition: service_started
     networks:
@@ -156,7 +199,8 @@ services:
       - DOTNET_READYTORUN=1
       - DOTNET_TieredCompilation=1
       - DOTNET_TieredPGO=1
-      # Endpointy pre všetky služby, ktoré admin potrebuje
+      # Pridajte IdentityService URL
+      - IdentityService__BaseUrl=http://identity-service:8080
       - BooksService__BaseUrl=http://books-service:8080
       - AuthorService__BaseUrl=http://author-service:8080
       - CategoryService__BaseUrl=http://category-service:8080
@@ -166,10 +210,13 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      identity-service:
+        condition: service_started
     restart: on-failure
 
 volumes:
   rabbitmq_data:
+  identity_data:  # Pridané pre Identity Service
 
 networks:
   spsif-library-network:
