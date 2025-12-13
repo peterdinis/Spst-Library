@@ -7,10 +7,7 @@ import React, {
 	useEffect,
 	ReactNode,
 } from "react";
-import {
-	User,
-	AuthContextType,
-} from "@/lib/types";
+import { User, AuthContextType } from "@/lib/types";
 import { mockAuthApi, initializeMockData } from "@/lib/mockApi";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
