@@ -1,0 +1,24 @@
+{
+  "projectName": "spst-kniznica",
+  "mode": "file-router",
+  "typescript": true,
+  "packageManager": "npm",
+  "tailwind": true,
+  "addOnOptions": {},
+  "git": true,
+  "version": 1,
+  "framework": "react-cra",
+  "chosenAddOns": [
+    "biome",
+    "nitro",
+    "start",
+    "workos",
+    "convex",
+    "compiler",
+    "shadcn",
+    "t3env",
+    "table",
+    "better-auth",
+    "tanstack-query"
+  ]
+}
