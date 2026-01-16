@@ -11,6 +11,7 @@ import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 
 import type { QueryClient } from '@tanstack/react-query'
+import Navigation from '@/components/shared/Navigation'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -48,6 +49,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <Navigation />
         <WorkOSProvider>
           <ConvexProvider>
             {children}
