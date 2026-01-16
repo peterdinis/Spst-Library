@@ -12,6 +12,7 @@ import appCss from '../styles.css?url'
 
 import type { QueryClient } from '@tanstack/react-query'
 import Navigation from '@/components/shared/Navigation'
+import { ThemeProvider } from '@/integrations/next-themes/ThemeProvider'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -49,25 +50,31 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <Navigation />
-        <WorkOSProvider>
-          <ConvexProvider>
-            {children}
-            <TanStackDevtools
-              config={{
-                position: 'bottom-right',
-              }}
-              plugins={[
-                {
-                  name: 'Tanstack Router',
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-                TanStackQueryDevtools,
-              ]}
-            />
-          </ConvexProvider>
-        </WorkOSProvider>
-        <Scripts />
+        <ThemeProvider 
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange>
+          <Navigation />
+          <WorkOSProvider>
+            <ConvexProvider>
+              {children}
+              <TanStackDevtools
+                config={{
+                  position: 'bottom-right',
+                }}
+                plugins={[
+                  {
+                    name: 'Tanstack Router',
+                    render: <TanStackRouterDevtoolsPanel />,
+                  },
+                  TanStackQueryDevtools,
+                ]}
+              />
+            </ConvexProvider>
+          </WorkOSProvider>
+          <Scripts />
+        </ThemeProvider>
       </body>
     </html>
   )

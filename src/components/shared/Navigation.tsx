@@ -3,6 +3,7 @@ import { Link, useRouter } from "@tanstack/react-router";
 import { BookOpen, Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "../ui/button";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function Navigation() {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -89,6 +90,7 @@ export function Navigation() {
 							>
 								Registrácia
 							</Button>
+                            <ThemeToggle />
 						</div>
 					</div>
 

@@ -1,3 +1,4 @@
+import Hero from '@/components/home/Hero';
 import DashboardSkeleton from '@/components/shared/DashboardSkeleton';
 import { NotFoundComponent } from '@/components/shared/NotFoundComponent';
 import { createFileRoute, ErrorComponent } from '@tanstack/react-router'
@@ -11,17 +12,14 @@ export const Route = createFileRoute("/")({
 	notFoundComponent: () => {
 		return <NotFoundComponent message="Táto stránka neexistuje" />;
 	},
-	loader: async () => {
-		await new Promise((resolve) => setTimeout(resolve, 1000));
-		return {};
-	},
+  preload: true
 });
 
 function App() {
 
   return (
     <>
-      HI
+      <Hero />
     </>
   )
 }
