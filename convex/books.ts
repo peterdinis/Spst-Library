@@ -1,14 +1,21 @@
 import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
+import { 
+  CreateBookInput, 
+  CreateBookSchema, 
+  GetBooksQuery, 
+  GetBooksQuerySchema, 
+  UpdateBookInput, 
+  UpdateBookSchema,
+} from "types/bookTypes";
+import { validateWithZod, createSearchableText } from "helpers/backendHelpers";
 
-// Typ pre návratovú hodnotu s autorom a kategóriou
 interface BookWithRelations extends Doc<"books"> {
   author: Doc<"authors">;
   category: Doc<"categories">;
 }
 
-// Vytvorenie novej knihy
 export const create = mutation({
   args: {
     title: v.string(),
@@ -34,34 +41,57 @@ export const create = mutation({
     ),
   },
   handler: async (ctx, args) => {
+    // Konvertovať Convex ID na string pre validáciu
+    const dataForValidation = {
+      ...args,
+      authorId: args.authorId as string,
+      categoryId: args.categoryId as string,
+    };
+
     // Validácia vstupu
-    const validatedData: CreateBookInput = validateWithZod(CreateBookSchema, args);
+    const validatedData: CreateBookInput = validateWithZod(CreateBookSchema, dataForValidation);
     
     const now = Date.now();
     
     // Skontrolovať či autor existuje
-    const author = await ctx.db.get(validatedData.authorId);
+    const author = await ctx.db.get(args.authorId);
     if (!author) {
       throw new ConvexError("Autor neexistuje");
     }
     
     // Skontrolovať či kategória existuje
-    const category = await ctx.db.get(validatedData.categoryId);
+    const category = await ctx.db.get(args.categoryId);
     if (!category) {
       throw new ConvexError("Kategória neexistuje");
     }
     
     // Vytvoriť searchable text
     const searchableText = createSearchableText({
-      ...validatedData,
-      author: author.name
+      title: validatedData.title,
+      author: author.name,
+      isbn: validatedData.isbn,
+      description: validatedData.description,
+      publisher: validatedData.publisher,
+      tags: validatedData.tags,
     });
     
-    // Vytvoriť knihu
+    // Vytvoriť knihu - konvertovať string ID späť na Convex ID
     const bookId = await ctx.db.insert("books", {
-      ...validatedData,
+      title: validatedData.title,
+      authorId: args.authorId,
+      isbn: validatedData.isbn,
+      description: validatedData.description,
+      coverImageUrl: validatedData.coverImageUrl,
+      publishedYear: validatedData.publishedYear,
+      publisher: validatedData.publisher,
+      pages: validatedData.pages,
+      language: validatedData.language,
+      categoryId: args.categoryId,
+      totalCopies: validatedData.totalCopies,
       availableCopies: validatedData.totalCopies,
+      location: validatedData.location,
       tags: validatedData.tags || [],
+      status: validatedData.status,
       addedAt: now,
       updatedAt: now,
       searchableText,
@@ -70,22 +100,22 @@ export const create = mutation({
     // Aktualizovať počet kníh autora
     const authorBooks = await ctx.db
       .query("books")
-      .withIndex("by_author", (q) => q.eq("authorId", validatedData.authorId))
+      .withIndex("by_author", (q) => q.eq("authorId", args.authorId))
       .collect();
     
-    await ctx.db.patch(validatedData.authorId, {
-      bookCount: authorBooks.length + 1,
+    await ctx.db.patch(args.authorId, {
+      bookCount: authorBooks.length,
       updatedAt: now,
     });
 
     // Aktualizovať počet kníh v kategórii
     const categoryBooks = await ctx.db
       .query("books")
-      .withIndex("by_category", (q) => q.eq("categoryId", validatedData.categoryId))
+      .withIndex("by_category", (q) => q.eq("categoryId", args.categoryId))
       .collect();
     
-    await ctx.db.patch(validatedData.categoryId, {
-      bookCount: categoryBooks.length + 1,
+    await ctx.db.patch(args.categoryId, {
+      bookCount: categoryBooks.length,
       updatedAt: now,
     });
 
@@ -93,7 +123,6 @@ export const create = mutation({
   },
 });
 
-// Aktualizácia existujúcej knihy
 export const update = mutation({
   args: {
     id: v.id("books"),
@@ -123,81 +152,78 @@ export const update = mutation({
   handler: async (ctx, args) => {
     const { id, ...updateData } = args;
     
-    // Validácia vstupu
-    const validatedData: UpdateBookInput = validateWithZod(
-      UpdateBookSchema, 
-      updateData
-    );
-    
     // Skontrolovať či kniha existuje
     const existingBook = await ctx.db.get(id);
     if (!existingBook) {
       throw new ConvexError("Kniha neexistuje");
     }
     
+    // Pripraviť dáta pre validáciu
+    const validationData: Record<string, unknown> = { ...updateData };
+    if (updateData.authorId) {
+      validationData.authorId = updateData.authorId as string;
+    }
+    if (updateData.categoryId) {
+      validationData.categoryId = updateData.categoryId as string;
+    }
+    
+    // Validácia vstupu
+    const validatedData: UpdateBookInput = validateWithZod(UpdateBookSchema, validationData);
+    
     const now = Date.now();
     
-    // Ak sa mení autor, skontrolovať či nový autor existuje
-    if (validatedData.authorId) {
-      const newAuthor = await ctx.db.get(validatedData.authorId);
+    // Ak sa mení autor
+    if (validatedData.authorId && validatedData.authorId !== existingBook.authorId) {
+      const newAuthor = await ctx.db.get(validatedData.authorId as Id<"authors">);
       if (!newAuthor) {
         throw new ConvexError("Nový autor neexistuje");
       }
       
-      // Odpočítať knihu od starého autora
-      const oldAuthorBooks = await ctx.db
-        .query("books")
-        .withIndex("by_author", (q) => q.eq("authorId", existingBook.authorId))
-        .collect();
+      // Aktualizovať počty
+      const [oldAuthorBooks, newAuthorBooks] = await Promise.all([
+        ctx.db.query("books").withIndex("by_author", (q) => q.eq("authorId", existingBook.authorId)).collect(),
+        ctx.db.query("books").withIndex("by_author", (q) => q.eq("authorId", validatedData.authorId as Id<"authors">)).collect(),
+      ]);
       
-      await ctx.db.patch(existingBook.authorId, {
-        bookCount: Math.max(0, oldAuthorBooks.length - 1),
-        updatedAt: now,
-      });
-      
-      // Pridať knihu novému autorovi
-      const newAuthorBooks = await ctx.db
-        .query("books")
-        .withIndex("by_author", (q) => q.eq("authorId", validatedData.authorId!))
-        .collect();
-      
-      await ctx.db.patch(validatedData.authorId, {
-        bookCount: newAuthorBooks.length + 1,
-        updatedAt: now,
-      });
+      await Promise.all([
+        ctx.db.patch(existingBook.authorId, {
+          bookCount: Math.max(0, oldAuthorBooks.length - 1),
+          updatedAt: now,
+        }),
+        ctx.db.patch(validatedData.authorId as Id<"authors">, {
+          bookCount: newAuthorBooks.length,
+          updatedAt: now,
+        }),
+      ]);
     }
     
-    // Ak sa mení kategória, skontrolovať či nová kategória existuje
-    if (validatedData.categoryId) {
-      const newCategory = await ctx.db.get(validatedData.categoryId);
+    // Ak sa mení kategória
+    if (validatedData.categoryId && validatedData.categoryId !== existingBook.categoryId) {
+      const newCategory = await ctx.db.get(validatedData.categoryId as Id<"categories">);
       if (!newCategory) {
         throw new ConvexError("Nová kategória neexistuje");
       }
       
-      // Odpočítať knihu od starej kategórie
-      const oldCategoryBooks = await ctx.db
-        .query("books")
-        .withIndex("by_category", (q) => q.eq("categoryId", existingBook.categoryId))
-        .collect();
+      // Aktualizovať počty
+      const [oldCategoryBooks, newCategoryBooks] = await Promise.all([
+        ctx.db.query("books").withIndex("by_category", (q) => q.eq("categoryId", existingBook.categoryId)).collect(),
+        ctx.db.query("books").withIndex("by_category", (q) => q.eq("categoryId", validatedData.categoryId as Id<"categories">)).collect(),
+      ]);
       
-      await ctx.db.patch(existingBook.categoryId, {
-        bookCount: Math.max(0, oldCategoryBooks.length - 1),
-        updatedAt: now,
-      });
-      
-      // Pridať knihu novej kategórii
-      const newCategoryBooks = await ctx.db
-        .query("books")
-        .withIndex("by_category", (q) => q.eq("categoryId", validatedData.categoryId!))
-        .collect();
-      
-      await ctx.db.patch(validatedData.categoryId!, {
-        bookCount: newCategoryBooks.length + 1,
-        updatedAt: now,
-      });
+      await Promise.all([
+        ctx.db.patch(existingBook.categoryId, {
+          bookCount: Math.max(0, oldCategoryBooks.length - 1),
+          updatedAt: now,
+        }),
+        ctx.db.patch(validatedData.categoryId as Id<"categories">, {
+          bookCount: newCategoryBooks.length,
+          updatedAt: now,
+        }),
+      ]);
     }
     
-    // Vytvoriť nový searchable text ak sa zmenil obsah
+    // Vytvoriť nový searchable text ak je potreba
+    let searchableText = existingBook.searchableText;
     const needsNewSearchableText = 
       validatedData.title !== undefined ||
       validatedData.isbn !== undefined ||
@@ -205,39 +231,61 @@ export const update = mutation({
       validatedData.publisher !== undefined ||
       validatedData.tags !== undefined;
     
-    let searchableText = existingBook.searchableText;
     if (needsNewSearchableText) {
-      const author = await ctx.db.get(validatedData.authorId || existingBook.authorId);
+      const authorId = (validatedData.authorId as Id<"authors">) || existingBook.authorId;
+      const author = await ctx.db.get(authorId);
       searchableText = createSearchableText({
-        ...existingBook,
-        ...validatedData,
-        author: author?.name || ""
+        title: validatedData.title ?? existingBook.title,
+        author: author?.name ?? "",
+        isbn: validatedData.isbn ?? existingBook.isbn,
+        description: validatedData.description ?? existingBook.description,
+        publisher: validatedData.publisher ?? existingBook.publisher,
+        tags: validatedData.tags ?? existingBook.tags,
       });
     }
     
-    // Aktualizovať knihu
-    await ctx.db.patch(id, {
-      ...validatedData,
+    // Pripraviť polia pre update
+    const updateFields: Record<string, unknown> = {
       updatedAt: now,
       searchableText,
-    });
+    };
+    
+    // Pridať iba zmenené polia
+    if (validatedData.title !== undefined) updateFields.title = validatedData.title;
+    if (validatedData.authorId !== undefined) updateFields.authorId = validatedData.authorId as Id<"authors">;
+    if (validatedData.isbn !== undefined) updateFields.isbn = validatedData.isbn;
+    if (validatedData.description !== undefined) updateFields.description = validatedData.description;
+    if (validatedData.coverImageUrl !== undefined) updateFields.coverImageUrl = validatedData.coverImageUrl;
+    if (validatedData.publishedYear !== undefined) updateFields.publishedYear = validatedData.publishedYear;
+    if (validatedData.publisher !== undefined) updateFields.publisher = validatedData.publisher;
+    if (validatedData.pages !== undefined) updateFields.pages = validatedData.pages;
+    if (validatedData.language !== undefined) updateFields.language = validatedData.language;
+    if (validatedData.categoryId !== undefined) updateFields.categoryId = validatedData.categoryId as Id<"categories">;
+    if (validatedData.totalCopies !== undefined) updateFields.totalCopies = validatedData.totalCopies;
+    if (validatedData.availableCopies !== undefined) updateFields.availableCopies = validatedData.availableCopies;
+    if (validatedData.location !== undefined) updateFields.location = validatedData.location;
+    if (validatedData.tags !== undefined) updateFields.tags = validatedData.tags;
+    if (validatedData.status !== undefined) updateFields.status = validatedData.status;
+    
+    await ctx.db.patch(id, updateFields);
     
     return id;
   },
 });
 
-// Získať knihu podľa ID s autorom a kategóriou
 export const getById = query({
   args: { id: v.id("books") },
   handler: async (ctx, args): Promise<BookWithRelations | null> => {
     const book = await ctx.db.get(args.id);
     if (!book) return null;
     
-    const author = await ctx.db.get(book.authorId);
-    const category = await ctx.db.get(book.categoryId);
+    const [author, category] = await Promise.all([
+      ctx.db.get(book.authorId),
+      ctx.db.get(book.categoryId),
+    ]);
     
     if (!author || !category) {
-      throw new ConvexError("Chýbajúce dáta autora alebo kategórie");
+      return null;
     }
     
     return {
@@ -248,7 +296,6 @@ export const getById = query({
   },
 });
 
-// Získať všetky knihy s filterom
 export const getAll = query({
   args: {
     categoryId: v.optional(v.id("categories")),
@@ -266,46 +313,66 @@ export const getAll = query({
     offset: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    // Validácia query parametrov
-    const queryParams: GetBooksQuery = validateWithZod(GetBooksQuerySchema, args);
+    // Pripraviť query parametre pre validáciu
+    const validationData: Record<string, unknown> = {};
+    if (args.categoryId) validationData.categoryId = args.categoryId as string;
+    if (args.authorId) validationData.authorId = args.authorId as string;
+    if (args.status) validationData.status = args.status;
+    if (args.search) validationData.search = args.search;
+    if (args.limit) validationData.limit = args.limit;
+    if (args.offset) validationData.offset = args.offset;
+
+    const queryParams: GetBooksQuery = validateWithZod(GetBooksQuerySchema, validationData);
     
-    let query = ctx.db.query("books");
+    let books: Doc<"books">[] = [];
     
     // Aplikovať filtre
     if (queryParams.categoryId) {
-      query = query.withIndex("by_category", (q) => 
-        q.eq("categoryId", queryParams.categoryId!)
-      );
+      books = await ctx.db
+        .query("books")
+        .withIndex("by_category", (q) => 
+          q.eq("categoryId", queryParams.categoryId as Id<"categories">)
+        )
+        .order("desc")
+        .collect();
     } else if (queryParams.authorId) {
-      query = query.withIndex("by_author", (q) => 
-        q.eq("authorId", queryParams.authorId!)
-      );
+      books = await ctx.db
+        .query("books")
+        .withIndex("by_author", (q) => 
+          q.eq("authorId", queryParams.authorId as Id<"authors">)
+        )
+        .order("desc")
+        .collect();
     } else if (queryParams.status) {
-      query = query.withIndex("by_status", (q) => 
-        q.eq("status", queryParams.status!)
-      );
+      books = await ctx.db
+        .query("books")
+        .withIndex("by_status", (q) => 
+          q.eq("status", queryParams.status!)
+        )
+        .order("desc")
+        .collect();
     } else if (queryParams.search) {
-      // Použiť full-text search
-      const results = await ctx.db
+      books = await ctx.db
         .query("books")
         .withSearchIndex("search_books", (q) =>
-          q.search("searchableText", queryParams.search!)
+          q.search("searchableText", queryParams.search!.toLowerCase())
         )
         .collect();
-      
-      return results;
+    } else {
+      books = await ctx.db
+        .query("books")
+        .order("desc")
+        .collect();
     }
     
-    // Získať dáta s pagináciou
-    const books = await query
-      .order("desc")
-      .take(queryParams.limit)
-      .skip(queryParams.offset)
-      .collect();
+    // Paginácia
+    const start = queryParams.offset || 0;
+    const end = start + (queryParams.limit || 20);
+    const paginatedBooks = books.slice(start, end);
     
-    // Získať autorov a kategórie pre každú knihu
+    // Získať autorov a kategórie
     const booksWithRelations = await Promise.all(
-      books.map(async (book) => {
+      paginatedBooks.map(async (book) => {
         const [author, category] = await Promise.all([
           ctx.db.get(book.authorId),
           ctx.db.get(book.categoryId),
@@ -313,8 +380,24 @@ export const getAll = query({
         
         return {
           ...book,
-          author: author || { name: "Neznámy autor" } as Doc<"authors">,
-          category: category || { name: "Neznáma kategória" } as Doc<"categories">,
+          author: author || {
+            _id: book.authorId,
+            name: "Neznámy autor",
+            bookCount: 0,
+            createdAt: 0,
+            updatedAt: 0,
+            searchableText: "",
+          } as Doc<"authors">,
+          category: category || {
+            _id: book.categoryId,
+            name: "Neznáma kategória",
+            slug: "",
+            bookCount: 0,
+            isActive: true,
+            createdAt: 0,
+            updatedAt: 0,
+            searchableText: "",
+          } as Doc<"categories">,
         };
       })
     );
@@ -323,7 +406,6 @@ export const getAll = query({
   },
 });
 
-// Odstrániť knihu
 export const remove = mutation({
   args: { id: v.id("books") },
   handler: async (ctx, args) => {
@@ -373,7 +455,6 @@ export const remove = mutation({
   },
 });
 
-// Získať dostupné knihy
 export const getAvailableBooks = query({
   args: {
     limit: v.optional(v.number()),
@@ -384,15 +465,12 @@ export const getAvailableBooks = query({
       .query("books")
       .withIndex("by_status", (q) => q.eq("status", "available"))
       .order("desc")
-      .take(args.limit || 20)
-      .skip(args.offset || 0)
-      .collect();
+      .take(args.limit || 20);
     
     return books;
   },
 });
 
-// Získať knihy podľa kategórie
 export const getByCategory = query({
   args: { categoryId: v.id("categories") },
   handler: async (ctx, args) => {
@@ -406,7 +484,6 @@ export const getByCategory = query({
   },
 });
 
-// Získať knihy podľa autora
 export const getByAuthor = query({
   args: { authorId: v.id("authors") },
   handler: async (ctx, args) => {
@@ -420,7 +497,6 @@ export const getByAuthor = query({
   },
 });
 
-// Vyhľadať knihy
 export const search = query({
   args: { query: v.string() },
   handler: async (ctx, args) => {
@@ -433,14 +509,12 @@ export const search = query({
       .withSearchIndex("search_books", (q) =>
         q.search("searchableText", args.query.toLowerCase())
       )
-      .take(50)
       .collect();
     
     return results;
   },
 });
 
-// Získať štatistiky
 export const getStats = query({
   args: {},
   handler: async (ctx) => {
@@ -452,14 +526,17 @@ export const getStats = query({
     const totalCopies = allBooks.reduce((sum, book) => sum + book.totalCopies, 0);
     const availableCopies = allBooks.reduce((sum, book) => sum + book.availableCopies, 0);
     
+    const categories = await ctx.db.query("categories").collect();
+    const authors = await ctx.db.query("authors").collect();
+    
     return {
       totalBooks,
       availableBooks,
       reservedBooks,
       totalCopies,
       availableCopies,
-      categories: await ctx.db.query("categories").collect().then(cats => cats.length),
-      authors: await ctx.db.query("authors").collect().then(authors => authors.length),
+      categories: categories.length,
+      authors: authors.length,
     };
   },
 });

@@ -5,9 +5,8 @@ export const BookStatus = z.enum(["available", "reserved", "maintenance", "lost"
 
 export const BookSchema = z.object({
   title: z.string().min(1, "Názov je povinný").max(200, "Názov je príliš dlhý"),
-  authorId: z.string().refine((val): val is Id<"authors"> => true, {
-    message: "Neplatné ID autora",
-  }),
+  authorId: z.custom<Id<"authors">>(),
+  author: z.string().optional(), 
   isbn: z.string().optional(),
   description: z.string().max(5000, "Popis je príliš dlhý").optional(),
   coverImageUrl: z.string().url("Neplatná URL adresa").optional().or(z.literal("")),
@@ -15,9 +14,7 @@ export const BookSchema = z.object({
   publisher: z.string().max(200, "Vydavateľ je príliš dlhý").optional(),
   pages: z.number().int().positive("Počet strán musí byť kladné číslo").optional(),
   language: z.string().max(50, "Jazyk je príliš dlhý").optional(),
-  categoryId: z.string().refine((val): val is Id<"categories"> => true, {
-    message: "Neplatné ID kategórie",
-  }),
+  categoryId: z.custom<Id<"categories">>(),
   totalCopies: z.number().int().min(1, "Minimálny počet kópií je 1"),
   availableCopies: z.number().int().min(0).optional(),
   location: z.string().max(100, "Lokácia je príliš dlhá").optional(),
