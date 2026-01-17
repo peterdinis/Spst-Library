@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { Id } from "../../convex/_generated/dataModel";
 import {
   Card,
   CardContent,
@@ -36,7 +37,18 @@ export const Route = createFileRoute("/books/$bookId")({
 function BookDetailPage() {
   const { bookId } = Route.useParams();
   const navigate = useNavigate();
-  const book = useQuery(api.books.getById, { id: bookId as any });
+  
+  // Skontrolovať, či ID vyzerá ako validné Convex ID
+  const isValidConvexId = (id: string): id is Id<"books"> => {
+    // Convex ID sú zvyčajne v tvare "tableName:someRandomString"
+    // Toto je len základná kontrola
+    return id.includes(":");
+  };
+
+  // Skúsiť konvertovať na Convex ID, alebo použiť undefined ak nie je validné
+  const convexBookId = isValidConvexId(bookId) ? (bookId as Id<"books">) : undefined;
+
+  const book = useQuery(api.books.getById, convexBookId ? { id: convexBookId } : "skip");
 
   const containerVariants = {
     hidden: { opacity: 0 },

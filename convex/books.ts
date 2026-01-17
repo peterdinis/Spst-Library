@@ -274,25 +274,32 @@ export const update = mutation({
 });
 
 export const getById = query({
-  args: { id: v.id("books") },
+  args: { id: v.string() },
   handler: async (ctx, args): Promise<BookWithRelations | null> => {
-    const book = await ctx.db.get(args.id);
-    if (!book) return null;
-    
-    const [author, category] = await Promise.all([
-      ctx.db.get(book.authorId),
-      ctx.db.get(book.categoryId),
-    ]);
-    
-    if (!author || !category) {
+    // Skúsiť konvertovať na Convex ID
+    try {
+      const bookId = args.id as Id<"books">;
+      const book = await ctx.db.get(bookId);
+      if (!book) return null;
+      
+      const [author, category] = await Promise.all([
+        ctx.db.get(book.authorId),
+        ctx.db.get(book.categoryId),
+      ]);
+      
+      if (!author || !category) {
+        return null;
+      }
+      
+      return {
+        ...book,
+        author,
+        category,
+      };
+    } catch (error) {
+      // Ak nie je validné Convex ID, vrátiť null
       return null;
     }
-    
-    return {
-      ...book,
-      author,
-      category,
-    };
   },
 });
 
