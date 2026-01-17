@@ -1,3 +1,4 @@
+import AllBooksWrapper from "@/components/books/AllBooksWrapper";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import { ErrorComponent } from "@/components/shared/ErrorComponent";
 import { NotFoundComponent } from "@/components/shared/NotFoundComponent";
@@ -12,9 +13,8 @@ export const Route = createFileRoute("/books")({
 	notFoundComponent: () => {
 		return <NotFoundComponent message="Táto stránka neexistuje" />;
 	},
-	preload: true,
 });
 
 function App() {
-	return <>BOOKS</>;
+	return <AllBooksWrapper />
 }
