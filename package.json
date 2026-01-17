@@ -7,9 +7,14 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "format": "biome format",
-    "lint": "biome lint",
-    "check": "biome check"
+    "format": "biome format .",
+    "format:write": "biome format . --write",
+    "format:check": "biome format . --verbose",
+    "lint": "biome lint .",
+    "lint:write": "biome lint . --apply",
+    "check": "biome check .",
+    "check:write": "biome check . --apply",
+    "check:ci": "biome ci ."
   },
   "dependencies": {
     "@convex-dev/react-query": "0.1.0",

@@ -108,7 +108,11 @@ const Hero: FC = () => {
 										visible: {
 											opacity: 1,
 											y: 0,
-											transition: { duration: 0.6, delay: 0.05, ease: "easeOut" },
+											transition: {
+												duration: 0.6,
+												delay: 0.05,
+												ease: "easeOut",
+											},
 										},
 									}}
 									className="bg-clip-text text-transparent bg-linear-to-r from-indigo-400 via-rose-400 to-amber-400 dark:from-indigo-300 dark:via-rose-300 dark:to-amber-300"
@@ -157,9 +161,9 @@ const Hero: FC = () => {
 							>
 								<Link to="/books">
 									<motion.button
-										whileHover={{ 
+										whileHover={{
 											scale: 1.05,
-											transition: { duration: 0.2 }
+											transition: { duration: 0.2 },
 										}}
 										whileTap={{ scale: 0.97 }}
 										className="px-6 py-3 rounded-xl bg-indigo-500 text-white font-medium shadow-lg shadow-indigo-500/30 dark:shadow-indigo-400/20 hover:bg-indigo-600 transition-colors duration-200"
@@ -182,9 +186,9 @@ const Hero: FC = () => {
 							>
 								<Link to="/">
 									<motion.button
-										whileHover={{ 
+										whileHover={{
 											scale: 1.05,
-											transition: { duration: 0.2 }
+											transition: { duration: 0.2 },
 										}}
 										whileTap={{ scale: 0.97 }}
 										className="px-6 py-3 rounded-xl border border-black/10 dark:border-white/20 font-medium text-black dark:text-white backdrop-blur-sm hover:bg-black/5 dark:hover:bg-white/10 transition-colors duration-200"

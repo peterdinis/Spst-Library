@@ -45,18 +45,18 @@ export function Navigation() {
 									<motion.span
 										initial={{ opacity: 0, y: -20 }}
 										animate={{ opacity: 1, y: 0 }}
-										transition={{ 
-											duration: 0.2, 
+										transition={{
+											duration: 0.2,
 											delay: index * 0.05,
-											ease: "easeOut"
+											ease: "easeOut",
 										}}
-										whileHover={{ 
+										whileHover={{
 											scale: 1.05,
-											transition: { duration: 0.15 }
+											transition: { duration: 0.15 },
 										}}
-										whileTap={{ 
+										whileTap={{
 											scale: 0.95,
-											transition: { duration: 0.1 }
+											transition: { duration: 0.1 },
 										}}
 										className={`
 											text-sm font-medium transition-colors hover:text-primary relative cursor-pointer
@@ -90,7 +90,7 @@ export function Navigation() {
 							>
 								Registrácia
 							</Button>
-                            <ThemeToggle />
+							<ThemeToggle />
 						</div>
 					</div>
 
@@ -117,24 +117,24 @@ export function Navigation() {
 				<AnimatePresence mode="wait">
 					{isMenuOpen && (
 						<motion.div
-							initial={{ 
-								height: 0, 
+							initial={{
+								height: 0,
 								opacity: 0,
-								y: -10
+								y: -10,
 							}}
-							animate={{ 
-								height: "auto", 
+							animate={{
+								height: "auto",
 								opacity: 1,
-								y: 0
+								y: 0,
 							}}
-							exit={{ 
-								height: 0, 
+							exit={{
+								height: 0,
 								opacity: 0,
-								y: -10
+								y: -10,
 							}}
-							transition={{ 
+							transition={{
 								duration: 0.25,
-								ease: "easeInOut"
+								ease: "easeInOut",
 							}}
 							className="md:hidden overflow-hidden"
 						>
@@ -146,21 +146,22 @@ export function Navigation() {
 												<motion.span
 													initial={{ opacity: 0, x: -20 }}
 													animate={{ opacity: 1, x: 0 }}
-													transition={{ 
+													transition={{
 														duration: 0.15,
 														delay: index * 0.03,
-														ease: "easeOut"
+														ease: "easeOut",
 													}}
-													whileHover={{ 
+													whileHover={{
 														x: 5,
-														transition: { duration: 0.1 }
+														transition: { duration: 0.1 },
 													}}
 													className={`
 														text-sm font-medium transition-colors py-2 text-left cursor-pointer block pl-4 border-l-2
 														${link.to.startsWith("/admin") ? "border-red-600 text-red-600 dark:text-red-400" : "border-transparent"}
-														${isActive
-															? "text-primary underline decoration-2 underline-offset-4 border-primary"
-															: "text-foreground/80 hover:text-primary hover:border-primary/30"
+														${
+															isActive
+																? "text-primary underline decoration-2 underline-offset-4 border-primary"
+																: "text-foreground/80 hover:text-primary hover:border-primary/30"
 														}
 													`}
 												>
@@ -179,10 +180,10 @@ export function Navigation() {
 									<motion.div
 										initial={{ opacity: 0, x: -20 }}
 										animate={{ opacity: 1, x: 0 }}
-										transition={{ 
+										transition={{
 											duration: 0.15,
 											delay: navLinks.length * 0.03,
-											ease: "easeOut"
+											ease: "easeOut",
 										}}
 										className="pt-2 space-y-2"
 									>
@@ -214,17 +215,15 @@ export function Navigation() {
 									<motion.div
 										initial={{ opacity: 0, x: -20 }}
 										animate={{ opacity: 1, x: 0 }}
-										transition={{ 
+										transition={{
 											duration: 0.15,
 											delay: (navLinks.length + 1) * 0.03,
-											ease: "easeOut"
+											ease: "easeOut",
 										}}
 										className="pt-2 border-t border-border/40 mt-2"
 									>
 										<div className="flex items-center justify-between px-4 py-2">
-											<span className="text-sm text-foreground/80">
-												Téma
-											</span>
+											<span className="text-sm text-foreground/80">Téma</span>
 										</div>
 									</motion.div>
 								</div>
