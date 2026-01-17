@@ -1,3 +1,4 @@
+import AllBooksWrapper from "@/components/books/AllBooksWrapper";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import { ErrorComponent } from "@/components/shared/ErrorComponent";
 import { NotFoundComponent } from "@/components/shared/NotFoundComponent";
@@ -16,5 +17,5 @@ export const Route = createFileRoute("/books")({
 });
 
 function App() {
-	return <>BOOKS</>;
+	return <AllBooksWrapper />
 }
