@@ -23,8 +23,7 @@ export const BooksList: FC = () => {
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const itemsPerPage = 12;
-
-  // Načítanie kníh s Convex - useQuery už je importované
+  
   const books = useQuery(
     api.books.getAll,
     searchQuery.trim() 
