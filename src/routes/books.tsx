@@ -1,20 +1,15 @@
-import AllBooksWrapper from "@/components/books/AllBooksWrapper";
 import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
-import { ErrorComponent } from "@/components/shared/ErrorComponent";
 import { NotFoundComponent } from "@/components/shared/NotFoundComponent";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/books")({
-	component: App,
-	pendingComponent: () => <DashboardSkeleton />,
-	errorComponent: () => {
-		return <ErrorComponent error={"Nepodarilo sa načítať hlavnú stránku"} />;
-	},
-	notFoundComponent: () => {
-		return <NotFoundComponent message="Táto stránka neexistuje" />;
-	},
+	component: BooksLayout,
+	pendingComponent: DashboardSkeleton,
+	notFoundComponent: () => (
+		<NotFoundComponent message="Stránka s knihami nebola nájdená" />
+	),
 });
 
-function App() {
-	return <AllBooksWrapper />
+function BooksLayout() {
+	return <Outlet />;
 }
