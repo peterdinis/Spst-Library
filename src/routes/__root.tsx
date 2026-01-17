@@ -13,6 +13,7 @@ import appCss from '../styles.css?url'
 import type { QueryClient } from '@tanstack/react-query'
 import Navigation from '@/components/shared/Navigation'
 import { ThemeProvider } from '@/integrations/next-themes/ThemeProvider'
+import { ScrollToTop } from '@/components/shared/ScrollToTop'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -59,6 +60,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           <WorkOSProvider>
             <ConvexProvider>
               {children}
+              <ScrollToTop />
               <TanStackDevtools
                 config={{
                   position: 'bottom-right',

@@ -4,15 +4,15 @@ import { ElegantShape } from "../ui/elegant-shape";
 import { Link } from "@tanstack/react-router";
 
 const Hero: FC = () => {
-	const fadeUpVariants = {
-		hidden: { opacity: 0, y: 30 },
+	const fadeUpVariants: Variants = {
+		hidden: { opacity: 0, y: 20 },
 		visible: (i: number) => ({
 			opacity: 1,
 			y: 0,
 			transition: {
-				duration: 1.1,
-				delay: 0.4 + i * 0.2,
-				ease: [0.25, 0.4, 0.25, 1],
+				duration: 0.7, // Skrátené z 1.1
+				delay: 0.1 + i * 0.1, // Skrátené oneskorenie
+				ease: [0.215, 0.61, 0.355, 1], // Optimálna krivka
 			},
 		}),
 	};
@@ -20,20 +20,20 @@ const Hero: FC = () => {
 	return (
 		<section>
 			<div className="relative min-h-screen -mt-16 w-full flex items-center justify-center overflow-hidden bg-white dark:bg-[#030303]">
-				{/* Soft glow orb */}
+				{/* Soft glow orb - rýchlejší */}
 				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 0.65 }}
-					transition={{ duration: 2 }}
+					transition={{ duration: 1, ease: "easeOut" }} // Skrátené
 					className="absolute inset-0 flex items-center justify-center"
 				>
 					<div className="w-200 h-200 rounded-full bg-amber-300/20 dark:bg-amber-200/10 blur-[120px]" />
 				</motion.div>
 
-				{/* Decorative shapes */}
+				{/* Decorative shapes - rýchlejší vstup */}
 				<div className="absolute inset-0 overflow-hidden">
 					<ElegantShape
-						delay={0.3}
+						delay={0.1} // Skrátené
 						width={280}
 						height={520}
 						rotate={-6}
@@ -42,7 +42,7 @@ const Hero: FC = () => {
 						className="left-[-10%] top-[-8%]"
 					/>
 					<ElegantShape
-						delay={0.6}
+						delay={0.2} // Skrátené
 						width={650}
 						height={220}
 						rotate={12}
@@ -51,7 +51,7 @@ const Hero: FC = () => {
 						className="right-[-18%] bottom-[-6%]"
 					/>
 					<ElegantShape
-						delay={0.45}
+						delay={0.15} // Skrátené
 						width={260}
 						height={260}
 						rotate={22}
@@ -60,7 +60,7 @@ const Hero: FC = () => {
 						className="left-[5%] top-[42%]"
 					/>
 					<ElegantShape
-						delay={0.7}
+						delay={0.25} // Skrátené
 						width={300}
 						height={80}
 						rotate={-20}
@@ -73,66 +73,126 @@ const Hero: FC = () => {
 				{/* Content */}
 				<div className="relative z-10 container mx-auto px-4 md:px-6">
 					<div className="max-w-3xl mx-auto text-center">
-						{/* Title */}
+						{/* Title - pridaná stagger animácia pre jednotlivé riadky */}
 						<motion.div
-							custom={1}
-							variants={fadeUpVariants as unknown as Variants}
 							initial="hidden"
 							animate="visible"
+							variants={{
+								hidden: { opacity: 0 },
+								visible: {
+									opacity: 1,
+									transition: {
+										staggerChildren: 0.1, // Rýchlejšie zobrazenie riadkov
+									},
+								},
+							}}
 						>
-							<h1 className="text-4xl sm:text-6xl md:text-7xl font-bold mb-4 md:mb-6 tracking-tight leading-tight">
+							<motion.h1
+								variants={{
+									hidden: { opacity: 0, y: 10 },
+									visible: {
+										opacity: 1,
+										y: 0,
+										transition: { duration: 0.6, ease: "easeOut" },
+									},
+								}}
+								className="text-4xl sm:text-6xl md:text-7xl font-bold mb-4 md:mb-6 tracking-tight leading-tight"
+							>
 								<span className="bg-clip-text text-transparent bg-linear-to-b from-black to-black/70 dark:from-white dark:to-white/60">
 									SPŠT Knižnica
 								</span>
 								<br />
-								<span className="bg-clip-text text-transparent bg-linear-to-r from-indigo-400 via-rose-400 to-amber-400 dark:from-indigo-300 dark:via-rose-300 dark:to-amber-300">
+								<motion.span
+									variants={{
+										hidden: { opacity: 0, y: 10 },
+										visible: {
+											opacity: 1,
+											y: 0,
+											transition: { duration: 0.6, delay: 0.05, ease: "easeOut" },
+										},
+									}}
+									className="bg-clip-text text-transparent bg-linear-to-r from-indigo-400 via-rose-400 to-amber-400 dark:from-indigo-300 dark:via-rose-300 dark:to-amber-300"
+								>
 									Moderné vzdelávanie, elegantný dizajn
-								</span>
-							</h1>
+								</motion.span>
+							</motion.h1>
 						</motion.div>
 
 						{/* Subtitle */}
 						<motion.div
-							custom={2}
-							variants={fadeUpVariants as unknown as Variants}
-							initial="hidden"
-							animate="visible"
+							initial={{ opacity: 0, y: 10 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
 						>
 							<p className="text-base sm:text-lg md:text-xl text-black/50 dark:text-white/40 mb-10 max-w-2xl mx-auto leading-relaxed font-light">
 								Digitálna knižnica SPŠT – rýchla, moderná a prehľadná.
 							</p>
 						</motion.div>
 
-						{/* CTA Buttons */}
+						{/* CTA Buttons - rýchlejšie */}
 						<motion.div
-							custom={3}
-							variants={fadeUpVariants as unknown as Variants}
 							initial="hidden"
 							animate="visible"
+							variants={{
+								hidden: { opacity: 0 },
+								visible: {
+									opacity: 1,
+									transition: {
+										staggerChildren: 0.08, // Rýchlejšie zobrazenie tlačidiel
+									},
+								},
+							}}
+							className="flex justify-center gap-4 mt-4"
 						>
-							<div className="flex justify-center gap-4 mt-4">
-								{/* Všetky knihy */}
+							{/* Všetky knihy */}
+							<motion.div
+								variants={{
+									hidden: { opacity: 0, y: 8 },
+									visible: {
+										opacity: 1,
+										y: 0,
+										transition: { duration: 0.5, ease: "easeOut" },
+									},
+								}}
+							>
 								<Link to="/books">
 									<motion.button
-										whileHover={{ scale: 1.05 }}
+										whileHover={{ 
+											scale: 1.05,
+											transition: { duration: 0.2 }
+										}}
 										whileTap={{ scale: 0.97 }}
-										className="px-6 py-3 rounded-xl bg-indigo-500 text-white font-medium shadow-lg shadow-indigo-500/30 dark:shadow-indigo-400/20 hover:bg-indigo-600 transition"
+										className="px-6 py-3 rounded-xl bg-indigo-500 text-white font-medium shadow-lg shadow-indigo-500/30 dark:shadow-indigo-400/20 hover:bg-indigo-600 transition-colors duration-200"
 									>
 										Všetky knihy
 									</motion.button>
 								</Link>
+							</motion.div>
 
-								{/* Hlavná stránka */}
+							{/* Hlavná stránka */}
+							<motion.div
+								variants={{
+									hidden: { opacity: 0, y: 8 },
+									visible: {
+										opacity: 1,
+										y: 0,
+										transition: { duration: 0.5, delay: 0.05, ease: "easeOut" },
+									},
+								}}
+							>
 								<Link to="/">
 									<motion.button
-										whileHover={{ scale: 1.05 }}
+										whileHover={{ 
+											scale: 1.05,
+											transition: { duration: 0.2 }
+										}}
 										whileTap={{ scale: 0.97 }}
-										className="px-6 py-3 rounded-xl border border-black/10 dark:border-white/20 font-medium text-black dark:text-white backdrop-blur-sm hover:bg-black/5 dark:hover:bg-white/10 transition"
+										className="px-6 py-3 rounded-xl border border-black/10 dark:border-white/20 font-medium text-black dark:text-white backdrop-blur-sm hover:bg-black/5 dark:hover:bg-white/10 transition-colors duration-200"
 									>
 										Hlavná stránka
 									</motion.button>
 								</Link>
-							</div>
+							</motion.div>
 						</motion.div>
 					</div>
 				</div>
