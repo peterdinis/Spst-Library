@@ -68,7 +68,7 @@ function BookDetailPage() {
           <Skeleton className="h-8 w-48 mb-6" />
           <div className="grid md:grid-cols-3 gap-8">
             <div className="md:col-span-1">
-              <Skeleton className="h-[400px] w-full rounded-lg" />
+              <Skeleton className="h-100 w-full rounded-lg" />
             </div>
             <div className="md:col-span-2 space-y-4">
               <Skeleton className="h-10 w-3/4" />
@@ -259,12 +259,6 @@ function BookDetailPage() {
                       <User className="h-4 w-4" />
                       <span
                         className="hover:text-primary cursor-pointer transition-colors"
-                        onClick={() =>
-                          navigate({
-                            to: "/authors",
-                            search: { authorId: book.author._id },
-                          })
-                        }
                       >
                         {book.author.name}
                       </span>
@@ -321,12 +315,6 @@ function BookDetailPage() {
                             <Badge
                               variant="outline"
                               className="font-normal cursor-pointer hover:bg-muted"
-                              onClick={() =>
-                                navigate({
-                                  to: "/categories",
-                                  search: { categoryId: book.category._id },
-                                })
-                              }
                             >
                               {book.category.name}
                             </Badge>
