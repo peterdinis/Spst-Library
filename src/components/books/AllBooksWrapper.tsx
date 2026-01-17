@@ -1,5 +1,3 @@
-"use client";
-
 import { FC, useState } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useQuery } from "convex/react";
@@ -12,38 +10,39 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BooksSearch } from "./BookSearch";
 import { BooksPagination } from "./BookPagination";
-import { BooksFilters } from "./BookFilters";
 import { api } from "convex/_generated/api";
 
-export const BooksList: FC = () => {
+const AllBooksWrapper: FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [categoryId, setCategoryId] = useState<string>("");
-  const [authorId, setAuthorId] = useState<string>("");
   const [status, setStatus] = useState<string>("");
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
   const itemsPerPage = 12;
-  
+
+  // Opravený input pre books query
   const books = useQuery(
     api.books.getAll,
-    searchQuery.trim() 
-      ? { search: searchQuery }
+    searchQuery.trim() || status
+      ? { 
+          search: searchQuery.trim() || undefined,
+          status: status as "available" | "reserved" | "maintenance" | "lost" || undefined,
+          limit: itemsPerPage,
+          offset: (page - 1) * itemsPerPage,
+        }
       : {
-          categoryId: categoryId || undefined,
-          authorId: authorId || undefined,
-          status: status || undefined,
           limit: itemsPerPage,
           offset: (page - 1) * itemsPerPage,
         }
   );
 
-  const categories = useQuery(api.categories.getAll);
-  const authors = useQuery(api.authors.getAll);
+  // Štatistiky kníh
   const stats = useQuery(api.books.getStats);
 
-  // Loading states
-  const isLoading = books === undefined;
-  const isEmpty = !isLoading && (!books || books.length === 0);
+  // Loading states - opravené na správne overovanie
+  const isLoadingBooks = books === undefined;
+  const isLoadingStats = stats === undefined;
+  const isLoading = isLoadingBooks || isLoadingStats;
+  const isEmpty = !isLoadingBooks && (!books || books.length === 0);
 
   // Animation variants
   const containerVariants = {
@@ -77,13 +76,16 @@ export const BooksList: FC = () => {
 
   const handleClearFilters = () => {
     setSearchQuery("");
-    setCategoryId("");
-    setAuthorId("");
     setStatus("");
     setPage(1);
   };
 
-  const hasActiveFilters = searchQuery || categoryId || authorId || status;
+  const hasActiveFilters = searchQuery || status;
+
+  // Počet strán pre pagináciu - berie do úvahy search
+  const totalPages = searchQuery.trim() 
+    ? Math.ceil((books?.length || 0) / itemsPerPage)
+    : Math.ceil((stats?.totalBooks || 0) / itemsPerPage);
 
   return (
     <motion.div
@@ -93,7 +95,7 @@ export const BooksList: FC = () => {
       className="space-y-6"
     >
       {/* Header with Search and Stats */}
-      <Card className="overflow-hidden border-border/50 bg-gradient-to-br from-background to-secondary/5">
+      <Card className="overflow-hidden border-border/50 bg-linear-to-br from-background to-secondary/5">
         <CardContent className="p-6">
           <div className="space-y-4">
             {/* Title and Search */}
@@ -127,8 +129,23 @@ export const BooksList: FC = () => {
 
             <Separator />
 
-            {/* Quick Stats */}
-            {stats && (
+            {/* Quick Stats - Loading state */}
+            {isLoadingStats ? (
+              <motion.div
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                className="grid grid-cols-2 md:grid-cols-4 gap-4"
+              >
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Card key={i} className="bg-background/50 border-border/30">
+                    <CardContent className="p-4 text-center">
+                      <Skeleton className="h-7 w-12 mx-auto mb-2" />
+                      <Skeleton className="h-4 w-20 mx-auto" />
+                    </CardContent>
+                  </Card>
+                ))}
+              </motion.div>
+            ) : stats && (
               <motion.div
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
@@ -155,8 +172,8 @@ export const BooksList: FC = () => {
                 </Card>
                 <Card className="bg-background/50 border-border/30">
                   <CardContent className="p-4 text-center">
-                    <p className="text-2xl font-bold text-purple-600">{stats.authors}</p>
-                    <p className="text-sm text-muted-foreground">Autorov</p>
+                    <p className="text-2xl font-bold text-purple-600">{stats.totalCopies}</p>
+                    <p className="text-sm text-muted-foreground">Celkom kópií</p>
                   </CardContent>
                 </Card>
               </motion.div>
@@ -173,12 +190,11 @@ export const BooksList: FC = () => {
                 size="sm"
                 onClick={() => setShowFilters(!showFilters)}
                 className="gap-2"
+                disabled={isLoading}
               >
                 <Filter className="h-4 w-4" />
                 Filtre {hasActiveFilters && `(${[
                   searchQuery && "hľadanie",
-                  categoryId && "kategória",
-                  authorId && "autor",
                   status && "stav"
                 ].filter(Boolean).length})`}
               </Button>
@@ -194,17 +210,74 @@ export const BooksList: FC = () => {
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden"
                 >
-                  <BooksFilters
-                    categories={categories || []}
-                    authors={authors || []}
-                    selectedCategory={categoryId}
-                    selectedAuthor={authorId}
-                    selectedStatus={status}
-                    onCategoryChange={setCategoryId}
-                    onAuthorChange={setAuthorId}
-                    onStatusChange={setStatus}
-                    onClear={handleClearFilters}
-                  />
+                  <div className="space-y-4 p-4 border rounded-lg bg-card">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Filter className="h-4 w-4" />
+                        <h3 className="font-semibold">Filtre</h3>
+                      </div>
+                      {hasActiveFilters && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleClearFilters}
+                          className="h-7 gap-1 text-xs"
+                          disabled={isLoading}
+                        >
+                          Vymazať
+                        </Button>
+                      )}
+                    </div>
+
+                    <Separator />
+
+                    {/* Status filter */}
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Stav</label>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant={status === "" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setStatus("")}
+                          disabled={isLoading}
+                        >
+                          Všetky
+                        </Button>
+                        <Button
+                          variant={status === "available" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setStatus("available")}
+                          disabled={isLoading}
+                        >
+                          Dostupné
+                        </Button>
+                        <Button
+                          variant={status === "reserved" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setStatus("reserved")}
+                          disabled={isLoading}
+                        >
+                          Rezervované
+                        </Button>
+                        <Button
+                          variant={status === "maintenance" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setStatus("maintenance")}
+                          disabled={isLoading}
+                        >
+                          V údržbe
+                        </Button>
+                        <Button
+                          variant={status === "lost" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setStatus("lost")}
+                          disabled={isLoading}
+                        >
+                          Stratené
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -229,32 +302,7 @@ export const BooksList: FC = () => {
                   size="sm"
                   className="h-4 w-4 p-0 ml-1"
                   onClick={() => setSearchQuery("")}
-                >
-                  ✕
-                </Button>
-              </Badge>
-            )}
-            {categoryId && categories?.find((c: { _id: string; }) => c._id === categoryId) && (
-              <Badge variant="secondary" className="gap-1">
-                Kategória: {categories.find((c: { _id: string; }) => c._id === categoryId)?.name}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-4 w-4 p-0 ml-1"
-                  onClick={() => setCategoryId("")}
-                >
-                  ✕
-                </Button>
-              </Badge>
-            )}
-            {authorId && authors?.find((a: { _id: string; }) => a._id === authorId) && (
-              <Badge variant="secondary" className="gap-1">
-                Autor: {authors.find((a: { _id: string; }) => a._id === authorId)?.name}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-4 w-4 p-0 ml-1"
-                  onClick={() => setAuthorId("")}
+                  disabled={isLoading}
                 >
                   ✕
                 </Button>
@@ -262,13 +310,18 @@ export const BooksList: FC = () => {
             )}
             {status && (
               <Badge variant="secondary" className="gap-1">
-                Stav: {status === "available" ? "Dostupné" : 
-                       status === "reserved" ? "Rezervované" : status}
+                Stav: {
+                  status === "available" ? "Dostupné" :
+                  status === "reserved" ? "Rezervované" :
+                  status === "maintenance" ? "V údržbe" :
+                  status === "lost" ? "Stratené" : status
+                }
                 <Button
                   variant="ghost"
                   size="sm"
                   className="h-4 w-4 p-0 ml-1"
                   onClick={() => setStatus("")}
+                  disabled={isLoading}
                 >
                   ✕
                 </Button>
@@ -279,6 +332,7 @@ export const BooksList: FC = () => {
               size="sm"
               onClick={handleClearFilters}
               className="h-6"
+              disabled={isLoading}
             >
               Vymazať všetko
             </Button>
@@ -286,14 +340,14 @@ export const BooksList: FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Loading State */}
-      {isLoading && (
+      {/* Loading State for Books */}
+      {isLoadingBooks && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
         >
-          {Array.from({ length: 8 }).map((_, i) => (
+          {Array.from({ length: itemsPerPage }).map((_, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
@@ -315,7 +369,7 @@ export const BooksList: FC = () => {
       )}
 
       {/* Empty State */}
-      {isEmpty && (
+      {isEmpty && !isLoadingBooks && (
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -341,7 +395,7 @@ export const BooksList: FC = () => {
               : "Skúste zmeniť filtre alebo hľadať iný výraz."}
           </p>
           {hasActiveFilters && (
-            <Button onClick={handleClearFilters}>
+            <Button onClick={handleClearFilters} disabled={isLoading}>
               Vymazať filtre
             </Button>
           )}
@@ -349,7 +403,7 @@ export const BooksList: FC = () => {
       )}
 
       {/* Books Grid */}
-      {!isLoading && !isEmpty && books && (
+      {!isLoadingBooks && !isEmpty && books && (
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -384,7 +438,7 @@ export const BooksList: FC = () => {
       )}
 
       {/* Pagination */}
-      {!isLoading && !isEmpty && books && books.length >= itemsPerPage && !searchQuery && (
+      {!isLoadingBooks && !isEmpty && books && books.length > 0 && (
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -392,7 +446,7 @@ export const BooksList: FC = () => {
         >
           <BooksPagination
             currentPage={page}
-            totalPages={Math.ceil((stats?.totalBooks || 0) / itemsPerPage)}
+            totalPages={totalPages}
             onPageChange={setPage}
           />
         </motion.div>
@@ -400,3 +454,5 @@ export const BooksList: FC = () => {
     </motion.div>
   );
 };
+
+export default AllBooksWrapper;

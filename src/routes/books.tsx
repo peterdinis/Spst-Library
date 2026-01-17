@@ -13,7 +13,6 @@ export const Route = createFileRoute("/books")({
 	notFoundComponent: () => {
 		return <NotFoundComponent message="Táto stránka neexistuje" />;
 	},
-	preload: true,
 });
 
 function App() {
