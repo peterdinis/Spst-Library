@@ -1,3 +1,4 @@
+import CreateCategoryForm from '@/components/categories/CreateCategoryForm'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/categories/create')({
@@ -5,5 +6,5 @@ export const Route = createFileRoute('/categories/create')({
 })
 
 function RouteComponent() {
-  return <div>Hello "/categories/create"!</div>
+  return <CreateCategoryForm />
 }
