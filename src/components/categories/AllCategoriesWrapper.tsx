@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "convex/react";
 import {
 	Card,
 	CardContent,
@@ -12,112 +12,30 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Grid, BookOpen, X, Loader2, RefreshCw } from "lucide-react";
-
-// Custom types
-interface Book {
-	id: string;
-	title: string;
-	author: string;
-	description?: string;
-	publishedYear?: number;
-	categoryId: string;
-	availableCopies: number;
-	totalCopies: number;
-	isAvailable?: boolean;
-}
+import { api } from "convex/_generated/api";
 
 interface Category {
-	id: string;
+	_id: string;
 	name: string;
-	description: string;
+	description?: string;
 	color?: string;
 	icon?: string;
+	bookCount: number;
+	subcategoryCount: number;
+	isActive: boolean;
 }
-
-// Keep books data static for now (or you could fetch this too)
-const MOCK_BOOKS: Book[] = [
-	{
-		id: "1",
-		title: "Veľký Gatsby",
-		author: "F. Scott Fitzgerald",
-		description:
-			"Román o americkom sne, láske a spoločenskej triede v období jazzu.",
-		publishedYear: 1925,
-		categoryId: "1",
-		availableCopies: 3,
-		totalCopies: 5,
-		isAvailable: true,
-	},
-	{
-		id: "2",
-		title: "Harry Potter a Kameň mudrcov",
-		author: "J.K. Rowling",
-		description: "Prvá kniha zo série o mladom čarodejníkovi Harrym Potterovi.",
-		publishedYear: 1997,
-		categoryId: "2",
-		availableCopies: 0,
-		totalCopies: 3,
-		isAvailable: false,
-	},
-	{
-		id: "3",
-		title: "1984",
-		author: "George Orwell",
-		description: "Dystopický román o totalitnom režime a dohliadacom štáte.",
-		publishedYear: 1949,
-		categoryId: "3",
-		availableCopies: 2,
-		totalCopies: 4,
-		isAvailable: true,
-	},
-	{
-		id: "4",
-		title: "Pýcha a predsudok",
-		author: "Jane Austen",
-		description:
-			"Romantický román o láske, spoločenských triedach a rodinných vzťahoch.",
-		publishedYear: 1813,
-		categoryId: "4",
-		availableCopies: 1,
-		totalCopies: 2,
-		isAvailable: true,
-	},
-];
 
 const AllCategoriesWrapper: FC = () => {
 	const navigate = useNavigate();
 
-	// Use useQuery to fetch categories from your server function
-	const {
-		data: categoriesResponse,
-		isLoading,
-		isError,
-		error,
-		refetch,
-		isRefetching,
-	} = useQuery({
-		queryKey: ["categories"],
-		queryFn: async () => {
-			// Call your server function
-			const response = await getAllCategories();
+	// Fetch categories using Convex
+	const categoriesData = useQuery(api.categories.getCategories, {
+		paginationOpts: { numItems: 100, cursor: null },
+		isActive: true,
+	});
 
-			// Check if the response was successful
-			if (!response.success) {
-				throw new Error(response.message || "Failed to fetch categories");
-			}
-
-			// Transform data if needed to match your Category interface
-			return response.data.map((category: any) => ({
-				id: category.id?.toString() || "",
-				name: category.name || "",
-				description: category.description || "",
-				color: category.color || getRandomColor(),
-				icon: category.icon || "Grid",
-			})) as Category[];
-		},
-		staleTime: 5 * 60 * 1000, // 5 minutes
-		retry: 3,
-		retryDelay: 1000,
+	// Fetch books for statistics
+	const booksData = useQuery(api.books.getAll, {
 	});
 
 	// Helper function to generate random colors for categories without specified colors
@@ -136,12 +54,19 @@ const AllCategoriesWrapper: FC = () => {
 	};
 
 	const getCategoryBookCount = (categoryId: string) => {
-		return MOCK_BOOKS.filter((book) => book.categoryId === categoryId).length;
+		if (!booksData?.page) return 0;
+		return booksData.page.filter((book) => book.categoryId === categoryId).length;
 	};
 
-	const getCategoryColor = (categoryId: string) => {
-		const category = categoriesResponse?.find((cat) => cat.id === categoryId);
-		return category?.color || getRandomColor();
+	const getAvailableBooksInCategory = (categoryId: string) => {
+		if (!booksData?.page) return 0;
+		return booksData.page.filter(
+			(book) => book.categoryId === categoryId && book.availableCopies > 0
+		).length;
+	};
+
+	const getCategoryColor = (category: Category) => {
+		return category.color || getRandomColor();
 	};
 
 	const containerVariants = {
@@ -165,17 +90,13 @@ const AllCategoriesWrapper: FC = () => {
 		},
 	};
 
-	const availableBooksCount = MOCK_BOOKS.filter(
-		(b) => b.availableCopies > 0,
-	).length;
-	const totalBooksCount = MOCK_BOOKS.length;
+	// Calculate statistics
+	const totalBooksCount = booksData?.page?.length || 0;
+	const availableBooksCount =
+		booksData?.page?.filter((b) => b.availableCopies > 0).length || 0;
 
-	const handleRefresh = () => {
-		refetch();
-	};
-
-	// Loading state - Rovnaký ako pri spisovateľoch a knihách
-	if (isLoading) {
+	// Loading state
+	if (categoriesData === undefined || booksData === undefined) {
 		return (
 			<section className="py-16 bg-linear-to-b from-background to-muted/30">
 				<div className="container mx-auto px-4">
@@ -191,39 +112,12 @@ const AllCategoriesWrapper: FC = () => {
 		);
 	}
 
-	// Error state - Rovnaký ako pri spisovateľoch a knihách
-	if (isError) {
-		const errorMessage =
-			error instanceof Error ? error.message : "Nastala neznáma chyba";
-		return (
-			<section className="py-16 bg-linear-to-b from-background to-muted/30">
-				<div className="container mx-auto px-4">
-					<div className="text-center py-12">
-						<div className="mx-auto max-w-md">
-							<div className="rounded-full bg-destructive/10 p-6 w-24 h-24 flex items-center justify-center mx-auto mb-6">
-								<X className="h-12 w-12 text-destructive" />
-							</div>
-							<h3 className="text-xl font-semibold mb-2">
-								Chyba pri načítavaní
-							</h3>
-							<p className="text-muted-foreground mb-6">{errorMessage}</p>
-							<Button onClick={handleRefresh}>
-								<RefreshCw className="mr-2 h-4 w-4" />
-								Skúsiť znova
-							</Button>
-						</div>
-					</div>
-				</div>
-			</section>
-		);
-	}
-
-	const categories = categoriesResponse || [];
+	const categories = categoriesData?.page || [];
 
 	return (
 		<section className="py-16 bg-linear-to-b from-background to-muted/30">
 			<div className="container mx-auto px-4">
-				{/* Header - Rovnaký štýl ako pri spisovateľoch */}
+				{/* Header */}
 				<motion.div
 					initial={{ opacity: 0, y: 30 }}
 					whileInView={{ opacity: 1, y: 0 }}
@@ -241,29 +135,20 @@ const AllCategoriesWrapper: FC = () => {
 							<Button
 								variant="outline"
 								size="icon"
-								onClick={handleRefresh}
-								disabled={isRefetching}
+								onClick={() => window.location.reload()}
 								className="relative"
 							>
-								<RefreshCw
-									className={`h-4 w-4 ${isRefetching ? "animate-spin" : ""}`}
-								/>
-								{isRefetching && (
-									<span className="absolute -top-1 -right-1 h-2 w-2">
-										<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-										<span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-									</span>
-								)}
+								<RefreshCw className="h-4 w-4" />
 							</Button>
 						</div>
 					</div>
 					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						Preskúmajte našu zbierku kníh podľa kategórií. Vyberte si z{" "}
-						{categories.length} kategórií a {MOCK_BOOKS.length} kníh.
+						{categories.length} kategórií a {totalBooksCount} kníh.
 					</p>
 				</motion.div>
 
-				{/* Results Count - Rovnaký štýl ako pri spisovateľoch */}
+				{/* Results Count */}
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
@@ -271,12 +156,7 @@ const AllCategoriesWrapper: FC = () => {
 					className="mb-8"
 				>
 					<div className="text-center text-sm text-muted-foreground mt-4">
-						{isRefetching ? (
-							<div className="flex items-center gap-2 justify-center">
-								<Loader2 className="h-3 w-3 animate-spin" />
-								Aktualizácia dát...
-							</div>
-						) : categories.length === 0 ? (
+						{categories.length === 0 ? (
 							"Nenašli sa žiadne kategórie"
 						) : (
 							<>
@@ -293,7 +173,6 @@ const AllCategoriesWrapper: FC = () => {
 
 				{/* Categories Grid */}
 				{categories.length === 0 ? (
-					// No Results State - Rovnaký štýl ako pri spisovateľoch
 					<motion.div
 						initial={{ opacity: 0, scale: 0.9 }}
 						animate={{ opacity: 1, scale: 1 }}
@@ -311,12 +190,9 @@ const AllCategoriesWrapper: FC = () => {
 							</p>
 							<Button
 								variant="outline"
-								onClick={handleRefresh}
-								disabled={isRefetching}
+								onClick={() => window.location.reload()}
 							>
-								<RefreshCw
-									className={`mr-2 h-4 w-4 ${isRefetching ? "animate-spin" : ""}`}
-								/>
+								<RefreshCw className="mr-2 h-4 w-4" />
 								Skúsiť znova
 							</Button>
 						</div>
@@ -329,19 +205,20 @@ const AllCategoriesWrapper: FC = () => {
 						className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
 					>
 						{categories.map((category) => {
-							const bookCount = getCategoryBookCount(category.id);
-							const categoryColor = getCategoryColor(category.id);
+							const bookCount = getCategoryBookCount(category._id);
+							const availableCount = getAvailableBooksInCategory(category._id);
+							const categoryColor = getCategoryColor(category);
 
 							return (
 								<motion.div
-									key={category.id}
+									key={category._id}
 									variants={itemVariants}
 									whileHover={{
 										y: -8,
 										scale: 1.03,
 										transition: { duration: 0.2 },
 									}}
-									onClick={() => navigate({ to: `/categories/${category.id}` })}
+									onClick={() => navigate({ to: `/categories/${category._id}` })}
 									className="cursor-pointer group"
 								>
 									<Card className="h-full hover:shadow-xl transition-all duration-300 border-border/50">
@@ -378,7 +255,7 @@ const AllCategoriesWrapper: FC = () => {
 												{category.name}
 											</CardTitle>
 											<CardDescription className="text-sm line-clamp-3">
-												{category.description}
+												{category.description || "Žiadny popis"}
 											</CardDescription>
 										</CardHeader>
 										<CardContent className="pt-0">
@@ -394,15 +271,17 @@ const AllCategoriesWrapper: FC = () => {
 													<div className="text-xs text-muted-foreground">
 														Dostupné knihy:{" "}
 														<span className="font-medium text-foreground">
-															{
-																MOCK_BOOKS.filter(
-																	(b) =>
-																		b.categoryId === category.id &&
-																		b.availableCopies > 0,
-																).length
-															}
+															{availableCount}
 														</span>
 													</div>
+													{category.subcategoryCount > 0 && (
+														<div className="text-xs text-muted-foreground mt-1">
+															Podkategórie:{" "}
+															<span className="font-medium text-foreground">
+																{category.subcategoryCount}
+															</span>
+														</div>
+													)}
 												</div>
 											)}
 										</CardContent>
@@ -413,7 +292,7 @@ const AllCategoriesWrapper: FC = () => {
 					</motion.div>
 				)}
 
-				{/* Stats - Rovnaký štýl ako pri spisovateľoch */}
+				{/* Stats */}
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}

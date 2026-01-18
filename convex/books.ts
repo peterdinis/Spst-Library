@@ -81,7 +81,6 @@ export const create = mutation({
       authorId: args.authorId,
       isbn: validatedData.isbn,
       description: validatedData.description,
-      coverImageUrl: validatedData.coverImageUrl,
       publishedYear: validatedData.publishedYear,
       publisher: validatedData.publisher,
       pages: validatedData.pages,
