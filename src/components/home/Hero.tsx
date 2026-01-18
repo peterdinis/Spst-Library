@@ -1,39 +1,26 @@
-import { motion, Variants } from "framer-motion";
-import { FC } from "react";
+import { motion } from "framer-motion";
+import { FC, memo } from "react";
 import { ElegantShape } from "../ui/elegant-shape";
 import { Link } from "@tanstack/react-router";
 
-const Hero: FC = () => {
-	const fadeUpVariants: Variants = {
-		hidden: { opacity: 0, y: 20 },
-		visible: (i: number) => ({
-			opacity: 1,
-			y: 0,
-			transition: {
-				duration: 0.7, // Skrátené z 1.1
-				delay: 0.1 + i * 0.1, // Skrátené oneskorenie
-				ease: [0.215, 0.61, 0.355, 1], // Optimálna krivka
-			},
-		}),
-	};
-
+const Hero: FC = memo(() => {
 	return (
 		<section>
 			<div className="relative min-h-screen -mt-16 w-full flex items-center justify-center overflow-hidden bg-white dark:bg-[#030303]">
-				{/* Soft glow orb - rýchlejší */}
+				{/* Soft glow orb - optimized */}
 				<motion.div
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 0.65 }}
-					transition={{ duration: 1, ease: "easeOut" }} // Skrátené
+					transition={{ duration: 0.6, ease: "easeOut" }}
 					className="absolute inset-0 flex items-center justify-center"
 				>
-					<div className="w-200 h-200 rounded-full bg-amber-300/20 dark:bg-amber-200/10 blur-[120px]" />
+					<div className="w-200 h-200 rounded-full bg-amber-300/20 dark:bg-amber-200/10 blur-[120px] will-change-transform" />
 				</motion.div>
 
-				{/* Decorative shapes - rýchlejší vstup */}
+				{/* Decorative shapes - reduced delays and optimized rendering */}
 				<div className="absolute inset-0 overflow-hidden">
 					<ElegantShape
-						delay={0.1} // Skrátené
+						delay={0}
 						width={280}
 						height={520}
 						rotate={-6}
@@ -42,7 +29,7 @@ const Hero: FC = () => {
 						className="left-[-10%] top-[-8%]"
 					/>
 					<ElegantShape
-						delay={0.2} // Skrátené
+						delay={0.05}
 						width={650}
 						height={220}
 						rotate={12}
@@ -51,7 +38,7 @@ const Hero: FC = () => {
 						className="right-[-18%] bottom-[-6%]"
 					/>
 					<ElegantShape
-						delay={0.15} // Skrátené
+						delay={0.1}
 						width={260}
 						height={260}
 						rotate={22}
@@ -60,7 +47,7 @@ const Hero: FC = () => {
 						className="left-[5%] top-[42%]"
 					/>
 					<ElegantShape
-						delay={0.25} // Skrátené
+						delay={0.15}
 						width={300}
 						height={80}
 						rotate={-20}
@@ -70,10 +57,10 @@ const Hero: FC = () => {
 					/>
 				</div>
 
-				{/* Content */}
+				{/* Content - optimized animations */}
 				<div className="relative z-10 container mx-auto px-4 md:px-6">
 					<div className="max-w-3xl mx-auto text-center">
-						{/* Title - pridaná stagger animácia pre jednotlivé riadky */}
+						{/* Title */}
 						<motion.div
 							initial="hidden"
 							animate="visible"
@@ -82,7 +69,7 @@ const Hero: FC = () => {
 								visible: {
 									opacity: 1,
 									transition: {
-										staggerChildren: 0.1, // Rýchlejšie zobrazenie riadkov
+										staggerChildren: 0.05,
 									},
 								},
 							}}
@@ -93,7 +80,7 @@ const Hero: FC = () => {
 									visible: {
 										opacity: 1,
 										y: 0,
-										transition: { duration: 0.6, ease: "easeOut" },
+										transition: { duration: 0.4, ease: "easeOut" },
 									},
 								}}
 								className="text-4xl sm:text-6xl md:text-7xl font-bold mb-4 md:mb-6 tracking-tight leading-tight"
@@ -109,8 +96,8 @@ const Hero: FC = () => {
 											opacity: 1,
 											y: 0,
 											transition: {
-												duration: 0.6,
-												delay: 0.05,
+												duration: 0.4,
+												delay: 0.02,
 												ease: "easeOut",
 											},
 										},
@@ -126,14 +113,14 @@ const Hero: FC = () => {
 						<motion.div
 							initial={{ opacity: 0, y: 10 }}
 							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.5, delay: 0.2, ease: "easeOut" }}
+							transition={{ duration: 0.3, delay: 0.1, ease: "easeOut" }}
 						>
 							<p className="text-base sm:text-lg md:text-xl text-black/50 dark:text-white/40 mb-10 max-w-2xl mx-auto leading-relaxed font-light">
 								Digitálna knižnica SPŠT – rýchla, moderná a prehľadná.
 							</p>
 						</motion.div>
 
-						{/* CTA Buttons - rýchlejšie */}
+						{/* CTA Buttons */}
 						<motion.div
 							initial="hidden"
 							animate="visible"
@@ -142,20 +129,19 @@ const Hero: FC = () => {
 								visible: {
 									opacity: 1,
 									transition: {
-										staggerChildren: 0.08, // Rýchlejšie zobrazenie tlačidiel
+										staggerChildren: 0.05,
 									},
 								},
 							}}
 							className="flex justify-center gap-4 mt-4"
 						>
-							{/* Všetky knihy */}
 							<motion.div
 								variants={{
 									hidden: { opacity: 0, y: 8 },
 									visible: {
 										opacity: 1,
 										y: 0,
-										transition: { duration: 0.5, ease: "easeOut" },
+										transition: { duration: 0.3, ease: "easeOut" },
 									},
 								}}
 							>
@@ -163,7 +149,7 @@ const Hero: FC = () => {
 									<motion.button
 										whileHover={{
 											scale: 1.05,
-											transition: { duration: 0.2 },
+											transition: { duration: 0.15 },
 										}}
 										whileTap={{ scale: 0.97 }}
 										className="px-6 py-3 rounded-xl bg-indigo-500 text-white font-medium shadow-lg shadow-indigo-500/30 dark:shadow-indigo-400/20 hover:bg-indigo-600 transition-colors duration-200"
@@ -173,14 +159,13 @@ const Hero: FC = () => {
 								</Link>
 							</motion.div>
 
-							{/* Hlavná stránka */}
 							<motion.div
 								variants={{
 									hidden: { opacity: 0, y: 8 },
 									visible: {
 										opacity: 1,
 										y: 0,
-										transition: { duration: 0.5, delay: 0.05, ease: "easeOut" },
+										transition: { duration: 0.3, delay: 0.03, ease: "easeOut" },
 									},
 								}}
 							>
@@ -188,7 +173,7 @@ const Hero: FC = () => {
 									<motion.button
 										whileHover={{
 											scale: 1.05,
-											transition: { duration: 0.2 },
+											transition: { duration: 0.15 },
 										}}
 										whileTap={{ scale: 0.97 }}
 										className="px-6 py-3 rounded-xl border border-black/10 dark:border-white/20 font-medium text-black dark:text-white backdrop-blur-sm hover:bg-black/5 dark:hover:bg-white/10 transition-colors duration-200"
@@ -206,6 +191,8 @@ const Hero: FC = () => {
 			</div>
 		</section>
 	);
-};
+});
+
+Hero.displayName = "Hero";
 
 export default Hero;
