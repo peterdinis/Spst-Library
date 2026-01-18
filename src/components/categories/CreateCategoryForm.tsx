@@ -77,10 +77,6 @@ import {
   Stethoscope,
   Briefcase,
   GraduationCap,
-  Paintbrush,
-  Scissors,
-  Hammer,
-  Wrench,
   Phone,
   Mail,
   MessageCircle,
@@ -130,14 +126,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 
-// Vytvoríme si typ pre ikonu
 type IconType = {
   name: string;
   component: React.ComponentType<any>;
   category: string;
 };
 
-// Zoskupené ikony podľa kategórií
 const ICON_CATEGORIES = [
   { id: 'books', label: 'Knihy', icon: Book },
   { id: 'education', label: 'Vzdelanie', icon: GraduationCap },
