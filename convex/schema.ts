@@ -8,7 +8,7 @@ export default defineSchema({
     birthYear: v.optional(v.number()),
     deathYear: v.optional(v.number()),
     nationality: v.optional(v.string()),
-    photoUrl: v.optional(v.string()),
+    photoFileId: v.optional(v.id("files")), // Changed from photoUrl
     website: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -46,7 +46,7 @@ export default defineSchema({
     authorId: v.id("authors"),
     isbn: v.optional(v.string()),
     description: v.optional(v.string()),
-    coverImageUrl: v.optional(v.string()),
+    coverFileId: v.optional(v.id("files")), // Changed from coverImageUrl
     publishedYear: v.optional(v.number()),
     publisher: v.optional(v.string()),
     pages: v.optional(v.number()),
@@ -84,4 +84,26 @@ export default defineSchema({
     .index("by_book", ["bookId"])
     .index("by_category", ["categoryId"])
     .index("by_book_and_category", ["bookId", "categoryId"]),
+
+  // New table for handling file uploads via UploadThing
+  files: defineTable({
+    storageId: v.string(), // UploadThing file key (e.g., "example.jpg")
+    url: v.string(), // UploadThing CDN URL
+    name: v.string(), // Original file name
+    type: v.string(), // MIME type (e.g., "image/jpeg")
+    size: v.number(), // File size in bytes
+    uploadedAt: v.number(), // Unix timestamp
+    uploadedBy: v.optional(v.string()), // If you have user authentication - can be email or userId
+    entityType: v.union(
+      v.literal("author_photo"),
+      v.literal("book_cover"),
+      v.literal("other")
+    ), // What type of entity this file belongs to
+    entityId: v.optional(v.string()), // Reference to the entity (authorId or bookId)
+    metadata: v.optional(v.any()), // Additional metadata if needed
+  })
+    .index("by_storage_id", ["storageId"])
+    .index("by_entity", ["entityType", "entityId"])
+    .index("by_uploaded_at", ["uploadedAt"])
+    .index("by_type", ["entityType"]),
 });
