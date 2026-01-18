@@ -97,7 +97,7 @@ const AllCategoriesWrapper: FC = () => {
 	// Loading state
 	if (categoriesData === undefined || booksData === undefined) {
 		return (
-			<section className="py-16 bg-gradient-to-b from-background to-muted/30">
+			<section className="py-16 bg-linear-to-b from-background to-muted/30">
 				<div className="container mx-auto px-4">
 					<div className="flex flex-col items-center justify-center py-20">
 						<Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
@@ -114,7 +114,7 @@ const AllCategoriesWrapper: FC = () => {
 	const categories = categoriesData?.page || [];
 
 	return (
-		<section className="py-16 bg-gradient-to-b from-background to-muted/30">
+		<section className="py-16 bg-linear-to-b from-background to-muted/30">
 			<div className="container mx-auto px-4">
 				{/* Header */}
 				<motion.div
