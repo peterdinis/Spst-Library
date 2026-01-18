@@ -2,6 +2,7 @@ import { FC } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "convex/react";
+import { api } from "convex/_generated/api";
 import {
 	Card,
 	CardContent,
@@ -11,8 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Grid, BookOpen, X, Loader2, RefreshCw } from "lucide-react";
-import { api } from "convex/_generated/api";
+import { Grid, BookOpen, Loader2, RefreshCw } from "lucide-react";
 
 interface Category {
 	_id: string;
@@ -28,17 +28,16 @@ interface Category {
 const AllCategoriesWrapper: FC = () => {
 	const navigate = useNavigate();
 
-	// Fetch categories using Convex
+	// Fetch categories using Convex - bez pagination pre jednoduchosť
 	const categoriesData = useQuery(api.categories.getCategories, {
 		paginationOpts: { numItems: 100, cursor: null },
 		isActive: true,
 	});
 
-	// Fetch books for statistics
-	const booksData = useQuery(api.books.getAll, {
-	});
+	// Fetch all books using the correct function
+	const booksData = useQuery(api.books.getAll, {});
 
-	// Helper function to generate random colors for categories without specified colors
+	// Helper function to generate random colors
 	const getRandomColor = () => {
 		const colors = [
 			"#3B82F6",
@@ -54,13 +53,13 @@ const AllCategoriesWrapper: FC = () => {
 	};
 
 	const getCategoryBookCount = (categoryId: string) => {
-		if (!booksData?.page) return 0;
-		return booksData.page.filter((book) => book.categoryId === categoryId).length;
+		if (!booksData) return 0;
+		return booksData.filter((book) => book.categoryId === categoryId).length;
 	};
 
 	const getAvailableBooksInCategory = (categoryId: string) => {
-		if (!booksData?.page) return 0;
-		return booksData.page.filter(
+		if (!booksData) return 0;
+		return booksData.filter(
 			(book) => book.categoryId === categoryId && book.availableCopies > 0
 		).length;
 	};
@@ -91,14 +90,14 @@ const AllCategoriesWrapper: FC = () => {
 	};
 
 	// Calculate statistics
-	const totalBooksCount = booksData?.page?.length || 0;
+	const totalBooksCount = booksData?.length || 0;
 	const availableBooksCount =
-		booksData?.page?.filter((b) => b.availableCopies > 0).length || 0;
+		booksData?.filter((b) => b.availableCopies > 0).length || 0;
 
 	// Loading state
 	if (categoriesData === undefined || booksData === undefined) {
 		return (
-			<section className="py-16 bg-linear-to-b from-background to-muted/30">
+			<section className="py-16 bg-gradient-to-b from-background to-muted/30">
 				<div className="container mx-auto px-4">
 					<div className="flex flex-col items-center justify-center py-20">
 						<Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
@@ -115,7 +114,7 @@ const AllCategoriesWrapper: FC = () => {
 	const categories = categoriesData?.page || [];
 
 	return (
-		<section className="py-16 bg-linear-to-b from-background to-muted/30">
+		<section className="py-16 bg-gradient-to-b from-background to-muted/30">
 			<div className="container mx-auto px-4">
 				{/* Header */}
 				<motion.div
@@ -243,7 +242,7 @@ const AllCategoriesWrapper: FC = () => {
 													{bookCount}{" "}
 													{bookCount === 1
 														? "kniha"
-														: bookCount < 5
+														: bookCount >= 2 && bookCount <= 4
 															? "knihy"
 															: "kníh"}
 												</Badge>
