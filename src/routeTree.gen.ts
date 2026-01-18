@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CategoriesIndexRouteImport } from './routes/categories.index'
 import { Route as BooksIndexRouteImport } from './routes/books.index'
 import { Route as AuthorsIndexRouteImport } from './routes/authors.index'
+import { Route as CategoriesCreateRouteImport } from './routes/categories.create'
 import { Route as BooksBookIdRouteImport } from './routes/books.$bookId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
@@ -54,6 +55,11 @@ const AuthorsIndexRoute = AuthorsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthorsRoute,
 } as any)
+const CategoriesCreateRoute = CategoriesCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => CategoriesRoute,
+} as any)
 const BooksBookIdRoute = BooksBookIdRouteImport.update({
   id: '/$bookId',
   path: '/$bookId',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/books': typeof BooksRouteWithChildren
   '/categories': typeof CategoriesRouteWithChildren
   '/books/$bookId': typeof BooksBookIdRoute
+  '/categories/create': typeof CategoriesCreateRoute
   '/authors/': typeof AuthorsIndexRoute
   '/books/': typeof BooksIndexRoute
   '/categories/': typeof CategoriesIndexRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/books/$bookId': typeof BooksBookIdRoute
+  '/categories/create': typeof CategoriesCreateRoute
   '/authors': typeof AuthorsIndexRoute
   '/books': typeof BooksIndexRoute
   '/categories': typeof CategoriesIndexRoute
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   '/books': typeof BooksRouteWithChildren
   '/categories': typeof CategoriesRouteWithChildren
   '/books/$bookId': typeof BooksBookIdRoute
+  '/categories/create': typeof CategoriesCreateRoute
   '/authors/': typeof AuthorsIndexRoute
   '/books/': typeof BooksIndexRoute
   '/categories/': typeof CategoriesIndexRoute
@@ -104,6 +113,7 @@ export interface FileRouteTypes {
     | '/books'
     | '/categories'
     | '/books/$bookId'
+    | '/categories/create'
     | '/authors/'
     | '/books/'
     | '/categories/'
@@ -112,6 +122,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/books/$bookId'
+    | '/categories/create'
     | '/authors'
     | '/books'
     | '/categories'
@@ -123,6 +134,7 @@ export interface FileRouteTypes {
     | '/books'
     | '/categories'
     | '/books/$bookId'
+    | '/categories/create'
     | '/authors/'
     | '/books/'
     | '/categories/'
@@ -188,6 +200,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthorsIndexRouteImport
       parentRoute: typeof AuthorsRoute
     }
+    '/categories/create': {
+      id: '/categories/create'
+      path: '/create'
+      fullPath: '/categories/create'
+      preLoaderRoute: typeof CategoriesCreateRouteImport
+      parentRoute: typeof CategoriesRoute
+    }
     '/books/$bookId': {
       id: '/books/$bookId'
       path: '/$bookId'
@@ -229,10 +248,12 @@ const BooksRouteChildren: BooksRouteChildren = {
 const BooksRouteWithChildren = BooksRoute._addFileChildren(BooksRouteChildren)
 
 interface CategoriesRouteChildren {
+  CategoriesCreateRoute: typeof CategoriesCreateRoute
   CategoriesIndexRoute: typeof CategoriesIndexRoute
 }
 
 const CategoriesRouteChildren: CategoriesRouteChildren = {
+  CategoriesCreateRoute: CategoriesCreateRoute,
   CategoriesIndexRoute: CategoriesIndexRoute,
 }
 
