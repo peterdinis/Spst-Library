@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 export default function BookLoader() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-rose-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
+    <div className="min-h-screen bg-linear-to-br from-indigo-50 via-white to-rose-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center">
       <div className="relative">
         {/* Main Book Container */}
         <motion.div
@@ -54,7 +54,7 @@ export default function BookLoader() {
 
           {/* Book Spine */}
           <motion.div
-            className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-indigo-600 to-indigo-800 rounded-l-sm shadow-md"
+            className="absolute left-0 top-2 bottom-2 w-1 bg-linear-to-b from-indigo-600 to-indigo-800 rounded-l-sm shadow-md"
             animate={{
               scaleY: [1, 1.05, 1],
             }}
@@ -74,7 +74,7 @@ export default function BookLoader() {
           transition={{ delay: 0.3, duration: 0.4 }}
         >
           <motion.p
-            className="text-lg font-semibold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-rose-600 dark:from-indigo-400 dark:to-rose-400"
+            className="text-lg font-semibold bg-clip-text text-transparent bg-linear-to-r from-indigo-600 to-rose-600 dark:from-indigo-400 dark:to-rose-400"
             animate={{
               opacity: [0.5, 1, 0.5],
             }}
@@ -121,7 +121,7 @@ export default function BookLoader() {
             ease: "easeInOut",
           }}
         >
-          <div className="w-full h-full bg-gradient-to-r from-indigo-400 via-rose-400 to-amber-400 rounded-full" />
+          <div className="w-full h-full bg-linear-to-r from-indigo-400 via-rose-400 to-amber-400 rounded-full" />
         </motion.div>
       </div>
     </div>
