@@ -166,7 +166,7 @@ export default function NewAuthorPage() {
 
   // On crop complete callback
   const onCropComplete = useCallback(
-    (croppedArea: any, croppedAreaPixels: CropArea) => {
+    (_: any, croppedAreaPixels: CropArea) => {
       setCroppedAreaPixels(croppedAreaPixels);
     },
     []
