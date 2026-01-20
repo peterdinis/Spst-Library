@@ -1,20 +1,18 @@
 import { useState, FormEvent, ChangeEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "convex/react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Upload, X, UserPlus } from "lucide-react";
-import { create } from "convex/authors";
-import { uploadAuthorImage } from "@/lib/uploathing";
+import { Loader2, X, UserPlus } from "lucide-react";
+import { useUploadThing } from "@/lib/uploathing";
+import { api } from "convex/_generated/api";
 
 export default function NewAuthorPage() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -35,21 +33,19 @@ export default function NewAuthorPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // TanStack Query mutation
-  const authorMutation = useMutation({
-    mutationFn: async (data: {
-      formData: typeof formData;
-      photoFileId?: string;
-    }) => {
-      return await create({
-        ...data.formData,
-        birthYear: data.formData.birthYear ? parseInt(data.formData.birthYear) : undefined,
-        deathYear: data.formData.deathYear ? parseInt(data.formData.deathYear) : undefined,
-        photoFileId: data.photoFileId as any,
-      });
+  // Convex mutation
+  const createAuthor = useMutation(api.authors.create);
+
+  // UploadThing hook
+  const { startUpload, isUploading } = useUploadThing("authorImage", {
+    onClientUploadComplete: (res) => {
+      console.log("Upload complete", res);
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["authors"] });
+    onUploadError: (error) => {
+      console.error("Upload error:", error);
+      toast.error("Upload failed", {
+        description: "Failed to upload image. Please try again.",
+      });
     },
   });
 
@@ -73,20 +69,16 @@ export default function NewAuthorPage() {
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      toast({
-        title: "Invalid file type",
+      toast.error("Invalid file type", {
         description: "Please select an image file (JPEG, PNG, etc.)",
-        variant: "destructive",
       });
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "File too large",
+      toast.error("File too large", {
         description: "Please select an image smaller than 5MB",
-        variant: "destructive",
       });
       return;
     }
@@ -113,18 +105,28 @@ export default function NewAuthorPage() {
 
     if (!formData.name.trim()) {
       newErrors.name = "Name is required";
+    } else if (formData.name.length > 200) {
+      newErrors.name = "Name is too long (max 200 characters)";
+    }
+
+    if (formData.biography && formData.biography.length > 5000) {
+      newErrors.biography = "Biography is too long (max 5000 characters)";
     }
 
     if (formData.birthYear) {
       const year = parseInt(formData.birthYear);
-      if (year < 1000 || year > new Date().getFullYear()) {
+      if (isNaN(year)) {
+        newErrors.birthYear = "Please enter a valid year";
+      } else if (year < 1000 || year > new Date().getFullYear()) {
         newErrors.birthYear = "Birth year must be between 1000 and current year";
       }
     }
 
     if (formData.deathYear) {
       const year = parseInt(formData.deathYear);
-      if (year < 1000 || year > new Date().getFullYear() + 10) {
+      if (isNaN(year)) {
+        newErrors.deathYear = "Please enter a valid year";
+      } else if (year < 1000 || year > new Date().getFullYear() + 10) {
         newErrors.deathYear = "Invalid death year";
       }
     }
@@ -132,14 +134,22 @@ export default function NewAuthorPage() {
     if (formData.birthYear && formData.deathYear) {
       const birth = parseInt(formData.birthYear);
       const death = parseInt(formData.deathYear);
-      if (death < birth) {
+      if (!isNaN(birth) && !isNaN(death) && death < birth) {
         newErrors.deathYear = "Death year must be after birth year";
       }
     }
 
+    if (formData.nationality && formData.nationality.length > 100) {
+      newErrors.nationality = "Nationality is too long (max 100 characters)";
+    }
+
     if (formData.website && formData.website.trim() !== "") {
       try {
-        new URL(formData.website);
+        // Add protocol if missing
+        const url = formData.website.includes("://") 
+          ? formData.website 
+          : `https://${formData.website}`;
+        new URL(url);
       } catch {
         newErrors.website = "Please enter a valid URL";
       }
@@ -159,57 +169,81 @@ export default function NewAuthorPage() {
 
     setIsSubmitting(true);
     setUploadProgress(0);
+    let toastId: string | number | undefined;
 
     try {
+      toastId = toast.loading("Creating author...");
+
       let photoFileId: string | undefined;
 
       // Upload image if selected
       if (imageFile) {
         setUploadProgress(30);
+        toast.loading("Uploading image...", { id: toastId });
+        
         try {
           // Upload image to UploadThing
-          const uploadResult = await uploadAuthorImage(imageFile);
+          const uploadResult = await startUpload([imageFile]);
           setUploadProgress(70);
           
           if (uploadResult && uploadResult[0]) {
-            photoFileId = uploadResult[0].serverData.fileId;
+            // Assuming UploadThing returns file ID in serverData
+            photoFileId = uploadResult[0].serverData?.fileKey
+            // OR if using UploadThing's URL, you might need to save it to Convex files table first
+            // Let me know if you need help with that integration
           }
         } catch (uploadError) {
           console.error("Image upload failed:", uploadError);
-          toast({
-            title: "Image upload failed",
+          toast.warning("Image upload failed", {
+            id: toastId,
             description: "The author was created without a photo. You can add one later.",
-            variant: "destructive",
           });
         }
       }
 
       setUploadProgress(90);
+      toast.loading("Saving author information...", { id: toastId });
+
+      // Parse numeric values
+      const birthYear = formData.birthYear ? parseInt(formData.birthYear) : undefined;
+      const deathYear = formData.deathYear ? parseInt(formData.deathYear) : undefined;
+      
+      // Convert empty string to undefined for website
+      const website = formData.website?.trim() === "" ? undefined : formData.website;
 
       // Create author in Convex
-      await authorMutation.mutateAsync({
-        formData,
-        photoFileId,
+      const authorId = await createAuthor({
+        name: formData.name,
+        biography: formData.biography || undefined,
+        birthYear,
+        deathYear,
+        nationality: formData.nationality || undefined,
+        photoFileId: photoFileId as any,
+        website,
       });
 
       setUploadProgress(100);
-
-      toast({
-        title: "Author created successfully",
+      
+      toast.success("Author created successfully", {
+        id: toastId,
         description: `${formData.name} has been added to the library.`,
+        action: {
+          label: "View",
+          onClick: () => navigate({ to: `/authors/${authorId}` }),
+        },
       });
 
       // Navigate back to authors list
       setTimeout(() => {
         navigate({ to: "/authors" });
-      }, 1500);
+      }, 2000);
 
     } catch (error: any) {
       console.error("Error creating author:", error);
-      toast({
-        title: "Error creating author",
+      
+      toast.error("Error creating author", {
+        id: toastId,
         description: error.message || "Please try again",
-        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -255,6 +289,7 @@ export default function NewAuthorPage() {
                       size="icon"
                       className="absolute -top-2 -right-2 h-6 w-6"
                       onClick={handleRemoveImage}
+                      disabled={isSubmitting || isUploading}
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -273,11 +308,16 @@ export default function NewAuthorPage() {
                     accept="image/*"
                     onChange={handleImageSelect}
                     className="cursor-pointer"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || isUploading}
                   />
                   <p className="text-sm text-muted-foreground">
                     Recommended: Square image, max 5MB. JPEG, PNG, or WebP.
                   </p>
+                  {isUploading && (
+                    <p className="text-sm text-blue-600">
+                      Uploading image...
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -293,7 +333,7 @@ export default function NewAuthorPage() {
                 value={formData.name}
                 onChange={handleInputChange}
                 placeholder="e.g., J.K. Rowling"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isUploading}
                 required
               />
               {errors.name && (
@@ -311,11 +351,16 @@ export default function NewAuthorPage() {
                 onChange={handleInputChange}
                 placeholder="Write a brief biography of the author..."
                 rows={4}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isUploading}
               />
-              <p className="text-sm text-muted-foreground">
-                {formData.biography.length}/5000 characters
-              </p>
+              <div className="flex justify-between items-center">
+                <p className="text-sm text-muted-foreground">
+                  {formData.biography.length}/5000 characters
+                </p>
+                {errors.biography && (
+                  <p className="text-sm text-destructive">{errors.biography}</p>
+                )}
+              </div>
             </div>
 
             {/* Birth and Death Year Fields */}
@@ -329,7 +374,9 @@ export default function NewAuthorPage() {
                   value={formData.birthYear}
                   onChange={handleInputChange}
                   placeholder="e.g., 1965"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isUploading}
+                  min={1000}
+                  max={new Date().getFullYear()}
                 />
                 {errors.birthYear && (
                   <p className="text-sm text-destructive">{errors.birthYear}</p>
@@ -345,7 +392,9 @@ export default function NewAuthorPage() {
                   value={formData.deathYear}
                   onChange={handleInputChange}
                   placeholder="e.g., 2023"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isUploading}
+                  min={1000}
+                  max={new Date().getFullYear() + 10}
                 />
                 {errors.deathYear && (
                   <p className="text-sm text-destructive">{errors.deathYear}</p>
@@ -363,8 +412,11 @@ export default function NewAuthorPage() {
                   value={formData.nationality}
                   onChange={handleInputChange}
                   placeholder="e.g., British"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isUploading}
                 />
+                {errors.nationality && (
+                  <p className="text-sm text-destructive">{errors.nationality}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -376,7 +428,7 @@ export default function NewAuthorPage() {
                   value={formData.website}
                   onChange={handleInputChange}
                   placeholder="https://example.com"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isUploading}
                 />
                 {errors.website && (
                   <p className="text-sm text-destructive">{errors.website}</p>
@@ -385,7 +437,7 @@ export default function NewAuthorPage() {
             </div>
 
             {/* Progress Bar */}
-            {(isSubmitting || uploadProgress > 0) && (
+            {(isSubmitting || isUploading || uploadProgress > 0) && (
               <div className="space-y-2">
                 <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
                   <div
@@ -407,15 +459,18 @@ export default function NewAuthorPage() {
                 type="button"
                 variant="outline"
                 onClick={() => navigate({ to: "/authors" })}
-                disabled={isSubmitting}
+                disabled={isSubmitting || isUploading}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
+              <Button 
+                type="submit" 
+                disabled={isSubmitting || isUploading}
+              >
+                {(isSubmitting || isUploading) ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating...
+                    {isUploading ? "Uploading..." : "Creating..."}
                   </>
                 ) : (
                   <>
