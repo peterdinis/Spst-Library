@@ -4,7 +4,7 @@ import DashboardSkeleton from "@/components/shared/DashboardSkeleton";
 import { ErrorComponent } from "@/components/shared/ErrorComponent";
 import Footer from "@/components/shared/Footer";
 import { NotFoundComponent } from "@/components/shared/NotFoundComponent";
-import { createFileRoute} from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
 	component: App,
