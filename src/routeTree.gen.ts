@@ -18,6 +18,8 @@ import { Route as BooksIndexRouteImport } from './routes/books.index'
 import { Route as AuthorsIndexRouteImport } from './routes/authors.index'
 import { Route as CategoriesCreateRouteImport } from './routes/categories.create'
 import { Route as BooksBookIdRouteImport } from './routes/books.$bookId'
+import { Route as AuthorsCreateRouteImport } from './routes/authors.create'
+import { Route as ApiUploadthingRouteRouteImport } from './routes/api/uploadthing/route'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const CategoriesRoute = CategoriesRouteImport.update({
@@ -65,6 +67,16 @@ const BooksBookIdRoute = BooksBookIdRouteImport.update({
   path: '/$bookId',
   getParentRoute: () => BooksRoute,
 } as any)
+const AuthorsCreateRoute = AuthorsCreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => AuthorsRoute,
+} as any)
+const ApiUploadthingRouteRoute = ApiUploadthingRouteRouteImport.update({
+  id: '/api/uploadthing',
+  path: '/api/uploadthing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -76,6 +88,8 @@ export interface FileRoutesByFullPath {
   '/authors': typeof AuthorsRouteWithChildren
   '/books': typeof BooksRouteWithChildren
   '/categories': typeof CategoriesRouteWithChildren
+  '/api/uploadthing': typeof ApiUploadthingRouteRoute
+  '/authors/create': typeof AuthorsCreateRoute
   '/books/$bookId': typeof BooksBookIdRoute
   '/categories/create': typeof CategoriesCreateRoute
   '/authors/': typeof AuthorsIndexRoute
@@ -85,6 +99,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/uploadthing': typeof ApiUploadthingRouteRoute
+  '/authors/create': typeof AuthorsCreateRoute
   '/books/$bookId': typeof BooksBookIdRoute
   '/categories/create': typeof CategoriesCreateRoute
   '/authors': typeof AuthorsIndexRoute
@@ -98,6 +114,8 @@ export interface FileRoutesById {
   '/authors': typeof AuthorsRouteWithChildren
   '/books': typeof BooksRouteWithChildren
   '/categories': typeof CategoriesRouteWithChildren
+  '/api/uploadthing': typeof ApiUploadthingRouteRoute
+  '/authors/create': typeof AuthorsCreateRoute
   '/books/$bookId': typeof BooksBookIdRoute
   '/categories/create': typeof CategoriesCreateRoute
   '/authors/': typeof AuthorsIndexRoute
@@ -112,6 +130,8 @@ export interface FileRouteTypes {
     | '/authors'
     | '/books'
     | '/categories'
+    | '/api/uploadthing'
+    | '/authors/create'
     | '/books/$bookId'
     | '/categories/create'
     | '/authors/'
@@ -121,6 +141,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/api/uploadthing'
+    | '/authors/create'
     | '/books/$bookId'
     | '/categories/create'
     | '/authors'
@@ -133,6 +155,8 @@ export interface FileRouteTypes {
     | '/authors'
     | '/books'
     | '/categories'
+    | '/api/uploadthing'
+    | '/authors/create'
     | '/books/$bookId'
     | '/categories/create'
     | '/authors/'
@@ -146,6 +170,7 @@ export interface RootRouteChildren {
   AuthorsRoute: typeof AuthorsRouteWithChildren
   BooksRoute: typeof BooksRouteWithChildren
   CategoriesRoute: typeof CategoriesRouteWithChildren
+  ApiUploadthingRouteRoute: typeof ApiUploadthingRouteRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -214,6 +239,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BooksBookIdRouteImport
       parentRoute: typeof BooksRoute
     }
+    '/authors/create': {
+      id: '/authors/create'
+      path: '/create'
+      fullPath: '/authors/create'
+      preLoaderRoute: typeof AuthorsCreateRouteImport
+      parentRoute: typeof AuthorsRoute
+    }
+    '/api/uploadthing': {
+      id: '/api/uploadthing'
+      path: '/api/uploadthing'
+      fullPath: '/api/uploadthing'
+      preLoaderRoute: typeof ApiUploadthingRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -225,10 +264,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthorsRouteChildren {
+  AuthorsCreateRoute: typeof AuthorsCreateRoute
   AuthorsIndexRoute: typeof AuthorsIndexRoute
 }
 
 const AuthorsRouteChildren: AuthorsRouteChildren = {
+  AuthorsCreateRoute: AuthorsCreateRoute,
   AuthorsIndexRoute: AuthorsIndexRoute,
 }
 
@@ -266,6 +307,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthorsRoute: AuthorsRouteWithChildren,
   BooksRoute: BooksRouteWithChildren,
   CategoriesRoute: CategoriesRouteWithChildren,
+  ApiUploadthingRouteRoute: ApiUploadthingRouteRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport

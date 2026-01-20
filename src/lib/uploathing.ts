@@ -1,4 +1,4 @@
-import { OurFileRouter } from "@/routes/api/uploadthing/core";
+import { OurFileRouter } from "@/routes/api/uploadthing/route";
 import {
   generateUploadButton,
   generateUploadDropzone,
