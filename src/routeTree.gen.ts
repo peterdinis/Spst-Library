@@ -17,8 +17,10 @@ import { Route as CategoriesIndexRouteImport } from './routes/categories.index'
 import { Route as BooksIndexRouteImport } from './routes/books.index'
 import { Route as AuthorsIndexRouteImport } from './routes/authors.index'
 import { Route as CategoriesCreateRouteImport } from './routes/categories.create'
+import { Route as CategoriesCategoryIdRouteImport } from './routes/categories.$categoryId'
 import { Route as BooksBookIdRouteImport } from './routes/books.$bookId'
 import { Route as AuthorsCreateRouteImport } from './routes/authors.create'
+import { Route as AuthorsAuthorIdRouteImport } from './routes/authors.$authorId'
 import { Route as ApiUploadthingRouteRouteImport } from './routes/api/uploadthing/route'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
@@ -62,6 +64,11 @@ const CategoriesCreateRoute = CategoriesCreateRouteImport.update({
   path: '/create',
   getParentRoute: () => CategoriesRoute,
 } as any)
+const CategoriesCategoryIdRoute = CategoriesCategoryIdRouteImport.update({
+  id: '/$categoryId',
+  path: '/$categoryId',
+  getParentRoute: () => CategoriesRoute,
+} as any)
 const BooksBookIdRoute = BooksBookIdRouteImport.update({
   id: '/$bookId',
   path: '/$bookId',
@@ -70,6 +77,11 @@ const BooksBookIdRoute = BooksBookIdRouteImport.update({
 const AuthorsCreateRoute = AuthorsCreateRouteImport.update({
   id: '/create',
   path: '/create',
+  getParentRoute: () => AuthorsRoute,
+} as any)
+const AuthorsAuthorIdRoute = AuthorsAuthorIdRouteImport.update({
+  id: '/$authorId',
+  path: '/$authorId',
   getParentRoute: () => AuthorsRoute,
 } as any)
 const ApiUploadthingRouteRoute = ApiUploadthingRouteRouteImport.update({
@@ -89,8 +101,10 @@ export interface FileRoutesByFullPath {
   '/books': typeof BooksRouteWithChildren
   '/categories': typeof CategoriesRouteWithChildren
   '/api/uploadthing': typeof ApiUploadthingRouteRoute
+  '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/authors/create': typeof AuthorsCreateRoute
   '/books/$bookId': typeof BooksBookIdRoute
+  '/categories/$categoryId': typeof CategoriesCategoryIdRoute
   '/categories/create': typeof CategoriesCreateRoute
   '/authors/': typeof AuthorsIndexRoute
   '/books/': typeof BooksIndexRoute
@@ -100,8 +114,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/uploadthing': typeof ApiUploadthingRouteRoute
+  '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/authors/create': typeof AuthorsCreateRoute
   '/books/$bookId': typeof BooksBookIdRoute
+  '/categories/$categoryId': typeof CategoriesCategoryIdRoute
   '/categories/create': typeof CategoriesCreateRoute
   '/authors': typeof AuthorsIndexRoute
   '/books': typeof BooksIndexRoute
@@ -115,8 +131,10 @@ export interface FileRoutesById {
   '/books': typeof BooksRouteWithChildren
   '/categories': typeof CategoriesRouteWithChildren
   '/api/uploadthing': typeof ApiUploadthingRouteRoute
+  '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/authors/create': typeof AuthorsCreateRoute
   '/books/$bookId': typeof BooksBookIdRoute
+  '/categories/$categoryId': typeof CategoriesCategoryIdRoute
   '/categories/create': typeof CategoriesCreateRoute
   '/authors/': typeof AuthorsIndexRoute
   '/books/': typeof BooksIndexRoute
@@ -131,8 +149,10 @@ export interface FileRouteTypes {
     | '/books'
     | '/categories'
     | '/api/uploadthing'
+    | '/authors/$authorId'
     | '/authors/create'
     | '/books/$bookId'
+    | '/categories/$categoryId'
     | '/categories/create'
     | '/authors/'
     | '/books/'
@@ -142,8 +162,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/api/uploadthing'
+    | '/authors/$authorId'
     | '/authors/create'
     | '/books/$bookId'
+    | '/categories/$categoryId'
     | '/categories/create'
     | '/authors'
     | '/books'
@@ -156,8 +178,10 @@ export interface FileRouteTypes {
     | '/books'
     | '/categories'
     | '/api/uploadthing'
+    | '/authors/$authorId'
     | '/authors/create'
     | '/books/$bookId'
+    | '/categories/$categoryId'
     | '/categories/create'
     | '/authors/'
     | '/books/'
@@ -232,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategoriesCreateRouteImport
       parentRoute: typeof CategoriesRoute
     }
+    '/categories/$categoryId': {
+      id: '/categories/$categoryId'
+      path: '/$categoryId'
+      fullPath: '/categories/$categoryId'
+      preLoaderRoute: typeof CategoriesCategoryIdRouteImport
+      parentRoute: typeof CategoriesRoute
+    }
     '/books/$bookId': {
       id: '/books/$bookId'
       path: '/$bookId'
@@ -244,6 +275,13 @@ declare module '@tanstack/react-router' {
       path: '/create'
       fullPath: '/authors/create'
       preLoaderRoute: typeof AuthorsCreateRouteImport
+      parentRoute: typeof AuthorsRoute
+    }
+    '/authors/$authorId': {
+      id: '/authors/$authorId'
+      path: '/$authorId'
+      fullPath: '/authors/$authorId'
+      preLoaderRoute: typeof AuthorsAuthorIdRouteImport
       parentRoute: typeof AuthorsRoute
     }
     '/api/uploadthing': {
@@ -264,11 +302,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthorsRouteChildren {
+  AuthorsAuthorIdRoute: typeof AuthorsAuthorIdRoute
   AuthorsCreateRoute: typeof AuthorsCreateRoute
   AuthorsIndexRoute: typeof AuthorsIndexRoute
 }
 
 const AuthorsRouteChildren: AuthorsRouteChildren = {
+  AuthorsAuthorIdRoute: AuthorsAuthorIdRoute,
   AuthorsCreateRoute: AuthorsCreateRoute,
   AuthorsIndexRoute: AuthorsIndexRoute,
 }
@@ -289,11 +329,13 @@ const BooksRouteChildren: BooksRouteChildren = {
 const BooksRouteWithChildren = BooksRoute._addFileChildren(BooksRouteChildren)
 
 interface CategoriesRouteChildren {
+  CategoriesCategoryIdRoute: typeof CategoriesCategoryIdRoute
   CategoriesCreateRoute: typeof CategoriesCreateRoute
   CategoriesIndexRoute: typeof CategoriesIndexRoute
 }
 
 const CategoriesRouteChildren: CategoriesRouteChildren = {
+  CategoriesCategoryIdRoute: CategoriesCategoryIdRoute,
   CategoriesCreateRoute: CategoriesCreateRoute,
   CategoriesIndexRoute: CategoriesIndexRoute,
 }
