@@ -1,15 +1,79 @@
-import { useState, FormEvent, ChangeEvent } from "react";
+import { useState, FormEvent, ChangeEvent, useCallback, SetStateAction } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
+import Cropper from "react-easy-crop";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, X, UserPlus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
+import { Loader2, X, UserPlus, Crop } from "lucide-react";
 import { useUploadThing } from "@/lib/uploathing";
 import { api } from "convex/_generated/api";
+
+interface CropArea {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+// Helper function to create cropped image
+const createImage = (url: string): Promise<HTMLImageElement> =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener("load", () => resolve(image));
+    image.addEventListener("error", (error) => reject(error));
+    image.src = url;
+  });
+
+async function getCroppedImg(
+  imageSrc: string,
+  pixelCrop: CropArea
+): Promise<Blob> {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  if (!ctx) {
+    throw new Error("No 2d context");
+  }
+
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+
+  ctx.drawImage(
+    image,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  );
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error("Canvas is empty"));
+        return;
+      }
+      resolve(blob);
+    }, "image/jpeg");
+  });
+}
 
 export default function NewAuthorPage() {
   const navigate = useNavigate();
@@ -32,6 +96,13 @@ export default function NewAuthorPage() {
   // Image upload state
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
+  // Cropper state
+  const [showCropper, setShowCropper] = useState(false);
+  const [tempImageSrc, setTempImageSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
 
   // Convex mutation
   const createAuthor = useMutation(api.authors.create);
@@ -56,7 +127,6 @@ export default function NewAuthorPage() {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     
-    // Clear error for this field
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
@@ -83,19 +153,67 @@ export default function NewAuthorPage() {
       return;
     }
 
-    setImageFile(file);
-
-    // Create preview
+    // Create preview and open cropper
     const reader = new FileReader();
     reader.onloadend = () => {
-      setImagePreview(reader.result as string);
+      setTempImageSrc(reader.result as string);
+      setShowCropper(true);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
     };
     reader.readAsDataURL(file);
+  };
+
+  // On crop complete callback
+  const onCropComplete = useCallback(
+    (croppedArea: any, croppedAreaPixels: CropArea) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    []
+  );
+
+  // Handle crop confirm
+  const handleCropConfirm = async () => {
+    if (!tempImageSrc || !croppedAreaPixels) return;
+
+    try {
+      const croppedBlob = await getCroppedImg(tempImageSrc, croppedAreaPixels);
+      
+      // Convert blob to file
+      const croppedFile = new File([croppedBlob], "author-photo.jpg", {
+        type: "image/jpeg",
+      });
+
+      setImageFile(croppedFile);
+
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(croppedBlob);
+      setImagePreview(previewUrl);
+
+      setShowCropper(false);
+      setTempImageSrc(null);
+    } catch (error) {
+      console.error("Error cropping image:", error);
+      toast.error("Failed to crop image", {
+        description: "Please try again",
+      });
+    }
+  };
+
+  // Handle crop cancel
+  const handleCropCancel = () => {
+    setShowCropper(false);
+    setTempImageSrc(null);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
   };
 
   // Remove selected image
   const handleRemoveImage = () => {
     setImageFile(null);
+    if (imagePreview) {
+      URL.revokeObjectURL(imagePreview);
+    }
     setImagePreview(null);
   };
 
@@ -145,7 +263,6 @@ export default function NewAuthorPage() {
 
     if (formData.website && formData.website.trim() !== "") {
       try {
-        // Add protocol if missing
         const url = formData.website.includes("://") 
           ? formData.website 
           : `https://${formData.website}`;
@@ -176,21 +293,16 @@ export default function NewAuthorPage() {
 
       let photoFileId: string | undefined;
 
-      // Upload image if selected
       if (imageFile) {
         setUploadProgress(30);
         toast.loading("Uploading image...", { id: toastId });
         
         try {
-          // Upload image to UploadThing
           const uploadResult = await startUpload([imageFile]);
           setUploadProgress(70);
           
           if (uploadResult && uploadResult[0]) {
-            // Assuming UploadThing returns file ID in serverData
-            photoFileId = uploadResult[0].serverData?.fileKey
-            // OR if using UploadThing's URL, you might need to save it to Convex files table first
-            // Let me know if you need help with that integration
+            photoFileId = uploadResult[0].serverData?.fileKey;
           }
         } catch (uploadError) {
           console.error("Image upload failed:", uploadError);
@@ -204,14 +316,10 @@ export default function NewAuthorPage() {
       setUploadProgress(90);
       toast.loading("Saving author information...", { id: toastId });
 
-      // Parse numeric values
       const birthYear = formData.birthYear ? parseInt(formData.birthYear) : undefined;
       const deathYear = formData.deathYear ? parseInt(formData.deathYear) : undefined;
-      
-      // Convert empty string to undefined for website
       const website = formData.website?.trim() === "" ? undefined : formData.website;
 
-      // Create author in Convex
       const authorId = await createAuthor({
         name: formData.name,
         biography: formData.biography || undefined,
@@ -233,7 +341,6 @@ export default function NewAuthorPage() {
         },
       });
 
-      // Navigate back to authors list
       setTimeout(() => {
         navigate({ to: "/authors" });
       }, 2000);
@@ -260,6 +367,56 @@ export default function NewAuthorPage() {
         </p>
       </div>
 
+      {/* Cropper Dialog */}
+      <Dialog open={showCropper} onOpenChange={setShowCropper}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Crop Author Photo</DialogTitle>
+            <DialogDescription>
+              Adjust the image to your preferred crop
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="relative h-96 bg-muted rounded-lg">
+            {tempImageSrc && (
+              <Cropper
+                image={tempImageSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+              />
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Zoom</Label>
+              <Slider
+                value={[zoom]}
+                onValueChange={(value: SetStateAction<number>[]) => setZoom(value[0])}
+                min={1}
+                max={3}
+                step={0.1}
+                className="w-full"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCropCancel}>
+              Cancel
+            </Button>
+            <Button onClick={handleCropConfirm}>
+              <Crop className="mr-2 h-4 w-4" />
+              Apply Crop
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -273,7 +430,6 @@ export default function NewAuthorPage() {
             <div className="space-y-4">
               <Label htmlFor="photo">Author Photo (Optional)</Label>
               <div className="flex items-start gap-6">
-                {/* Image Preview */}
                 {imagePreview ? (
                   <div className="relative">
                     <div className="w-32 h-32 rounded-lg overflow-hidden border">
@@ -300,7 +456,6 @@ export default function NewAuthorPage() {
                   </div>
                 )}
 
-                {/* Upload Controls */}
                 <div className="flex-1 space-y-2">
                   <Input
                     id="photo"
