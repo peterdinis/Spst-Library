@@ -60,7 +60,7 @@ const AllCategoriesWrapper: FC = () => {
 	const getAvailableBooksInCategory = (categoryId: string) => {
 		if (!booksData) return 0;
 		return booksData.filter(
-			(book) => book.categoryId === categoryId && book.availableCopies > 0
+			(book) => book.categoryId === categoryId && book.availableCopies > 0,
 		).length;
 	};
 
@@ -217,7 +217,9 @@ const AllCategoriesWrapper: FC = () => {
 										scale: 1.03,
 										transition: { duration: 0.2 },
 									}}
-									onClick={() => navigate({ to: `/categories/${category._id}` })}
+									onClick={() =>
+										navigate({ to: `/categories/${category._id}` })
+									}
 									className="cursor-pointer group"
 								>
 									<Card className="h-full hover:shadow-xl transition-all duration-300 border-border/50">

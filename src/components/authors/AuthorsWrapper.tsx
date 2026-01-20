@@ -53,7 +53,8 @@ export function AllAuthorsWrapper() {
 			id: author._id,
 			fullName: author.name,
 			nationality: author.nationality || "Neznáme",
-			photoUrl: author.photoFileId || 
+			photoUrl:
+				author.photoFileId ||
 				`https://ui-avatars.com/api/?name=${encodeURIComponent(author.name)}&background=random&size=128`,
 		}));
 	}, [authorsResult]);
