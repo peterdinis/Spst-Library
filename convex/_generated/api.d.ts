@@ -11,6 +11,7 @@
 import type * as authors from "../authors.js";
 import type * as books from "../books.js";
 import type * as categories from "../categories.js";
+import type * as files from "../files.js";
 
 import type {
   ApiFromModules,
@@ -22,6 +23,7 @@ declare const fullApi: ApiFromModules<{
   authors: typeof authors;
   books: typeof books;
   categories: typeof categories;
+  files: typeof files;
 }>;
 
 /**

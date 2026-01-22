@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { Loader2, X, UserPlus, Crop } from "lucide-react";
-import { useUploadThing } from "@/lib/uploathing";
+import { useUploadThing } from "@/lib/uploadthing";
 import { api } from "convex/_generated/api";
 
 interface CropArea {
@@ -112,8 +112,9 @@ export default function NewAuthorPage() {
 		null,
 	);
 
-	// Convex mutation
+	// Convex mutations
 	const createAuthor = useMutation(api.authors.create);
+	const createFileRecord = useMutation(api.files.createFileRecord);
 
 	// UploadThing hook
 	const { startUpload, isUploading } = useUploadThing("authorImage", {
@@ -305,17 +306,33 @@ export default function NewAuthorPage() {
 
 				try {
 					const uploadResult = await startUpload([imageFile]);
-					setUploadProgress(70);
+					setUploadProgress(50);
 
 					if (uploadResult && uploadResult[0]) {
-						photoFileId = uploadResult[0].serverData?.fileKey;
+						const uploadedFile = uploadResult[0];
+						const serverData = uploadedFile.serverData;
+
+						// Create file record in Convex
+						if (serverData) {
+							toast.loading("Saving file metadata...", { id: toastId });
+							photoFileId = await createFileRecord({
+								storageId: serverData.fileKey,
+								url: serverData.fileUrl,
+								name: serverData.fileName,
+								type: serverData.fileType,
+								size: serverData.fileSize,
+								uploadedBy: serverData.uploadedBy,
+								entityType: "author_photo",
+							});
+							setUploadProgress(70);
+						}
 					}
 				} catch (uploadError) {
 					console.error("Image upload failed:", uploadError);
 					toast.warning("Image upload failed", {
 						id: toastId,
 						description:
-							"The author was created without a photo. You can add one later.",
+							"The author will be created without a photo. You can add one later.",
 					});
 				}
 			}
