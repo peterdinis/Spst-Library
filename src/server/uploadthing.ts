@@ -2,7 +2,7 @@ import { createUploadthing, type FileRouter } from "uploadthing/server";
 
 const f = createUploadthing();
 
-// FileRouter for author image uploads
+// FileRouter for author image uploads and book cover uploads
 export const uploadRouter = {
 	authorImage: f({
 		image: {
@@ -17,6 +17,31 @@ export const uploadRouter = {
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
 			console.log("Upload complete for userId:", metadata.userId);
+			console.log("File uploaded:", file);
+
+			// Return all necessary data for Convex integration
+			return {
+				uploadedBy: metadata.userId,
+				fileKey: file.key,
+				fileName: file.name,
+				fileUrl: file.url,
+				fileSize: file.size,
+				fileType: file.type,
+			};
+		}),
+	bookCover: f({
+		image: {
+			maxFileSize: "4MB",
+			maxFileCount: 1,
+		},
+	})
+		.middleware(async ({ req }) => {
+			// TODO: Add real authentication when available
+			// For now, we'll allow uploads without strict auth
+			return { userId: "anonymous" };
+		})
+		.onUploadComplete(async ({ metadata, file }) => {
+			console.log("Book cover upload complete for userId:", metadata.userId);
 			console.log("File uploaded:", file);
 
 			// Return all necessary data for Convex integration
