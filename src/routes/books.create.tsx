@@ -81,16 +81,13 @@ async function getCroppedImg(
 	);
 
 	return new Promise((resolve, reject) => {
-		canvas.toBlob(
-			(blob) => {
-				if (!blob) {
-					reject(new Error("Canvas is empty"));
-					return;
-				}
-				resolve(blob);
-			},
-			"image/jpeg",
-		);
+		canvas.toBlob((blob) => {
+			if (!blob) {
+				reject(new Error("Canvas is empty"));
+				return;
+			}
+			resolve(blob);
+		}, "image/jpeg");
 	});
 }
 
@@ -736,9 +733,7 @@ function CreateBookPage() {
 								<Label htmlFor="status">Stav</Label>
 								<Select
 									value={formData.status}
-									onValueChange={(value) =>
-										handleSelectChange("status", value)
-									}
+									onValueChange={(value) => handleSelectChange("status", value)}
 									disabled={isSubmitting || isUploading}
 								>
 									<SelectTrigger id="status">
