@@ -30,7 +30,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
-import { Loader2, X, BookOpen, Crop, Upload } from "lucide-react";
+import { Loader2, X, BookOpen, Crop } from "lucide-react";
 import { useUploadThing } from "@/lib/uploadthing";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
@@ -137,7 +137,7 @@ function CreateBookPage() {
 		paginationOpts: { numItems: 1000 },
 	});
 	const categoriesResult = useQuery(api.categories.getCategories, {
-		paginationOpts: { numItems: 1000 },
+		paginationOpts: { numItems: 1000, cursor: null },
 		isActive: true,
 	});
 
@@ -333,7 +333,7 @@ function CreateBookPage() {
 						// Create file record in Convex
 						if (serverData) {
 							toast.loading("Ukladanie metadát súboru...", { id: toastId });
-							const fileId = await createFileRecord({
+							await createFileRecord({
 								storageId: serverData.fileKey,
 								url: serverData.fileUrl,
 								name: serverData.fileName,
@@ -560,10 +560,11 @@ function CreateBookPage() {
 									Autor <span className="text-destructive">*</span>
 								</Label>
 								<Select
-									value={formData.authorId}
-									onValueChange={(value) =>
-										handleSelectChange("authorId", value)
-									}
+									key="author-select"
+									value={formData.authorId || undefined}
+									onValueChange={(value) => {
+										handleSelectChange("authorId", value);
+									}}
 									disabled={isSubmitting || isUploading}
 								>
 									<SelectTrigger id="authorId">
@@ -587,10 +588,11 @@ function CreateBookPage() {
 									Kategória <span className="text-destructive">*</span>
 								</Label>
 								<Select
-									value={formData.categoryId}
-									onValueChange={(value) =>
-										handleSelectChange("categoryId", value)
-									}
+									key="category-select"
+									value={formData.categoryId || undefined}
+									onValueChange={(value) => {
+										handleSelectChange("categoryId", value);
+									}}
 									disabled={isSubmitting || isUploading}
 								>
 									<SelectTrigger id="categoryId">
