@@ -301,123 +301,123 @@ function CreateBookPage() {
 	// Handle form submission
 	// In the handleSubmit function of CreateBookPage:
 
-// Handle form submission
-const handleSubmit = async (e: FormEvent) => {
-  e.preventDefault();
+	// Handle form submission
+	const handleSubmit = async (e: FormEvent) => {
+		e.preventDefault();
 
-  if (!validateForm()) {
-    return;
-  }
+		if (!validateForm()) {
+			return;
+		}
 
-  setIsSubmitting(true);
-  setUploadProgress(0);
-  let toastId: string | number | undefined;
+		setIsSubmitting(true);
+		setUploadProgress(0);
+		let toastId: string | number | undefined;
 
-  try {
-    toastId = toast.loading("Vytváranie knihy...");
+		try {
+			toastId = toast.loading("Vytváranie knihy...");
 
-    let coverFileId: Id<"files"> | undefined;
+			let coverFileId: Id<"files"> | undefined;
 
-    if (imageFile) {
-      setUploadProgress(30);
-      toast.loading("Nahrávanie obrázka...", { id: toastId });
+			if (imageFile) {
+				setUploadProgress(30);
+				toast.loading("Nahrávanie obrázka...", { id: toastId });
 
-      try {
-        const uploadResult = await startUpload([imageFile]);
-        setUploadProgress(50);
+				try {
+					const uploadResult = await startUpload([imageFile]);
+					setUploadProgress(50);
 
-        if (uploadResult && uploadResult[0]) {
-          const uploadedFile = uploadResult[0];
-          const serverData = uploadedFile.serverData;
+					if (uploadResult && uploadResult[0]) {
+						const uploadedFile = uploadResult[0];
+						const serverData = uploadedFile.serverData;
 
-          // Create file record in Convex
-          if (serverData) {
-            toast.loading("Ukladanie metadát súboru...", { id: toastId });
-            
-            const fileRecordId = await createFileRecord({
-              storageId: serverData.fileKey,
-              url: serverData.fileUrl,
-              name: serverData.fileName,
-              type: serverData.fileType,
-              size: serverData.fileSize,
-              uploadedBy: serverData.uploadedBy,
-              entityType: "book_cover",
-            });
-            
-            setUploadProgress(70);
+						// Create file record in Convex
+						if (serverData) {
+							toast.loading("Ukladanie metadát súboru...", { id: toastId });
 
-            // Store the file ID
-            coverFileId = fileRecordId;
-          }
-        }
-      } catch (uploadError) {
-        console.error("Image upload failed:", uploadError);
-        toast.warning("Nahrávanie obrázka zlyhalo", {
-          id: toastId,
-          description:
-            "Kniha bude vytvorená bez obrázka. Môžete ho pridať neskôr.",
-        });
-      }
-    }
+							const fileRecordId = await createFileRecord({
+								storageId: serverData.fileKey,
+								url: serverData.fileUrl,
+								name: serverData.fileName,
+								type: serverData.fileType,
+								size: serverData.fileSize,
+								uploadedBy: serverData.uploadedBy,
+								entityType: "book_cover",
+							});
 
-    setUploadProgress(90);
-    toast.loading("Ukladanie informácií o knihe...", { id: toastId });
+							setUploadProgress(70);
 
-    // Parse tags
-    const tags = formData.tags
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag.length > 0);
+							// Store the file ID
+							coverFileId = fileRecordId;
+						}
+					}
+				} catch (uploadError) {
+					console.error("Image upload failed:", uploadError);
+					toast.warning("Nahrávanie obrázka zlyhalo", {
+						id: toastId,
+						description:
+							"Kniha bude vytvorená bez obrázka. Môžete ho pridať neskôr.",
+					});
+				}
+			}
 
-    // Get the author ID as Id<"authors"> and category ID as Id<"categories">
-    const authorId = formData.authorId as Id<"authors">;
-    const categoryId = formData.categoryId as Id<"categories">;
+			setUploadProgress(90);
+			toast.loading("Ukladanie informácií o knihe...", { id: toastId });
 
-    const bookId = await createBook({
-      title: formData.title,
-      authorId: authorId,
-      categoryId: categoryId,
-      isbn: formData.isbn || undefined,
-      description: formData.description || undefined,
-      coverFileId: coverFileId, // Len file ID, nie coverImageUrl
-      publishedYear: formData.publishedYear
-        ? parseInt(formData.publishedYear)
-        : undefined,
-      publisher: formData.publisher || undefined,
-      pages: formData.pages ? parseInt(formData.pages) : undefined,
-      language: formData.language || undefined,
-      totalCopies: parseInt(formData.totalCopies),
-      location: formData.location || undefined,
-      tags: tags.length > 0 ? tags : undefined,
-      status: formData.status,
-    });
+			// Parse tags
+			const tags = formData.tags
+				.split(",")
+				.map((tag) => tag.trim())
+				.filter((tag) => tag.length > 0);
 
-    setUploadProgress(100);
+			// Get the author ID as Id<"authors"> and category ID as Id<"categories">
+			const authorId = formData.authorId as Id<"authors">;
+			const categoryId = formData.categoryId as Id<"categories">;
 
-    toast.success("Kniha bola úspešne vytvorená", {
-      id: toastId,
-      description: `${formData.title} bola pridaná do knižnice.`,
-      action: {
-        label: "Zobraziť",
-        onClick: () => navigate({ to: `/books/${bookId}` }),
-      },
-    });
+			const bookId = await createBook({
+				title: formData.title,
+				authorId: authorId,
+				categoryId: categoryId,
+				isbn: formData.isbn || undefined,
+				description: formData.description || undefined,
+				coverFileId: coverFileId, // Len file ID, nie coverImageUrl
+				publishedYear: formData.publishedYear
+					? parseInt(formData.publishedYear)
+					: undefined,
+				publisher: formData.publisher || undefined,
+				pages: formData.pages ? parseInt(formData.pages) : undefined,
+				language: formData.language || undefined,
+				totalCopies: parseInt(formData.totalCopies),
+				location: formData.location || undefined,
+				tags: tags.length > 0 ? tags : undefined,
+				status: formData.status,
+			});
 
-    setTimeout(() => {
-      navigate({ to: "/books" });
-    }, 2000);
-  } catch (error: any) {
-    console.error("Error creating book:", error);
+			setUploadProgress(100);
 
-    toast.error("Chyba pri vytváraní knihy", {
-      id: toastId,
-      description: error.message || "Skúste to znova",
-    });
-  } finally {
-    setIsSubmitting(false);
-    setUploadProgress(0);
-  }
-};
+			toast.success("Kniha bola úspešne vytvorená", {
+				id: toastId,
+				description: `${formData.title} bola pridaná do knižnice.`,
+				action: {
+					label: "Zobraziť",
+					onClick: () => navigate({ to: `/books/${bookId}` }),
+				},
+			});
+
+			setTimeout(() => {
+				navigate({ to: "/books" });
+			}, 2000);
+		} catch (error: any) {
+			console.error("Error creating book:", error);
+
+			toast.error("Chyba pri vytváraní knihy", {
+				id: toastId,
+				description: error.message || "Skúste to znova",
+			});
+		} finally {
+			setIsSubmitting(false);
+			setUploadProgress(0);
+		}
+	};
 
 	return (
 		<div className="container max-w-4xl mx-auto py-8">
