@@ -10,7 +10,7 @@ export const uploadRouter = {
 			maxFileCount: 1,
 		},
 	})
-		.middleware(async ({ req }) => {
+		.middleware(async () => {
 			// TODO: Add real authentication when available
 			// For now, we'll allow uploads without strict auth
 			return { userId: "anonymous" };
@@ -33,7 +33,7 @@ export const uploadRouter = {
 			maxFileCount: 1,
 		},
 	})
-		.middleware(async ({ req }) => {
+		.middleware(async () => {
 			// TODO: Add real authentication when available
 			// For now, we'll allow uploads without strict auth
 			return { userId: "anonymous" };

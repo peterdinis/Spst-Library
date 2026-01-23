@@ -144,11 +144,11 @@ function CreateBookPage() {
 
 	// UploadThing hook
 	const { startUpload, isUploading } = useUploadThing("bookCover", {
-		onClientUploadComplete: (res) => {
+		onClientUploadComplete: () => {
 			toast.success("Upload sa podaril", {
 			});
 		},
-		onUploadError: (error) => {
+		onUploadError: () => {
 			toast.error("Upload zlyhal", {
 				description: "Nepodarilo sa nahrať obrázok. Skúste to znova.",
 			});
