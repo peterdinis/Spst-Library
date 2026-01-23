@@ -23,6 +23,7 @@ export const create = mutation({
     isbn: v.optional(v.string()),
     description: v.optional(v.string()),
     coverImageUrl: v.optional(v.string()),
+    coverFileId: v.optional(v.id("files")), // ADD THIS LINE
     publishedYear: v.optional(v.number()),
     publisher: v.optional(v.string()),
     pages: v.optional(v.number()),
@@ -46,6 +47,7 @@ export const create = mutation({
       ...args,
       authorId: args.authorId as string,
       categoryId: args.categoryId as string,
+      coverFileId: args.coverFileId as string, // ADD THIS
     };
 
     // Validácia vstupu
@@ -75,12 +77,14 @@ export const create = mutation({
       tags: validatedData.tags,
     });
     
-    // Vytvoriť knihu - konvertovať string ID späť na Convex ID
+    // Vytvoriť knihu
     const bookId = await ctx.db.insert("books", {
       title: validatedData.title,
       authorId: args.authorId,
       isbn: validatedData.isbn,
       description: validatedData.description,
+      //coverImageUrl: validatedData.coverImageUrl,
+      coverFileId: args.coverFileId, // ADD THIS
       publishedYear: validatedData.publishedYear,
       publisher: validatedData.publisher,
       pages: validatedData.pages,
@@ -95,6 +99,14 @@ export const create = mutation({
       updatedAt: now,
       searchableText,
     });
+
+    // Update file entity reference if cover was provided
+    if (args.coverFileId) {
+      await ctx.db.patch(args.coverFileId, {
+        entityType: "book_cover",
+        entityId: bookId,
+      });
+    }
 
     // Aktualizovať počet kníh autora
     const authorBooks = await ctx.db
