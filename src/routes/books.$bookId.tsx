@@ -38,21 +38,9 @@ function BookDetailPage() {
 	const { bookId } = Route.useParams();
 	const navigate = useNavigate();
 
-	// Skontrolovať, či ID vyzerá ako validné Convex ID
-	const isValidConvexId = (id: string): id is Id<"books"> => {
-		// Convex ID sú zvyčajne v tvare "tableName:someRandomString"
-		// Toto je len základná kontrola
-		return id.includes(":");
-	};
-
-	// Skúsiť konvertovať na Convex ID, alebo použiť undefined ak nie je validné
-	const convexBookId = isValidConvexId(bookId)
-		? (bookId as Id<"books">)
-		: undefined;
-
 	const book = useQuery(
 		api.books.getById,
-		convexBookId ? { id: convexBookId } : "skip",
+		{ id: bookId as Id<"books"> },
 	);
 
 	const containerVariants = {
@@ -170,20 +158,9 @@ function BookDetailPage() {
 					>
 						<Card className="overflow-hidden">
 							<div className="aspect-3/4 relative bg-linear-to-br from-muted/50 to-muted">
-								{book.coverImageUrl ? (
-									<motion.img
-										initial={{ opacity: 0 }}
-										animate={{ opacity: 1 }}
-										transition={{ delay: 0.3 }}
-										src={book.coverImageUrl}
-										alt={book.title}
-										className="w-full h-full object-cover"
-									/>
-								) : (
 									<div className="w-full h-full flex items-center justify-center">
 										<BookOpen className="h-24 w-24 text-muted-foreground/50" />
 									</div>
-								)}
 								<div className="absolute top-4 right-4">
 									<Badge
 										className={`${
