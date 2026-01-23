@@ -9,7 +9,7 @@ export const BookSchema = z.object({
   author: z.string().optional(), 
   isbn: z.string().optional(),
   description: z.string().max(5000, "Popis je príliš dlhý").optional(),
-  coverImageUrl: z.string().url("Neplatná URL adresa").optional().or(z.literal("")),
+  coverFileId: z.custom<Id<"files">>().optional(), // Zmenené z coverImageUrl na coverFileId
   publishedYear: z.number().int().min(1000).max(new Date().getFullYear() + 1).optional(),
   publisher: z.string().max(200, "Vydavateľ je príliš dlhý").optional(),
   pages: z.number().int().positive("Počet strán musí byť kladné číslo").optional(),
@@ -33,11 +33,16 @@ export const CreateBookSchema = BookSchema.omit({
 }).extend({
   tags: z.array(z.string()).default([]),
   status: BookStatus.default("available"),
+  // Pre validáciu v konvexe potrebujeme string, nie Id<"files">
+  coverFileId: z.string().optional(), // Zmenené pre validáciu
 });
 
 export const UpdateBookSchema = BookSchema.partial().omit({
   addedAt: true,
   searchableText: true,
+}).extend({
+  // Pre validáciu v konvexe potrebujeme string pre optional polia
+  coverFileId: z.string().optional(), // Zmenené pre validáciu
 });
 
 export const GetBooksQuerySchema = z.object({

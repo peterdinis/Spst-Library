@@ -40,6 +40,8 @@ function BookDetailPage() {
 
 	const book = useQuery(api.books.getById, { id: bookId as Id<"books"> });
 
+	console.log("Book detail page rendered with book:", book);
+
 	const containerVariants = {
 		hidden: { opacity: 0 },
 		visible: {
@@ -155,14 +157,19 @@ function BookDetailPage() {
 					>
 						<Card className="overflow-hidden">
 							<div className="aspect-3/4 relative bg-linear-to-br from-muted/50 to-muted">
-								<div className="w-full h-full flex items-center justify-center">
-									<BookOpen className="h-24 w-24 text-muted-foreground/50" />
-								</div>
+								{book.coverFileId ? (
+									<div className="w-full h-full flex items-center justify-center">
+										<img loading="lazy" src={book.coverFile?.url!} />
+									</div>
+								) : (
+									<div className="w-full h-full flex items-center justify-center">
+										<BookOpen className="h-24 w-24 text-muted-foreground/50" />
+									</div>
+								)}
 								<div className="absolute top-4 right-4">
 									<Badge
-										className={`${
-											statusColors[book.status]
-										} font-semibold px-3 py-1`}
+										className={`${statusColors[book.status]
+											} font-semibold px-3 py-1`}
 									>
 										{statusLabels[book.status]}
 									</Badge>
