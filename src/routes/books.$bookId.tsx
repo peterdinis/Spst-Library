@@ -38,10 +38,7 @@ function BookDetailPage() {
 	const { bookId } = Route.useParams();
 	const navigate = useNavigate();
 
-	const book = useQuery(
-		api.books.getById,
-		{ id: bookId as Id<"books"> },
-	);
+	const book = useQuery(api.books.getById, { id: bookId as Id<"books"> });
 
 	const containerVariants = {
 		hidden: { opacity: 0 },
@@ -158,9 +155,9 @@ function BookDetailPage() {
 					>
 						<Card className="overflow-hidden">
 							<div className="aspect-3/4 relative bg-linear-to-br from-muted/50 to-muted">
-									<div className="w-full h-full flex items-center justify-center">
-										<BookOpen className="h-24 w-24 text-muted-foreground/50" />
-									</div>
+								<div className="w-full h-full flex items-center justify-center">
+									<BookOpen className="h-24 w-24 text-muted-foreground/50" />
+								</div>
 								<div className="absolute top-4 right-4">
 									<Badge
 										className={`${
