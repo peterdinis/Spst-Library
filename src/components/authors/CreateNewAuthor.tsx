@@ -118,11 +118,7 @@ export default function NewAuthorPage() {
 
 	// UploadThing hook
 	const { startUpload, isUploading } = useUploadThing("authorImage", {
-		onClientUploadComplete: (res) => {
-			console.log("Upload complete", res);
-		},
-		onUploadError: (error) => {
-			console.error("Upload error:", error);
+		onUploadError: () => {
 			toast.error("Upload failed", {
 				description: "Failed to upload image. Please try again.",
 			});
@@ -199,9 +195,8 @@ export default function NewAuthorPage() {
 			setShowCropper(false);
 			setTempImageSrc(null);
 		} catch (error) {
-			console.error("Error cropping image:", error);
 			toast.error("Failed to crop image", {
-				description: "Please try again",
+				description: "Please try again" + error,
 			});
 		}
 	};
@@ -328,11 +323,10 @@ export default function NewAuthorPage() {
 						}
 					}
 				} catch (uploadError) {
-					console.error("Image upload failed:", uploadError);
 					toast.warning("Image upload failed", {
 						id: toastId,
 						description:
-							"The author will be created without a photo. You can add one later.",
+							"The author will be created without a photo. You can add one later." + uploadError,
 					});
 				}
 			}
@@ -374,8 +368,6 @@ export default function NewAuthorPage() {
 				navigate({ to: "/authors" });
 			}, 2000);
 		} catch (error: any) {
-			console.error("Error creating author:", error);
-
 			toast.error("Error creating author", {
 				id: toastId,
 				description: error.message || "Please try again",
