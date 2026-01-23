@@ -40,8 +40,6 @@ function BookDetailPage() {
 
 	const book = useQuery(api.books.getById, { id: bookId as Id<"books"> });
 
-	console.log("Book detail page rendered with book:", book);
-
 	const containerVariants = {
 		hidden: { opacity: 0 },
 		visible: {

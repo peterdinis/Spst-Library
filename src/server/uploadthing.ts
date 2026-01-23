@@ -16,8 +16,6 @@ export const uploadRouter = {
 			return { userId: "anonymous" };
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
-			console.log("Upload complete for userId:", metadata.userId);
-			console.log("File uploaded:", file);
 
 			// Return all necessary data for Convex integration
 			return {
@@ -41,8 +39,6 @@ export const uploadRouter = {
 			return { userId: "anonymous" };
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
-			console.log("Book cover upload complete for userId:", metadata.userId);
-			console.log("File uploaded:", file);
 
 			// Return all necessary data for Convex integration
 			return {

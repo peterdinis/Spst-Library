@@ -145,10 +145,10 @@ function CreateBookPage() {
 	// UploadThing hook
 	const { startUpload, isUploading } = useUploadThing("bookCover", {
 		onClientUploadComplete: (res) => {
-			console.log("Upload complete", res);
+			toast.success("Upload sa podaril", {
+			});
 		},
 		onUploadError: (error) => {
-			console.error("Upload error:", error);
 			toast.error("Upload zlyhal", {
 				description: "Nepodarilo sa nahrať obrázok. Skúste to znova.",
 			});
@@ -238,7 +238,6 @@ function CreateBookPage() {
 			setShowCropper(false);
 			setTempImageSrc(null);
 		} catch (error) {
-			console.error("Error cropping image:", error);
 			toast.error("Nepodarilo sa orezáť obrázok", {
 				description: "Skúste to znova",
 			});
@@ -299,9 +298,6 @@ function CreateBookPage() {
 	};
 
 	// Handle form submission
-	// In the handleSubmit function of CreateBookPage:
-
-	// Handle form submission
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
 
@@ -351,7 +347,6 @@ function CreateBookPage() {
 						}
 					}
 				} catch (uploadError) {
-					console.error("Image upload failed:", uploadError);
 					toast.warning("Nahrávanie obrázka zlyhalo", {
 						id: toastId,
 						description:
@@ -379,7 +374,7 @@ function CreateBookPage() {
 				categoryId: categoryId,
 				isbn: formData.isbn || undefined,
 				description: formData.description || undefined,
-				coverFileId: coverFileId, // Len file ID, nie coverImageUrl
+				coverFileId: coverFileId,
 				publishedYear: formData.publishedYear
 					? parseInt(formData.publishedYear)
 					: undefined,
@@ -407,8 +402,6 @@ function CreateBookPage() {
 				navigate({ to: "/books" });
 			}, 2000);
 		} catch (error: any) {
-			console.error("Error creating book:", error);
-
 			toast.error("Chyba pri vytváraní knihy", {
 				id: toastId,
 				description: error.message || "Skúste to znova",
@@ -566,7 +559,6 @@ function CreateBookPage() {
 									Autor <span className="text-destructive">*</span>
 								</Label>
 								<Select
-									key="author-select"
 									value={formData.authorId || undefined}
 									onValueChange={(value) => {
 										handleSelectChange("authorId", value);
@@ -594,7 +586,6 @@ function CreateBookPage() {
 									Kategória <span className="text-destructive">*</span>
 								</Label>
 								<Select
-									key="category-select"
 									value={formData.categoryId || undefined}
 									onValueChange={(value) => {
 										handleSelectChange("categoryId", value);
