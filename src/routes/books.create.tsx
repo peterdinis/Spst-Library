@@ -316,7 +316,6 @@ const handleSubmit = async (e: FormEvent) => {
   try {
     toastId = toast.loading("Vytváranie knihy...");
 
-    let coverImageUrl: string | undefined;
     let coverFileId: Id<"files"> | undefined;
 
     if (imageFile) {
@@ -335,8 +334,6 @@ const handleSubmit = async (e: FormEvent) => {
           if (serverData) {
             toast.loading("Ukladanie metadát súboru...", { id: toastId });
             
-            // IMPORTANT: Use the correct mutation for creating file record
-            // Based on your authors code, it should be:
             const fileRecordId = await createFileRecord({
               storageId: serverData.fileKey,
               url: serverData.fileUrl,
@@ -349,9 +346,8 @@ const handleSubmit = async (e: FormEvent) => {
             
             setUploadProgress(70);
 
-            // Store both the file ID and URL
+            // Store the file ID
             coverFileId = fileRecordId;
-            coverImageUrl = serverData.fileUrl;
           }
         }
       } catch (uploadError) {
@@ -383,10 +379,7 @@ const handleSubmit = async (e: FormEvent) => {
       categoryId: categoryId,
       isbn: formData.isbn || undefined,
       description: formData.description || undefined,
-      // Pass the file ID if available, otherwise pass undefined
-      // Note: You need to update your books.create mutation to accept coverFileId
-      coverFileId: coverFileId, // NEW: Pass file ID
-      coverImageUrl: coverImageUrl, // Keep URL for backward compatibility
+      coverFileId: coverFileId, // Len file ID, nie coverImageUrl
       publishedYear: formData.publishedYear
         ? parseInt(formData.publishedYear)
         : undefined,

@@ -14,6 +14,14 @@ import { validateWithZod, createSearchableText } from "helpers/backendHelpers";
 interface BookWithRelations extends Doc<"books"> {
   author: Doc<"authors">;
   category: Doc<"categories">;
+  coverFile: Doc<"files"> | null; // Pridané
+}
+
+// Pridané nové rozhranie pre getAll query
+interface BookWithAllRelations extends Doc<"books"> {
+  author: Doc<"authors">;
+  category: Doc<"categories">;
+  coverFile: Doc<"files"> | null;
 }
 
 export const create = mutation({
@@ -22,8 +30,7 @@ export const create = mutation({
     authorId: v.id("authors"),
     isbn: v.optional(v.string()),
     description: v.optional(v.string()),
-    coverImageUrl: v.optional(v.string()),
-    coverFileId: v.optional(v.id("files")), // ADD THIS LINE
+    coverFileId: v.optional(v.id("files")),
     publishedYear: v.optional(v.number()),
     publisher: v.optional(v.string()),
     pages: v.optional(v.number()),
@@ -47,7 +54,7 @@ export const create = mutation({
       ...args,
       authorId: args.authorId as string,
       categoryId: args.categoryId as string,
-      coverFileId: args.coverFileId as string, // ADD THIS
+      coverFileId: args.coverFileId as string,
     };
 
     // Validácia vstupu
@@ -83,8 +90,7 @@ export const create = mutation({
       authorId: args.authorId,
       isbn: validatedData.isbn,
       description: validatedData.description,
-      //coverImageUrl: validatedData.coverImageUrl,
-      coverFileId: args.coverFileId, // ADD THIS
+      coverFileId: args.coverFileId,
       publishedYear: validatedData.publishedYear,
       publisher: validatedData.publisher,
       pages: validatedData.pages,
@@ -141,7 +147,7 @@ export const update = mutation({
     authorId: v.optional(v.id("authors")),
     isbn: v.optional(v.string()),
     description: v.optional(v.string()),
-    coverImageUrl: v.optional(v.string()),
+    coverFileId: v.optional(v.id("files")),
     publishedYear: v.optional(v.number()),
     publisher: v.optional(v.string()),
     pages: v.optional(v.number()),
@@ -176,6 +182,9 @@ export const update = mutation({
     }
     if (updateData.categoryId) {
       validationData.categoryId = updateData.categoryId as string;
+    }
+    if (updateData.coverFileId) {
+      validationData.coverFileId = updateData.coverFileId as string;
     }
     
     // Validácia vstupu
@@ -266,7 +275,7 @@ export const update = mutation({
     if (validatedData.authorId !== undefined) updateFields.authorId = validatedData.authorId as Id<"authors">;
     if (validatedData.isbn !== undefined) updateFields.isbn = validatedData.isbn;
     if (validatedData.description !== undefined) updateFields.description = validatedData.description;
-    if (validatedData.coverImageUrl !== undefined) updateFields.coverImageUrl = validatedData.coverImageUrl;
+    if (validatedData.coverFileId !== undefined) updateFields.coverFileId = validatedData.coverFileId as Id<"files">;
     if (validatedData.publishedYear !== undefined) updateFields.publishedYear = validatedData.publishedYear;
     if (validatedData.publisher !== undefined) updateFields.publisher = validatedData.publisher;
     if (validatedData.pages !== undefined) updateFields.pages = validatedData.pages;
@@ -279,6 +288,25 @@ export const update = mutation({
     if (validatedData.status !== undefined) updateFields.status = validatedData.status;
     
     await ctx.db.patch(id, updateFields);
+
+    // Update file entity reference if cover file changed
+    if (validatedData.coverFileId !== undefined) {
+      // Remove old file reference
+      if (existingBook.coverFileId && existingBook.coverFileId !== validatedData.coverFileId) {
+        await ctx.db.patch(existingBook.coverFileId, {
+          entityType: "other",
+          entityId: undefined,
+        });
+      }
+
+      // Add new file reference
+      if (validatedData.coverFileId) {
+        await ctx.db.patch(validatedData.coverFileId as Id<"files">, {
+          entityType: "book_cover",
+          entityId: id,
+        });
+      }
+    }
     
     return id;
   },
@@ -293,9 +321,10 @@ export const getById = query({
       const book = await ctx.db.get(bookId);
       if (!book) return null;
       
-      const [author, category] = await Promise.all([
+      const [author, category, coverFile] = await Promise.all([
         ctx.db.get(book.authorId),
         ctx.db.get(book.categoryId),
+        book.coverFileId ? ctx.db.get(book.coverFileId) : Promise.resolve(null),
       ]);
       
       if (!author || !category) {
@@ -306,11 +335,40 @@ export const getById = query({
         ...book,
         author,
         category,
+        coverFile,
       };
     } catch (error) {
       // Ak nie je validné Convex ID, vrátiť null
       return null;
     }
+  },
+});
+
+export const getWithCover = query({
+  args: { id: v.id("books") },
+  handler: async (ctx, args) => {
+    const book = await ctx.db.get(args.id);
+    if (!book) {
+      return null;
+    }
+
+    // Fetch author, category and cover file if it exists
+    const [author, category, coverFile] = await Promise.all([
+      ctx.db.get(book.authorId),
+      ctx.db.get(book.categoryId),
+      book.coverFileId ? ctx.db.get(book.coverFileId) : Promise.resolve(null),
+    ]);
+
+    if (!author || !category) {
+      return null;
+    }
+
+    return {
+      ...book,
+      author,
+      category,
+      coverFile,
+    };
   },
 });
 
@@ -330,7 +388,7 @@ export const getAll = query({
     limit: v.optional(v.number()),
     offset: v.optional(v.number()),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<BookWithAllRelations[]> => { // Zmenený return type
     // Pripraviť query parametre pre validáciu
     const validationData: Record<string, unknown> = {};
     if (args.categoryId) validationData.categoryId = args.categoryId as string;
@@ -388,12 +446,13 @@ export const getAll = query({
     const end = start + (queryParams.limit || 20);
     const paginatedBooks = books.slice(start, end);
     
-    // Získať autorov a kategórie
-    const booksWithRelations = await Promise.all(
+    // Získať autorov a kategórie (a cover files)
+    const booksWithRelations: BookWithAllRelations[] = await Promise.all(
       paginatedBooks.map(async (book) => {
-        const [author, category] = await Promise.all([
+        const [author, category, coverFile] = await Promise.all([
           ctx.db.get(book.authorId),
           ctx.db.get(book.categoryId),
+          book.coverFileId ? ctx.db.get(book.coverFileId) : Promise.resolve(null),
         ]);
         
         return {
@@ -416,6 +475,7 @@ export const getAll = query({
             updatedAt: 0,
             searchableText: "",
           } as Doc<"categories">,
+          coverFile,
         };
       })
     );
@@ -455,6 +515,14 @@ export const remove = mutation({
       bookCount: Math.max(0, categoryBooks.length - 1),
       updatedAt: now,
     });
+    
+    // Remove file entity reference if cover exists
+    if (book.coverFileId) {
+      await ctx.db.patch(book.coverFileId, {
+        entityType: "other",
+        entityId: undefined,
+      });
+    }
     
     // Odstrániť knihu
     await ctx.db.delete(args.id);
