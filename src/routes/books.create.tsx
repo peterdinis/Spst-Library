@@ -145,8 +145,7 @@ function CreateBookPage() {
 	// UploadThing hook
 	const { startUpload, isUploading } = useUploadThing("bookCover", {
 		onClientUploadComplete: () => {
-			toast.success("Upload sa podaril", {
-			});
+			toast.success("Upload sa podaril", {});
 		},
 		onUploadError: () => {
 			toast.error("Upload zlyhal", {
