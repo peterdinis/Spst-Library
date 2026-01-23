@@ -40,8 +40,6 @@ function BookDetailPage() {
 
 	const book = useQuery(api.books.getById, { id: bookId as Id<"books"> });
 
-	console.log("Book detail page rendered with book:", book);
-
 	const containerVariants = {
 		hidden: { opacity: 0 },
 		visible: {
@@ -168,8 +166,9 @@ function BookDetailPage() {
 								)}
 								<div className="absolute top-4 right-4">
 									<Badge
-										className={`${statusColors[book.status]
-											} font-semibold px-3 py-1`}
+										className={`${
+											statusColors[book.status]
+										} font-semibold px-3 py-1`}
 									>
 										{statusLabels[book.status]}
 									</Badge>
