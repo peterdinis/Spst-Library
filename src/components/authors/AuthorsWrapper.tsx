@@ -25,7 +25,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Search, BookOpen, MapPin, X, Loader2} from "lucide-react";
+import { Search, BookOpen, MapPin, X, Loader2 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "convex/_generated/api";

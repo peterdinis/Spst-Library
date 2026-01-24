@@ -134,20 +134,22 @@ function BookDetailPage() {
 		},
 	};
 
-	const [reservationStep, setReservationStep] = useState<"form" | "success">("form");
+	const [reservationStep, setReservationStep] = useState<"form" | "success">(
+		"form",
+	);
 	const [isLoading, setIsLoading] = useState(false);
 
 	const handleReservationSubmit = async () => {
 		setIsLoading(true);
 		// Simulácia API volania
-		await new Promise(resolve => setTimeout(resolve, 1500));
-		
+		await new Promise((resolve) => setTimeout(resolve, 1500));
+
 		// Tu by bola skutočná logika na odoslanie rezervácie
 		console.log("Reservation data:", reservationData);
-		
+
 		setIsLoading(false);
 		setReservationStep("success");
-		
+
 		// Reset formulára po 3 sekundách
 		setTimeout(() => {
 			setIsReservationOpen(false);
@@ -256,7 +258,11 @@ function BookDetailPage() {
 							<div className="aspect-3/4 relative bg-linear-to-br from-muted/50 to-muted">
 								{book.coverFileId ? (
 									<div className="w-full h-full flex items-center justify-center">
-										<img loading="lazy" src={book.coverFile?.url!} alt={book.title} />
+										<img
+											loading="lazy"
+											src={book.coverFile?.url!}
+											alt={book.title}
+										/>
 									</div>
 								) : (
 									<div className="w-full h-full flex items-center justify-center">
@@ -324,7 +330,10 @@ function BookDetailPage() {
 																	</DialogTitle>
 																	<DialogDescription className="pt-2">
 																		Vyplňte formulár pre rezerváciu knihy "
-																		<span className="font-semibold">{book.title}</span>"
+																		<span className="font-semibold">
+																			{book.title}
+																		</span>
+																		"
 																	</DialogDescription>
 																</DialogHeader>
 
@@ -406,10 +415,18 @@ function BookDetailPage() {
 																					<SelectValue placeholder="Vyberte dobu výpožičky" />
 																				</SelectTrigger>
 																				<SelectContent>
-																					<SelectItem value="3">3 dni</SelectItem>
-																					<SelectItem value="7">7 dní</SelectItem>
-																					<SelectItem value="14">14 dní</SelectItem>
-																					<SelectItem value="30">30 dní</SelectItem>
+																					<SelectItem value="3">
+																						3 dni
+																					</SelectItem>
+																					<SelectItem value="7">
+																						7 dní
+																					</SelectItem>
+																					<SelectItem value="14">
+																						14 dní
+																					</SelectItem>
+																					<SelectItem value="30">
+																						30 dní
+																					</SelectItem>
 																				</SelectContent>
 																			</Select>
 																		</div>
@@ -462,7 +479,9 @@ function BookDetailPage() {
 																			<Button
 																				variant="outline"
 																				className="flex-1"
-																				onClick={() => setIsReservationOpen(false)}
+																				onClick={() =>
+																					setIsReservationOpen(false)
+																				}
 																			>
 																				Zrušiť
 																			</Button>
@@ -491,7 +510,9 @@ function BookDetailPage() {
 														) : (
 															// Úspešná rezervácia
 															<motion.div
-																variants={successVariants as unknown as Variants}
+																variants={
+																	successVariants as unknown as Variants
+																}
 																initial="hidden"
 																animate="visible"
 																className="p-8 text-center"
@@ -513,19 +534,27 @@ function BookDetailPage() {
 																<DialogTitle className="text-2xl font-bold mb-2">
 																	Rezervácia bola úspešná!
 																</DialogTitle>
-																
+
 																<DialogDescription className="mb-6">
-																	Kniha "<span className="font-semibold">{book.title}</span>" 
-																	bola rezervovaná na vaše meno.
+																	Kniha "
+																	<span className="font-semibold">
+																		{book.title}
+																	</span>
+																	" bola rezervovaná na vaše meno.
 																</DialogDescription>
 
 																<div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
 																	<p className="text-sm text-green-800">
-																		Potvrdenie o rezervácii bolo odoslané na email 
-																		<span className="font-semibold"> {reservationData.email}</span>
+																		Potvrdenie o rezervácii bolo odoslané na
+																		email
+																		<span className="font-semibold">
+																			{" "}
+																			{reservationData.email}
+																		</span>
 																	</p>
 																	<p className="text-xs text-green-600 mt-2">
-																		Rezerváciu si môžete vyzdvihnúť v priebehu 24 hodín.
+																		Rezerváciu si môžete vyzdvihnúť v priebehu
+																		24 hodín.
 																	</p>
 																</div>
 

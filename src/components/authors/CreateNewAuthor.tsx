@@ -326,7 +326,8 @@ export default function NewAuthorPage() {
 					toast.warning("Image upload failed", {
 						id: toastId,
 						description:
-							"The author will be created without a photo. You can add one later." + uploadError,
+							"The author will be created without a photo. You can add one later." +
+							uploadError,
 					});
 				}
 			}

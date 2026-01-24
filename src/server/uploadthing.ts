@@ -16,7 +16,6 @@ export const uploadRouter = {
 			return { userId: "anonymous" };
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
-
 			// Return all necessary data for Convex integration
 			return {
 				uploadedBy: metadata.userId,
@@ -39,7 +38,6 @@ export const uploadRouter = {
 			return { userId: "anonymous" };
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
-
 			// Return all necessary data for Convex integration
 			return {
 				uploadedBy: metadata.userId,
