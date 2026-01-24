@@ -391,8 +391,6 @@ const CreateCategoryForm: FC = () => {
 				setIsSubmitted(true);
 			}
 		} catch (error: any) {
-			console.error("Error creating category:", error);
-
 			if (error.message?.includes("already exists")) {
 				setErrors((prev) => ({
 					...prev,
