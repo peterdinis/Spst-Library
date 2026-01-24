@@ -145,10 +145,10 @@ function BookDetailPage() {
 
 	const handleReservationSubmit = async () => {
 		setIsLoading(true);
-		
+
 		// Získanie finálnej doby výpožičky
-		const finalPeriod = customPeriodEnabled 
-			? parseInt(reservationData.customPeriod) 
+		const finalPeriod = customPeriodEnabled
+			? parseInt(reservationData.customPeriod)
 			: parseInt(reservationData.period);
 
 		// Simulácia API volania
@@ -158,7 +158,7 @@ function BookDetailPage() {
 		console.log("Reservation data:", {
 			...reservationData,
 			period: finalPeriod,
-			isCustomPeriod: customPeriodEnabled
+			isCustomPeriod: customPeriodEnabled,
 		});
 
 		setIsLoading(false);
@@ -187,7 +187,7 @@ function BookDetailPage() {
 			setReservationData({ ...reservationData, customPeriod: "" });
 			return;
 		}
-		
+
 		if (numValue < 1) {
 			setReservationData({ ...reservationData, customPeriod: "1" });
 		} else if (numValue > 365) {
@@ -198,8 +198,8 @@ function BookDetailPage() {
 	};
 
 	const getReservationPeriod = () => {
-		return customPeriodEnabled 
-			? reservationData.customPeriod 
+		return customPeriodEnabled
+			? reservationData.customPeriod
 			: reservationData.period;
 	};
 
@@ -453,7 +453,9 @@ function BookDetailPage() {
 																					<CalendarRange className="h-4 w-4 text-muted-foreground" />
 																					<Switch
 																						checked={customPeriodEnabled}
-																						onCheckedChange={setCustomPeriodEnabled}
+																						onCheckedChange={
+																							setCustomPeriodEnabled
+																						}
 																					/>
 																					<span className="text-sm text-muted-foreground">
 																						Vlastná doba
@@ -502,9 +504,13 @@ function BookDetailPage() {
 																							type="number"
 																							min="1"
 																							max="365"
-																							value={reservationData.customPeriod}
+																							value={
+																								reservationData.customPeriod
+																							}
 																							onChange={(e) =>
-																								handleCustomPeriodChange(e.target.value)
+																								handleCustomPeriodChange(
+																									e.target.value,
+																								)
 																							}
 																							className="flex-1"
 																						/>
@@ -585,9 +591,11 @@ function BookDetailPage() {
 																					isLoading ||
 																					!reservationData.name ||
 																					!reservationData.email ||
-																					(customPeriodEnabled && 
-																						(!reservationData.customPeriod || 
-																						 parseInt(reservationData.customPeriod) < 1))
+																					(customPeriodEnabled &&
+																						(!reservationData.customPeriod ||
+																							parseInt(
+																								reservationData.customPeriod,
+																							) < 1))
 																				}
 																			>
 																				{isLoading ? (
@@ -656,8 +664,9 @@ function BookDetailPage() {
 																		</p>
 																	</div>
 																	<p className="text-xs text-green-600 mt-3">
-																		Potvrdenie o rezervácii bolo odoslané na email.
-																		Rezerváciu si môžete vyzdvihnúť v priebehu 24 hodín.
+																		Potvrdenie o rezervácii bolo odoslané na
+																		email. Rezerváciu si môžete vyzdvihnúť v
+																		priebehu 24 hodín.
 																	</p>
 																</div>
 
