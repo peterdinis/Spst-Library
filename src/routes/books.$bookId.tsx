@@ -32,6 +32,7 @@ import {
 	Mail,
 	Clock,
 	CheckCircle,
+	CalendarRange,
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
@@ -53,6 +54,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 
 export const Route = createFileRoute("/books/$bookId")({
 	component: BookDetailPage,
@@ -62,12 +64,14 @@ function BookDetailPage() {
 	const { bookId } = Route.useParams();
 	const navigate = useNavigate();
 	const [isReservationOpen, setIsReservationOpen] = useState(false);
+	const [customPeriodEnabled, setCustomPeriodEnabled] = useState(false);
 	const [reservationData, setReservationData] = useState({
 		name: "",
 		email: "",
 		phone: "",
 		note: "",
 		period: "7",
+		customPeriod: "14", // Predvolená hodnota pre vlastnú dobu
 	});
 
 	const book = useQuery(api.books.getById, { id: bookId as Id<"books"> });
@@ -141,11 +145,21 @@ function BookDetailPage() {
 
 	const handleReservationSubmit = async () => {
 		setIsLoading(true);
+		
+		// Získanie finálnej doby výpožičky
+		const finalPeriod = customPeriodEnabled 
+			? parseInt(reservationData.customPeriod) 
+			: parseInt(reservationData.period);
+
 		// Simulácia API volania
 		await new Promise((resolve) => setTimeout(resolve, 1500));
 
 		// Tu by bola skutočná logika na odoslanie rezervácie
-		console.log("Reservation data:", reservationData);
+		console.log("Reservation data:", {
+			...reservationData,
+			period: finalPeriod,
+			isCustomPeriod: customPeriodEnabled
+		});
 
 		setIsLoading(false);
 		setReservationStep("success");
@@ -154,14 +168,46 @@ function BookDetailPage() {
 		setTimeout(() => {
 			setIsReservationOpen(false);
 			setReservationStep("form");
+			setCustomPeriodEnabled(false);
 			setReservationData({
 				name: "",
 				email: "",
 				phone: "",
 				note: "",
 				period: "7",
+				customPeriod: "14",
 			});
 		}, 3000);
+	};
+
+	const handleCustomPeriodChange = (value: string) => {
+		// Validácia: len čísla od 1 do 365
+		const numValue = parseInt(value);
+		if (isNaN(numValue)) {
+			setReservationData({ ...reservationData, customPeriod: "" });
+			return;
+		}
+		
+		if (numValue < 1) {
+			setReservationData({ ...reservationData, customPeriod: "1" });
+		} else if (numValue > 365) {
+			setReservationData({ ...reservationData, customPeriod: "365" });
+		} else {
+			setReservationData({ ...reservationData, customPeriod: value });
+		}
+	};
+
+	const getReservationPeriod = () => {
+		return customPeriodEnabled 
+			? reservationData.customPeriod 
+			: reservationData.period;
+	};
+
+	const getReservationPeriodLabel = () => {
+		const period = parseInt(getReservationPeriod());
+		if (period === 1) return "1 deň";
+		if (period >= 2 && period <= 4) return `${period} dni`;
+		return `${period} dní`;
 	};
 
 	if (book === undefined) {
@@ -397,38 +443,80 @@ function BookDetailPage() {
 																		</div>
 
 																		{/* Doba výpožičky */}
-																		<div className="space-y-2">
-																			<Label htmlFor="period">
-																				<Clock className="h-4 w-4 inline mr-2" />
-																				Doba výpožičky
-																			</Label>
-																			<Select
-																				value={reservationData.period}
-																				onValueChange={(value) =>
-																					setReservationData({
-																						...reservationData,
-																						period: value,
-																					})
-																				}
-																			>
-																				<SelectTrigger>
-																					<SelectValue placeholder="Vyberte dobu výpožičky" />
-																				</SelectTrigger>
-																				<SelectContent>
-																					<SelectItem value="3">
-																						3 dni
-																					</SelectItem>
-																					<SelectItem value="7">
-																						7 dní
-																					</SelectItem>
-																					<SelectItem value="14">
-																						14 dní
-																					</SelectItem>
-																					<SelectItem value="30">
-																						30 dní
-																					</SelectItem>
-																				</SelectContent>
-																			</Select>
+																		<div className="space-y-4">
+																			<div className="flex items-center justify-between">
+																				<Label className="flex items-center gap-2">
+																					<Clock className="h-4 w-4" />
+																					Doba výpožičky
+																				</Label>
+																				<div className="flex items-center gap-2">
+																					<CalendarRange className="h-4 w-4 text-muted-foreground" />
+																					<Switch
+																						checked={customPeriodEnabled}
+																						onCheckedChange={setCustomPeriodEnabled}
+																					/>
+																					<span className="text-sm text-muted-foreground">
+																						Vlastná doba
+																					</span>
+																				</div>
+																			</div>
+
+																			{!customPeriodEnabled ? (
+																				<Select
+																					value={reservationData.period}
+																					onValueChange={(value) =>
+																						setReservationData({
+																							...reservationData,
+																							period: value,
+																						})
+																					}
+																				>
+																					<SelectTrigger>
+																						<SelectValue placeholder="Vyberte dobu výpožičky" />
+																					</SelectTrigger>
+																					<SelectContent>
+																						<SelectItem value="1">
+																							1 deň
+																						</SelectItem>
+																						<SelectItem value="3">
+																							3 dni
+																						</SelectItem>
+																						<SelectItem value="7">
+																							7 dní (štandard)
+																						</SelectItem>
+																						<SelectItem value="14">
+																							14 dní
+																						</SelectItem>
+																						<SelectItem value="21">
+																							21 dní
+																						</SelectItem>
+																						<SelectItem value="30">
+																							30 dní
+																						</SelectItem>
+																					</SelectContent>
+																				</Select>
+																			) : (
+																				<div className="space-y-2">
+																					<div className="flex items-center gap-2">
+																						<Input
+																							type="number"
+																							min="1"
+																							max="365"
+																							value={reservationData.customPeriod}
+																							onChange={(e) =>
+																								handleCustomPeriodChange(e.target.value)
+																							}
+																							className="flex-1"
+																						/>
+																						<span className="text-sm whitespace-nowrap">
+																							dní
+																						</span>
+																					</div>
+																					<p className="text-xs text-muted-foreground">
+																						Zadajte počet dní od 1 do 365
+																					</p>
+																				</div>
+																			)}
 																		</div>
 
 																		{/* Poznámka */}
@@ -469,7 +557,12 @@ function BookDetailPage() {
 																					Doba rezervácie:
 																				</span>
 																				<span className="font-semibold">
-																					{reservationData.period} dní
+																					{getReservationPeriodLabel()}
+																					{customPeriodEnabled && (
+																						<span className="ml-1 text-xs text-primary">
+																							(vlastná)
+																						</span>
+																					)}
 																				</span>
 																			</div>
 																		</div>
@@ -491,7 +584,10 @@ function BookDetailPage() {
 																				disabled={
 																					isLoading ||
 																					!reservationData.name ||
-																					!reservationData.email
+																					!reservationData.email ||
+																					(customPeriodEnabled && 
+																						(!reservationData.customPeriod || 
+																						 parseInt(reservationData.customPeriod) < 1))
 																				}
 																			>
 																				{isLoading ? (
@@ -544,17 +640,24 @@ function BookDetailPage() {
 																</DialogDescription>
 
 																<div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-																	<p className="text-sm text-green-800">
-																		Potvrdenie o rezervácii bolo odoslané na
-																		email
-																		<span className="font-semibold">
-																			{" "}
+																	<div className="text-left space-y-2">
+																		<p className="text-sm text-green-800">
+																			<strong>Doba výpožičky:</strong>{" "}
+																			{getReservationPeriodLabel()}
+																			{customPeriodEnabled && " (vlastná)"}
+																		</p>
+																		<p className="text-sm text-green-800">
+																			<strong>Email:</strong>{" "}
 																			{reservationData.email}
-																		</span>
-																	</p>
-																	<p className="text-xs text-green-600 mt-2">
-																		Rezerváciu si môžete vyzdvihnúť v priebehu
-																		24 hodín.
+																		</p>
+																		<p className="text-sm text-green-800">
+																			<strong>Meno:</strong>{" "}
+																			{reservationData.name}
+																		</p>
+																	</div>
+																	<p className="text-xs text-green-600 mt-3">
+																		Potvrdenie o rezervácii bolo odoslané na email.
+																		Rezerváciu si môžete vyzdvihnúť v priebehu 24 hodín.
 																	</p>
 																</div>
 
@@ -724,12 +827,6 @@ function BookDetailPage() {
 								<Card>
 									<CardContent className="pt-6">
 										<div className="space-y-4">
-											<div>
-												<h4 className="font-medium mb-2">ID záznamu</h4>
-												<code className="text-sm bg-muted px-2 py-1 rounded">
-													{book._id}
-												</code>
-											</div>
 											<div>
 												<h4 className="font-medium mb-2">Dátum pridania</h4>
 												<p className="text-sm">
