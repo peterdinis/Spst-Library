@@ -25,10 +25,11 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Search, BookOpen, MapPin, X, Loader2, RefreshCw } from "lucide-react";
+import { Search, BookOpen, MapPin, X, Loader2} from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "convex/_generated/api";
+
 export function AllAuthorsWrapper() {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [currentPage, setCurrentPage] = useState(1);
@@ -151,16 +152,7 @@ export function AllAuthorsWrapper() {
 								Naši autori
 							</h1>
 						</div>
-						<div className="flex-1 flex justify-end">
-							<Button
-								variant="outline"
-								size="icon"
-								onClick={() => window.location.reload()}
-								className="relative"
-							>
-								<RefreshCw className="h-4 w-4" />
-							</Button>
-						</div>
+						<div className="flex-1 flex justify-end" />
 					</div>
 					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						Spoznajte autorov kníh v našej knižnici
