@@ -130,16 +130,7 @@ const AllCategoriesWrapper: FC = () => {
 								Kategórie kníh
 							</h1>
 						</div>
-						<div className="flex-1 flex justify-end">
-							<Button
-								variant="outline"
-								size="icon"
-								onClick={() => window.location.reload()}
-								className="relative"
-							>
-								<RefreshCw className="h-4 w-4" />
-							</Button>
-						</div>
+						<div className="flex-1 flex justify-end" />
 					</div>
 					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						Preskúmajte našu zbierku kníh podľa kategórií. Vyberte si z{" "}
