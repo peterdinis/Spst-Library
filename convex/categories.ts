@@ -2,19 +2,7 @@ import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { paginationOptsValidator } from "convex/server";
 import { Id } from "./_generated/dataModel";
-import { z } from "zod";
-
-// Zod schemas for validation
-const categoryCreateSchema = z.object({
-  name: z.string().min(1).max(100),
-  description: z.string().max(500).optional(),
-  slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-  icon: z.string().max(50).optional(),
-  isActive: z.boolean().optional(),
-});
-
-const categoryUpdateSchema = categoryCreateSchema.partial();
+import { categoryCreateSchema, categoryUpdateSchema } from "types/categoryTypes";
 
 // GET all categories with pagination
 export const getCategories = query({
