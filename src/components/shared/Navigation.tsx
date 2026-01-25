@@ -4,7 +4,6 @@ import { BookOpen, Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "../ui/button";
 import { ThemeToggle } from "./ThemeToggle";
-import { NotificationDropdown } from "@/notifications/NotificationDropdown";
 
 export function Navigation() {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -92,7 +91,6 @@ export function Navigation() {
 								Registrácia
 							</Button>
 							<ThemeToggle />
-							<NotificationDropdown />
 						</div>
 					</div>
 
