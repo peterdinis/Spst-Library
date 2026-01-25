@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { 
   Bell, 
-  Check, 
   Clock, 
   AlertCircle, 
   BookOpen, 
@@ -11,9 +10,7 @@ import {
   Mail,
   MessageSquare,
   Settings,
-  X,
   Trash2,
-  ExternalLink,
   ChevronRight,
   Eye,
   EyeOff,
@@ -27,14 +24,17 @@ import {
   Calendar,
   DollarSign,
   User,
-  Shield
+  Shield,
+  Download,
+  Upload,
+  Save,
+  HelpCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -42,13 +42,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
 
 export type NotificationType = 
   | 'borrow_due'
@@ -605,7 +607,7 @@ const NotificationItem = React.memo<NotificationItemProps>(({
 
 NotificationItem.displayName = 'NotificationItem';
 
-// Settings Panel Component
+// Enhanced Settings Panel Component
 const NotificationSettings = () => {
   const [settings, setSettings] = useState({
     email: true,
@@ -618,40 +620,125 @@ const NotificationSettings = () => {
     promotions: false,
     system: true,
     sound: true,
-    vibration: true
+    vibration: true,
+    quietHours: false,
+    quietStart: "22:00",
+    quietEnd: "07:00",
+    digestEmail: true,
+    digestFrequency: "daily",
+    priorityThreshold: "medium"
   });
+
+  const [hasChanges, setHasChanges] = useState(false);
+
+  const handleSettingChange = (key: string, value: any) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+    setHasChanges(true);
+  };
+
+  const handleSave = () => {
+    setHasChanges(false);
+    // Simulate save action
+    setTimeout(() => {
+      console.log("Settings saved", settings);
+    }, 500);
+  };
+
+  const handleReset = () => {
+    setSettings({
+      email: true,
+      sms: false,
+      push: true,
+      in_app: true,
+      borrowDue: true,
+      fines: true,
+      membership: true,
+      promotions: false,
+      system: true,
+      sound: true,
+      vibration: true,
+      quietHours: false,
+      quietStart: "22:00",
+      quietEnd: "07:00",
+      digestEmail: true,
+      digestFrequency: "daily",
+      priorityThreshold: "medium"
+    });
+    setHasChanges(true);
+  };
 
   return (
     <div className="space-y-6 p-4">
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <h3 className="font-semibold text-sm flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Nastavenia notifikácií
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            Prispôsobte si spôsob prijímania upozornení
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {hasChanges && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSave}
+              className="h-8 px-3"
+            >
+              <Save className="h-3.5 w-3.5 mr-1.5" />
+              Uložiť
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleReset}
+            className="h-8 px-3"
+          >
+            Obnoviť
+          </Button>
+        </div>
+      </div>
+
       <div className="space-y-4">
-        <h3 className="font-semibold text-sm">Kanály</h3>
+        <div className="flex items-center justify-between">
+          <div>
+            <Label className="text-sm font-medium">Globálne vypnutie</Label>
+            <p className="text-xs text-muted-foreground">Vypnite všetky notifikácie naraz</p>
+          </div>
+          <Switch checked={false} onCheckedChange={() => {}} />
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-4">
+        <h3 className="font-semibold text-sm flex items-center gap-2">
+          <Mail className="h-4 w-4" />
+          Komunikačné kanály
+        </h3>
         <div className="space-y-3">
           {[
-            { key: 'email', label: 'Email', icon: Mail },
-            { key: 'sms', label: 'SMS', icon: MessageSquare },
-            { key: 'push', label: 'Push notifikácie', icon: Bell },
-            { key: 'in_app', label: 'V aplikácii', icon: Zap }
-          ].map(({ key, label, icon: Icon }) => (
-            <div key={key} className="flex items-center justify-between">
+            { key: 'email', label: 'Email', icon: Mail, description: 'Odošle sa na váš email' },
+            { key: 'sms', label: 'SMS', icon: MessageSquare, description: 'Odošle sa ako SMS správa' },
+            { key: 'push', label: 'Push notifikácie', icon: Bell, description: 'Zobrazí sa v prehliadači' },
+            { key: 'in_app', label: 'V aplikácii', icon: Zap, description: 'Zobrazí sa v aplikácii' }
+          ].map(({ key, label, icon: Icon, description }) => (
+            <div key={key} className="flex items-center justify-between p-3 rounded-lg border">
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 rounded-lg bg-accent/50 flex items-center justify-center">
-                  <Icon className="h-4 w-4" />
+                <div className="h-10 w-10 rounded-lg bg-accent/50 flex items-center justify-center">
+                  <Icon className="h-5 w-5" />
                 </div>
                 <div>
                   <Label className="text-sm font-medium">{label}</Label>
-                  <p className="text-xs text-muted-foreground">
-                    {key === 'email' && 'Odošle sa na váš email'}
-                    {key === 'sms' && 'Odošle sa ako SMS správa'}
-                    {key === 'push' && 'Zobrazí sa v prehliadači'}
-                    {key === 'in_app' && 'Zobrazí sa v aplikácii'}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{description}</p>
                 </div>
               </div>
               <Switch 
-                checked={settings[key as keyof typeof settings]}
-                onCheckedChange={(checked) => 
-                  setSettings(prev => ({ ...prev, [key]: checked }))
-                }
+                checked={settings[key as keyof typeof settings] as boolean}
+                onCheckedChange={(checked) => handleSettingChange(key, checked)}
               />
             </div>
           ))}
@@ -661,7 +748,10 @@ const NotificationSettings = () => {
       <Separator />
 
       <div className="space-y-4">
-        <h3 className="font-semibold text-sm">Typy notifikácií</h3>
+        <h3 className="font-semibold text-sm flex items-center gap-2">
+          <Filter className="h-4 w-4" />
+          Filtrovanie notifikácií
+        </h3>
         <div className="space-y-3">
           {[
             { key: 'borrowDue', label: 'Splatnosť výpožičiek', icon: Calendar },
@@ -670,16 +760,14 @@ const NotificationSettings = () => {
             { key: 'promotions', label: 'Propagačné', icon: Sparkles },
             { key: 'system', label: 'Systémové', icon: Settings }
           ].map(({ key, label, icon: Icon }) => (
-            <div key={key} className="flex items-center justify-between">
+            <div key={key} className="flex items-center justify-between p-3 rounded-lg border">
               <div className="flex items-center gap-3">
-                <Icon className="h-4 w-4 text-muted-foreground" />
-                <Label className="text-sm">{label}</Label>
+                <Icon className="h-5 w-5 text-muted-foreground" />
+                <Label className="text-sm font-medium">{label}</Label>
               </div>
               <Switch 
-                checked={settings[key as keyof typeof settings]}
-                onCheckedChange={(checked) => 
-                  setSettings(prev => ({ ...prev, [key]: checked }))
-                }
+                checked={settings[key as keyof typeof settings] as boolean}
+                onCheckedChange={(checked) => handleSettingChange(key, checked)}
               />
             </div>
           ))}
@@ -689,32 +777,133 @@ const NotificationSettings = () => {
       <Separator />
 
       <div className="space-y-4">
-        <h3 className="font-semibold text-sm">Ďalšie nastavenia</h3>
-        <div className="space-y-3">
+        <h3 className="font-semibold text-sm flex items-center gap-2">
+          <Shield className="h-4 w-4" />
+          Rozšírené nastavenia
+        </h3>
+        
+        <div className="space-y-4 p-3 rounded-lg border">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Bell className="h-4 w-4 text-muted-foreground" />
-              <Label className="text-sm">Zvuk</Label>
+            <div className="space-y-1">
+              <Label className="text-sm font-medium">Tiché hodiny</Label>
+              <p className="text-xs text-muted-foreground">Vypnutie notifikácií počas noci</p>
             </div>
             <Switch 
-              checked={settings.sound}
-              onCheckedChange={(checked) => 
-                setSettings(prev => ({ ...prev, sound: checked }))
-              }
+              checked={settings.quietHours}
+              onCheckedChange={(checked) => handleSettingChange('quietHours', checked)}
             />
           </div>
+          
+          {settings.quietHours && (
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              <div className="space-y-2">
+                <Label className="text-xs">Začiatok</Label>
+                <Input 
+                  type="time" 
+                  value={settings.quietStart}
+                  onChange={(e) => handleSettingChange('quietStart', e.target.value)}
+                  className="h-8"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs">Koniec</Label>
+                <Input 
+                  type="time" 
+                  value={settings.quietEnd}
+                  onChange={(e) => handleSettingChange('quietEnd', e.target.value)}
+                  className="h-8"
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-3 p-3 rounded-lg border">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Zap className="h-4 w-4 text-muted-foreground" />
-              <Label className="text-sm">Vibrácie</Label>
+            <div className="space-y-1">
+              <Label className="text-sm font-medium">Emailový súhrn</Label>
+              <p className="text-xs text-muted-foreground">Denný alebo týždenný prehľad</p>
             </div>
             <Switch 
-              checked={settings.vibration}
-              onCheckedChange={(checked) => 
-                setSettings(prev => ({ ...prev, vibration: checked }))
-              }
+              checked={settings.digestEmail}
+              onCheckedChange={(checked) => handleSettingChange('digestEmail', checked)}
             />
           </div>
+          
+          {settings.digestEmail && (
+            <div className="space-y-2">
+              <Label className="text-xs">Frekvencia</Label>
+              <Select 
+                value={settings.digestFrequency}
+                onValueChange={(value) => handleSettingChange('digestFrequency', value)}
+              >
+                <SelectTrigger className="h-8">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="daily">Denný</SelectItem>
+                  <SelectItem value="weekly">Týždenný</SelectItem>
+                  <SelectItem value="biweekly">Dvojtýždenný</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-3 p-3 rounded-lg border">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">Prioritný filter</Label>
+              <span className="text-xs font-medium px-2 py-1 rounded bg-accent">
+                {settings.priorityThreshold}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Zobrazuj iba notifikácie s vyššou alebo rovnakou prioritou
+            </p>
+            <div className="pt-2">
+              <Slider 
+                value={[
+                  settings.priorityThreshold === 'low' ? 0 : 
+                  settings.priorityThreshold === 'medium' ? 50 : 100
+                ]}
+                onValueChange={(value) => {
+                  const threshold = value[0] === 0 ? 'low' : value[0] === 50 ? 'medium' : 'high';
+                  handleSettingChange('priorityThreshold', threshold);
+                }}
+                className="w-full"
+                max={100}
+                step={50}
+              />
+              <div className="flex justify-between text-xs text-muted-foreground mt-2">
+                <span>Nízka</span>
+                <span>Stredná</span>
+                <span>Vysoká</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Separator />
+
+      <div className="space-y-3">
+        <h4 className="font-semibold text-sm">Ďalšie možnosti</h4>
+        <div className="grid grid-cols-2 gap-3">
+          <Button variant="outline" size="sm" className="h-9">
+            <Download className="h-3.5 w-3.5 mr-2" />
+            Exportovať
+          </Button>
+          <Button variant="outline" size="sm" className="h-9">
+            <Upload className="h-3.5 w-3.5 mr-2" />
+            Importovať
+          </Button>
+        </div>
+        <div className="flex items-center justify-center pt-4">
+          <Button variant="ghost" size="sm" className="h-8">
+            <HelpCircle className="h-3.5 w-3.5 mr-2" />
+            Nápoveda k nastaveniam
+          </Button>
         </div>
       </div>
     </div>
@@ -725,12 +914,12 @@ const NotificationSettings = () => {
 const EmptyNotifications = () => (
   <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
     <div className="relative mb-6">
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-xl" />
-      <div className="relative h-24 w-24 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+      <div className="absolute inset-0 bg-linear-to-br from-blue-500/20 to-purple-500/20 rounded-full blur-xl" />
+      <div className="relative h-24 w-24 rounded-full bg-linear-to-br from-blue-500 to-purple-500 flex items-center justify-center">
         <Bell className="h-12 w-12 text-white" />
       </div>
     </div>
-    <h3 className="font-semibold text-xl mb-2 bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+    <h3 className="font-semibold text-xl mb-2 bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
       Žiadne notifikácie
     </h3>
     <p className="text-sm text-muted-foreground mb-6 max-w-xs">
@@ -790,7 +979,9 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
   const [activeTab, setActiveTab] = useState("all");
   const [isLoading, setIsLoading] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [dropdownWidth, setDropdownWidth] = useState(440);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   
   // Initialize with mock data
   useEffect(() => {
@@ -801,8 +992,29 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
     }, 800);
   }, []);
   
-  // Group notifications by date
-  const groupedNotifications = groupNotificationsByDate(notifications);
+  // Handle click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+  
+  // Handle escape key
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+    
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, []);
   
   // Filter notifications based on active tab
   const filteredNotifications = notifications.filter(notification => {
@@ -844,6 +1056,11 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
     setNotifications(prev => prev.filter(notification => notification.id !== id));
   };
   
+  // Delete all notifications
+  const deleteAllNotifications = () => {
+    setNotifications([]);
+  };
+  
   // Simulate new notification
   const simulateNewNotification = () => {
     const types: NotificationType[] = ['borrow_due', 'fine_issued', 'reservation_ready'];
@@ -880,7 +1097,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
               className={cn(
                 "relative h-11 w-11 rounded-xl transition-all duration-300",
                 "hover:bg-accent hover:text-accent-foreground hover:scale-110",
-                "bg-gradient-to-br from-background to-accent/50",
+                "bg-linear-to-br from-background to-accent/50",
                 hasNewNotifications && "animate-pulse-slow shadow-lg shadow-blue-500/20",
                 "border border-border/50 backdrop-blur-sm"
               )}
@@ -888,7 +1105,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
               <div className="relative">
                 <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-3 -right-3 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-red-500 to-pink-500 text-xs font-bold text-white shadow-lg animate-bounce">
+                  <span className="absolute -top-3 -right-3 flex h-6 w-6 items-center justify-center rounded-full bg-linear-to-br from-red-500 to-pink-500 text-xs font-bold text-white shadow-lg animate-bounce">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
@@ -898,15 +1115,26 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
           
           <DropdownMenuContent 
             align="end" 
-            className="w-[440px] p-0 animate-in slide-in-from-top-5 duration-300 border-border/50 backdrop-blur-md bg-background/95"
+            className={cn(
+              "p-0 animate-in slide-in-from-top-5 duration-300 border-border/50 backdrop-blur-md bg-background/95",
+              "max-h-[85vh] overflow-hidden"
+            )}
             collisionPadding={16}
             sideOffset={8}
+            style={{ width: dropdownWidth }}
+            ref={contentRef}
+            onInteractOutside={(e) => {
+              // Prevent closing when clicking on content
+              if (contentRef.current?.contains(e.target as Node)) {
+                e.preventDefault();
+              }
+            }}
           >
             {/* Header with stats */}
-            <div className="sticky top-0 z-50 bg-gradient-to-b from-background/95 to-background/80 backdrop-blur-xl border-b border-border/50 p-4">
+            <div className="sticky top-0 z-50 bg-linear-to-b from-background/95 to-background/80 backdrop-blur-xl border-b border-border/50 p-4">
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <DropdownMenuLabel className="p-0 text-lg font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
+                  <DropdownMenuLabel className="p-0 text-lg font-bold bg-linear-to-r from-foreground to-muted-foreground bg-clip-text text-transparent">
                     Notifikácie
                   </DropdownMenuLabel>
                   <div className="flex items-center gap-3 mt-1">
@@ -959,14 +1187,17 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
                         <CheckCircle className="h-4 w-4 mr-2" />
                         Označiť všetky ako prečítané
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setShowSettings(!showSettings)}>
+                      <DropdownMenuItem onClick={() => {
+                        setShowSettings(!showSettings);
+                        setActiveTab(showSettings ? "all" : "settings");
+                      }}>
                         <Settings className="h-4 w-4 mr-2" />
-                        Nastavenia
+                        {showSettings ? "Späť na notifikácie" : "Nastavenia"}
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem 
                         className="text-destructive focus:text-destructive"
-                        onClick={() => setNotifications([])}
+                        onClick={deleteAllNotifications}
                         disabled={notifications.length === 0}
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
@@ -978,9 +1209,24 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
               </div>
               
               {/* Tabs */}
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <Tabs 
+                value={showSettings ? "settings" : activeTab} 
+                onValueChange={(value) => {
+                  if (value === "settings") {
+                    setShowSettings(true);
+                  } else {
+                    setShowSettings(false);
+                    setActiveTab(value);
+                  }
+                }}
+                className="w-full"
+              >
                 <TabsList className="grid grid-cols-4 w-full h-9">
-                  <TabsTrigger value="all" className="text-xs">
+                  <TabsTrigger 
+                    value="all" 
+                    className="text-xs"
+                    disabled={showSettings}
+                  >
                     Všetky
                     {notifications.length > 0 && (
                       <span className="ml-1.5 text-[10px] bg-muted px-1.5 py-0.5 rounded">
@@ -988,7 +1234,11 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
                       </span>
                     )}
                   </TabsTrigger>
-                  <TabsTrigger value="unread" className="text-xs">
+                  <TabsTrigger 
+                    value="unread" 
+                    className="text-xs"
+                    disabled={showSettings}
+                  >
                     Neprečítané
                     {unreadCount > 0 && (
                       <span className="ml-1.5 text-[10px] bg-blue-500 text-white px-1.5 py-0.5 rounded">
@@ -996,7 +1246,11 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
                       </span>
                     )}
                   </TabsTrigger>
-                  <TabsTrigger value="high" className="text-xs">
+                  <TabsTrigger 
+                    value="high" 
+                    className="text-xs"
+                    disabled={showSettings}
+                  >
                     Vysoká
                     {highPriorityCount > 0 && (
                       <span className="ml-1.5 text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded">
@@ -1004,33 +1258,38 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
                       </span>
                     )}
                   </TabsTrigger>
-                  <TabsTrigger value="settings" className="text-xs" onClick={() => setShowSettings(true)}>
-                    <Settings className="h-3 w-3" />
+                  <TabsTrigger 
+                    value="settings" 
+                    className="text-xs"
+                  >
+                    <Settings className="h-3.5 w-3.5" />
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
             
             {/* Content Area */}
-            <div className="max-h-[500px] overflow-hidden">
+            <div className="max-h-[60vh] overflow-hidden">
               {showSettings ? (
-                <NotificationSettings />
+                <ScrollArea className="h-[60vh]">
+                  <NotificationSettings />
+                </ScrollArea>
               ) : isLoading ? (
                 <NotificationSkeleton />
               ) : filteredNotifications.length === 0 ? (
                 <EmptyNotifications />
               ) : (
-                <ScrollArea className="h-[500px]">
+                <ScrollArea className="h-[60vh]">
                   <div className="p-4">
                     {filteredGroupedNotifications.map((group, groupIndex) => (
                       <div key={`${group.date}-${groupIndex}`} className="mb-8">
-                        <div className="sticky top-0 z-10 bg-gradient-to-b from-background/95 via-background/90 to-transparent pb-3 mb-3">
+                        <div className="sticky top-0 z-10 bg-linear-to-b from-background/95 via-background/90 to-transparent pb-3 mb-3">
                           <div className="flex items-center gap-3">
-                            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+                            <div className="h-px flex-1 bg-linear-to-r from-transparent via-border to-transparent" />
                             <span className="text-xs font-semibold text-muted-foreground px-3 py-1 rounded-full bg-accent/50 backdrop-blur-sm">
                               {group.date}
                             </span>
-                            <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
+                            <div className="h-px flex-1 bg-linear-to-r from-transparent via-border to-transparent" />
                           </div>
                         </div>
                         
@@ -1052,19 +1311,35 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
               )}
             </div>
             
-            {/* Footer */}
+            {/* Footer - only show when not in settings */}
             {!showSettings && filteredNotifications.length > 0 && (
-              <div className="sticky bottom-0 border-t border-border/50 bg-gradient-to-t from-background via-background to-background/80 p-3">
-                <Button
-                  variant="ghost"
-                  className="w-full justify-between text-sm group"
-                  onClick={() => console.log('View all notifications')}
-                >
-                  <span className="group-hover:translate-x-1 transition-transform">
-                    Zobraziť všetky notifikácie
-                  </span>
-                  <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
+              <div className="sticky bottom-0 border-t border-border/50 bg-linear-to-t from-background via-background to-background/80 p-3">
+                <div className="flex items-center justify-between">
+                  <Button
+                    variant="ghost"
+                    className="text-sm group"
+                    onClick={() => console.log('View all notifications')}
+                    size="sm"
+                  >
+                    <span className="group-hover:translate-x-1 transition-transform">
+                      Zobraziť všetky
+                    </span>
+                    <ChevronRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => {
+                        setDropdownWidth(prev => prev === 440 ? 600 : 440);
+                      }}
+                    >
+                      {dropdownWidth === 440 ? "Rozbaliť" : "Zbaliť"}
+                    </Button>
+                  </div>
+                </div>
               </div>
             )}
           </DropdownMenuContent>
@@ -1074,8 +1349,8 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ clas
         {hasNewNotifications && unreadCount > 0 && !isOpen && (
           <div className="absolute -top-0.5 -right-0.5">
             <div className="relative">
-              <div className="absolute inset-0 animate-ping bg-gradient-to-br from-blue-500 to-purple-500 rounded-full opacity-75" />
-              <div className="relative h-2.5 w-2.5 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 border-2 border-background shadow-lg" />
+              <div className="absolute inset-0 animate-ping bg-linear-to-br from-blue-500 to-purple-500 rounded-full opacity-75" />
+              <div className="relative h-2.5 w-2.5 rounded-full bg-linear-to-br from-blue-500 to-purple-500 border-2 border-background shadow-lg" />
             </div>
           </div>
         )}
