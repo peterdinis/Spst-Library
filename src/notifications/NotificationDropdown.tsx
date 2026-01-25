@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState, useEffect, useRef } from "react";
+import { FC, useState} from "react";
 import {
 	Bell,
 	Clock,
@@ -12,22 +10,13 @@ import {
 	Settings,
 	Trash2,
 	ChevronRight,
-	Eye,
 	EyeOff,
 	MoreVertical,
 	Sparkles,
 	CheckCircle,
 	AlertTriangle,
-	Info,
 	Zap,
-	Calendar,
 	DollarSign,
-	User,
-	Shield,
-	Download,
-	Upload,
-	Save,
-	HelpCircle,
 	ChevronDown,
 	ChevronUp,
 } from "lucide-react";
@@ -35,34 +24,20 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 
 export type NotificationType =
 	| "borrow_due"
@@ -90,7 +65,6 @@ export interface Notification {
 	priority?: "low" | "medium" | "high";
 }
 
-// Mock data - upravené podľa obrázka
 const mockNotifications: Notification[] = [
 	{
 		id: "6",
@@ -209,7 +183,6 @@ const mockNotifications: Notification[] = [
 	},
 ];
 
-// Utility functions
 const getNotificationIcon = (type: NotificationType) => {
 	const baseClasses = "h-4 w-4";
 	switch (type) {
@@ -227,17 +200,6 @@ const getNotificationIcon = (type: NotificationType) => {
 			return <Sparkles className={`${baseClasses} text-pink-500`} />;
 		default:
 			return <Bell className={`${baseClasses} text-gray-500`} />;
-	}
-};
-
-const getPriorityIcon = (priority: "low" | "medium" | "high") => {
-	switch (priority) {
-		case "high":
-			return <AlertTriangle className="h-3 w-3 text-red-500" />;
-		case "medium":
-			return <AlertCircle className="h-3 w-3 text-amber-500" />;
-		case "low":
-			return <Info className="h-3 w-3 text-blue-500" />;
 	}
 };
 
@@ -271,7 +233,6 @@ const formatTimeAgo = (timestamp: number) => {
 	return "Teraz";
 };
 
-// Notification Item Component
 interface NotificationItemProps {
 	notification: Notification;
 	onMarkAsRead: (id: string) => void;
@@ -295,83 +256,106 @@ const NotificationItem = ({
 	return (
 		<div
 			className={cn(
-				"p-4 rounded-xl border transition-all duration-200 hover:bg-accent/5",
+				"group relative p-4 rounded-2xl border transition-all duration-300",
+				"hover:shadow-lg hover:scale-[1.01] hover:border-primary/20",
 				!isRead
-					? "bg-white dark:bg-gray-900"
-					: "bg-gray-50/50 dark:bg-gray-900/50",
+					? "bg-linear-to-br from-blue-50/50 to-purple-50/30 dark:from-blue-950/20 dark:to-purple-950/10 border-blue-200/50 dark:border-blue-800/30"
+					: "bg-linear-to-br from-gray-50/80 to-slate-50/50 dark:from-gray-900/50 dark:to-slate-900/30 border-gray-200/50 dark:border-gray-800/30",
 				notification.priority === "high" &&
-					"border-red-200 dark:border-red-900/30",
-				notification.priority === "medium" &&
-					"border-amber-200 dark:border-amber-900/30",
-				notification.status === "failed" && "border-destructive/20",
+					"ring-2 ring-red-400/20 dark:ring-red-500/20 border-red-300 dark:border-red-900/50",
+				notification.status === "failed" && "border-destructive/40",
 			)}
 		>
-			<div className="flex items-start gap-3">
-				<div className={cn("relative mt-0.5", !isRead && "animate-pulse-slow")}>
+			{notification.priority === "high" && (
+				<div className="absolute left-0 top-0 bottom-0 w-1 bg-linear-to-b from-red-500 to-orange-500 rounded-l-2xl" />
+			)}
+
+			<div className="flex items-start gap-4">
+				<div 
+					className={cn(
+						"relative flex items-center justify-center h-11 w-11 rounded-xl",
+						"bg-linear-to-br shadow-sm transition-transform duration-300",
+						"group-hover:scale-110",
+						!isRead && "animate-pulse-slow",
+						notification.type === "borrow_due" && "from-amber-100 to-amber-200 dark:from-amber-900/30 dark:to-amber-800/20",
+						notification.type === "fine_issued" && "from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/20",
+						notification.type === "membership_expiry" && "from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/20",
+						notification.type === "reservation_ready" && "from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/20",
+						notification.type === "system" && "from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/20",
+						notification.type === "promotional" && "from-pink-100 to-pink-200 dark:from-pink-900/30 dark:to-pink-800/20",
+					)}
+				>
 					{getNotificationIcon(notification.type)}
 				</div>
 
-				<div className="flex-1 min-w-0 space-y-2">
-					<div className="flex items-start justify-between">
-						<div className="flex items-center gap-2">
-							<h4
-								className={cn(
-									"font-semibold text-sm truncate",
-									isRead ? "text-muted-foreground" : "text-foreground",
+				<div className="flex-1 min-w-0 space-y-3">
+					<div className="flex items-start justify-between gap-3">
+						<div className="flex flex-col gap-1.5">
+							<div className="flex items-center gap-2 flex-wrap">
+								<h4
+									className={cn(
+										"font-bold text-base",
+										isRead ? "text-muted-foreground" : "text-foreground",
+									)}
+								>
+									{notification.title}
+								</h4>
+								{notification.priority === "high" && (
+									<Badge variant="destructive" className="h-6 px-2 text-[10px] font-semibold shadow-sm">
+										<AlertTriangle className="h-3 w-3 mr-1" />
+										Urgentné
+									</Badge>
 								)}
-							>
-								{notification.title}
-							</h4>
-							{notification.priority && notification.priority === "high" && (
-								<Badge variant="destructive" className="h-5 px-1.5 text-[10px]">
-									<AlertTriangle className="h-2.5 w-2.5 mr-1" />
-									Vysoká
-								</Badge>
-							)}
+							</div>
+							<span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+								<Clock className="h-3 w-3" />
+								{formatTimeAgo(notification.createdAt)}
+							</span>
 						</div>
-						<span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
-							{formatTimeAgo(notification.createdAt)}
-						</span>
 					</div>
 
 					<p
 						className={cn(
 							"text-sm leading-relaxed",
-							isRead ? "text-muted-foreground/80" : "text-muted-foreground",
+							isRead ? "text-muted-foreground/70" : "text-muted-foreground",
 						)}
 					>
 						{notification.message}
 					</p>
 
-					{/* Metadata chips */}
-					<div className="flex flex-wrap gap-1.5">
+					<div className="flex flex-wrap gap-2">
 						{notification.data?.bookTitle && (
 							<Badge
 								variant="outline"
-								className="text-xs px-2 py-0.5 bg-background/50"
+								className="text-xs px-2.5 py-1 bg-blue-50/50 dark:bg-blue-950/30 border-blue-200/50 dark:border-blue-800/30 font-medium"
 							>
-								<BookOpen className="h-2.5 w-2.5 mr-1" />
+								<BookOpen className="h-3 w-3 mr-1.5" />
 								{notification.data.bookTitle}
 							</Badge>
 						)}
 						{notification.data?.fineAmount && (
-							<Badge variant="destructive" className="text-xs px-2 py-0.5">
-								<DollarSign className="h-2.5 w-2.5 mr-1" />
+							<Badge 
+								variant="destructive" 
+								className="text-xs px-2.5 py-1 shadow-sm font-semibold"
+							>
+								<DollarSign className="h-3 w-3 mr-1" />
 								{notification.data.fineAmount} €
 							</Badge>
 						)}
 						{notification.data?.daysRemaining !== undefined && (
-							<Badge variant="secondary" className="text-xs px-2 py-0.5">
-								<Clock className="h-2.5 w-2.5 mr-1" />
-								{notification.data.daysRemaining} dní
+							<Badge 
+								variant="secondary" 
+								className="text-xs px-2.5 py-1 bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100 border-amber-200/50 dark:border-amber-800/30 font-medium"
+							>
+								<Clock className="h-3 w-3 mr-1.5" />
+								{notification.data.daysRemaining} dní zostáva
 							</Badge>
 						)}
 					</div>
 
-					{/* Footer */}
-					<div className="flex items-center justify-between pt-1">
+					<div className="flex items-center justify-between pt-2 border-t border-border/40">
 						<div className="flex items-center gap-3">
-							<div className="flex items-center gap-1 text-xs text-muted-foreground/70">
+							<div className="flex items-center gap-1.5 text-xs text-muted-foreground/80 font-medium px-2 py-1 rounded-md bg-muted/30">
 								{getChannelIcon(notification.channel)}
 								<span className="capitalize">
 									{notification.channel.replace("_", " ")}
@@ -379,28 +363,28 @@ const NotificationItem = ({
 							</div>
 
 							{notification.status === "failed" && (
-								<Badge variant="destructive" className="text-xs px-2 py-0">
-									<AlertCircle className="h-2.5 w-2.5 mr-1" />
-									Chyba
+								<Badge variant="destructive" className="text-xs px-2 py-0.5 shadow-sm">
+									<AlertCircle className="h-3 w-3 mr-1" />
+									Zlyhalo odoslanie
 								</Badge>
 							)}
 						</div>
 
-						<div className="flex items-center gap-1">
+						<div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
 							<TooltipProvider>
 								<Tooltip>
 									<TooltipTrigger asChild>
 										<Button
 											variant="ghost"
 											size="icon"
-											className="h-7 w-7 rounded-full hover:bg-destructive/10 hover:text-destructive"
+											className="h-8 w-8 rounded-lg hover:bg-destructive/15 hover:text-destructive transition-all duration-200"
 											onClick={() => onDelete(notification.id)}
 										>
-											<Trash2 className="h-3.5 w-3.5" />
+											<Trash2 className="h-4 w-4" />
 										</Button>
 									</TooltipTrigger>
-									<TooltipContent side="top">
-										<p className="text-xs">Vymazať</p>
+									<TooltipContent side="top" className="text-xs">
+										Vymazať notifikáciu
 									</TooltipContent>
 								</Tooltip>
 							</TooltipProvider>
@@ -411,22 +395,20 @@ const NotificationItem = ({
 										<Button
 											variant="ghost"
 											size="icon"
-											className="h-7 w-7 rounded-full hover:bg-primary/10 hover:text-primary"
+											className="h-8 w-8 rounded-lg hover:bg-primary/15 hover:text-primary transition-all duration-200"
 											onClick={handleMarkAsRead}
 										>
 											{isRead ? (
-												<EyeOff className="h-3.5 w-3.5" />
+												<EyeOff className="h-4 w-4" />
 											) : (
-												<Eye className="h-3.5 w-3.5" />
+												<CheckCircle className="h-4 w-4" />
 											)}
 										</Button>
 									</TooltipTrigger>
-									<TooltipContent side="top">
-										<p className="text-xs">
-											{isRead
-												? "Označiť ako neprečítané"
-												: "Označiť ako prečítané"}
-										</p>
+									<TooltipContent side="top" className="text-xs">
+										{isRead
+											? "Označiť ako neprečítané"
+											: "Označiť ako prečítané"}
 									</TooltipContent>
 								</Tooltip>
 							</TooltipProvider>
@@ -438,39 +420,31 @@ const NotificationItem = ({
 	);
 };
 
-// Main Component
 interface NotificationDropdownProps {
 	className?: string;
 }
 
-export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
+export const NotificationDropdown: FC<NotificationDropdownProps> = ({
 	className,
 }) => {
-	const [notifications, setNotifications] =
-		useState<Notification[]>(mockNotifications);
+	const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
 	const [isOpen, setIsOpen] = useState(false);
 	const [activeTab, setActiveTab] = useState("all");
-	const [showSettings, setShowSettings] = useState(false);
 	const [isExpanded, setIsExpanded] = useState(false);
 
 	const unreadCount = notifications.filter((n) => !n.readAt).length;
-	const highPriorityCount = notifications.filter(
-		(n) => n.priority === "high",
-	).length;
+	const highPriorityCount = notifications.filter((n) => n.priority === "high").length;
 
-	// Filter notifications based on active tab
 	const filteredNotifications = notifications.filter((notification) => {
 		if (activeTab === "unread") return !notification.readAt;
 		if (activeTab === "high") return notification.priority === "high";
 		return true;
 	});
 
-	// Sort - newest first
 	const sortedNotifications = [...filteredNotifications].sort(
 		(a, b) => b.createdAt - a.createdAt,
 	);
 
-	// Mark all as read
 	const markAllAsRead = () => {
 		setNotifications((prev) =>
 			prev.map((notification) => ({
@@ -480,7 +454,6 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 		);
 	};
 
-	// Mark single as read
 	const markAsRead = (id: string) => {
 		setNotifications((prev) =>
 			prev.map((notification) =>
@@ -491,14 +464,12 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 		);
 	};
 
-	// Delete notification
 	const deleteNotification = (id: string) => {
 		setNotifications((prev) =>
 			prev.filter((notification) => notification.id !== id),
 		);
 	};
 
-	// Delete all notifications
 	const deleteAllNotifications = () => {
 		setNotifications([]);
 	};
@@ -528,25 +499,34 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 				<DropdownMenuContent
 					align="end"
 					className={cn(
-						"p-0 w-[440px] border-border/50 bg-background/95 backdrop-blur-md",
-						"max-h-[85vh] overflow-hidden flex flex-col",
-						isExpanded && "w-[600px]",
+						"p-0 w-120 border-border/40 bg-linear-to-b from-background via-background to-muted/20 backdrop-blur-xl shadow-2xl",
+						"max-h-[85vh] overflow-hidden flex flex-col rounded-2xl",
+						isExpanded && "w-160",
 					)}
-					sideOffset={8}
+					sideOffset={12}
 					collisionPadding={16}
 				>
-					{/* Header */}
-					<div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b p-4">
-						<div className="flex items-center justify-between mb-4">
+					<div className="sticky top-0 z-50 bg-linear-to-b from-background to-background/95 backdrop-blur-xl border-b border-border/50 p-5">
+						<div className="flex items-center justify-between mb-5">
 							<div>
-								<h3 className="font-bold text-lg">Notifikácie</h3>
-								<div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-									<span>{unreadCount} neprečítaných</span>
+								<div className="flex items-center gap-2.5">
+									<div className="p-2 bg-linear-to-br from-blue-500 to-purple-600 rounded-xl">
+										<Bell className="h-5 w-5 text-white" />
+									</div>
+									<h3 className="font-bold text-xl bg-linear-to-r from-foreground to-foreground/70 bg-clip-text">
+										Notifikácie
+									</h3>
+								</div>
+								<div className="flex items-center gap-3 mt-2.5 text-sm">
+									<div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 font-medium">
+										<div className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+										{unreadCount} neprečítaných
+									</div>
 									{highPriorityCount > 0 && (
-										<>
-											<span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
-											<span>{highPriorityCount} vysoká priorita</span>
-										</>
+										<div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-950/30 text-red-700 dark:text-red-300 font-medium">
+											<AlertTriangle className="h-3 w-3" />
+											{highPriorityCount} urgentných
+										</div>
 									)}
 								</div>
 							</div>
@@ -554,27 +534,26 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 							<div className="flex items-center gap-2">
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
-										<Button variant="outline" size="icon" className="h-8 w-8">
+										<Button 
+											variant="outline" 
+											size="icon" 
+											className="h-9 w-9 rounded-xl border-border/50 hover:bg-accent/50 hover:border-primary/30 transition-all duration-200"
+										>
 											<MoreVertical className="h-4 w-4" />
 										</Button>
 									</DropdownMenuTrigger>
-									<DropdownMenuContent align="end">
+									<DropdownMenuContent align="end" className="w-56 rounded-xl">
 										<DropdownMenuItem
 											onClick={markAllAsRead}
 											disabled={unreadCount === 0}
+											className="rounded-lg"
 										>
 											<CheckCircle className="h-4 w-4 mr-2" />
 											Označiť všetky ako prečítané
 										</DropdownMenuItem>
-										<DropdownMenuItem
-											onClick={() => setShowSettings(!showSettings)}
-										>
-											<Settings className="h-4 w-4 mr-2" />
-											Nastavenia
-										</DropdownMenuItem>
 										<DropdownMenuSeparator />
 										<DropdownMenuItem
-											className="text-destructive"
+											className="text-destructive rounded-lg"
 											onClick={deleteAllNotifications}
 											disabled={notifications.length === 0}
 										>
@@ -586,112 +565,74 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 							</div>
 						</div>
 
-						{/* Tabs */}
 						<Tabs
-							value={showSettings ? "settings" : activeTab}
+							value={activeTab}
 							onValueChange={(value) => {
-								if (value === "settings") {
-									setShowSettings(true);
-								} else {
-									setShowSettings(false);
-									setActiveTab(value);
-								}
+								setActiveTab(value);
 							}}
 							className="w-full"
 						>
-							<TabsList className="grid grid-cols-4 w-full h-9">
-								<TabsTrigger value="all" className="text-xs">
-									Všetky
+							<TabsList className="grid grid-cols-3 w-full h-10 bg-muted/40 p-1 rounded-xl">
+								<TabsTrigger 
+									value="all" 
+									className="text-xs font-medium rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
+								>
+									<span className="mr-1.5">Všetky</span>
 									<Badge
 										variant="secondary"
-										className="ml-1.5 h-5 w-5 p-0 text-[10px]"
+										className="h-5 px-1.5 text-[10px] font-semibold bg-muted"
 									>
 										{notifications.length}
 									</Badge>
 								</TabsTrigger>
-								<TabsTrigger value="unread" className="text-xs">
-									Neprečítané
+								<TabsTrigger 
+									value="unread" 
+									className="text-xs font-medium rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
+								>
+									<span className="mr-1.5">Nové</span>
 									{unreadCount > 0 && (
 										<Badge
 											variant="default"
-											className="ml-1.5 h-5 w-5 p-0 text-[10px] bg-blue-500"
+											className="h-5 px-1.5 text-[10px] font-semibold bg-blue-500 animate-pulse"
 										>
 											{unreadCount}
 										</Badge>
 									)}
 								</TabsTrigger>
-								<TabsTrigger value="high" className="text-xs">
-									Vysoká
+								<TabsTrigger 
+									value="high" 
+									className="text-xs font-medium rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
+								>
+									<span className="mr-1.5">Urgentné</span>
 									{highPriorityCount > 0 && (
 										<Badge
 											variant="destructive"
-											className="ml-1.5 h-5 w-5 p-0 text-[10px]"
+											className="h-5 px-1.5 text-[10px] font-semibold shadow-sm"
 										>
 											{highPriorityCount}
 										</Badge>
 									)}
 								</TabsTrigger>
-								<TabsTrigger value="settings" className="text-xs">
-									<Settings className="h-4 w-4" />
-								</TabsTrigger>
 							</TabsList>
 						</Tabs>
 					</div>
 
-					{/* Content - ZABEZPEČENÉ aby nevyšlo von */}
 					<div className="flex-1 overflow-hidden min-h-0">
-						{showSettings ? (
-							<ScrollArea className="h-[400px]">
-								<div className="p-4 space-y-6">
-									<div className="space-y-4">
-										<h4 className="font-semibold">Nastavenia notifikácií</h4>
-										<div className="space-y-3">
-											{["email", "sms", "push", "in_app"].map((channel) => (
-												<div
-													key={channel}
-													className="flex items-center justify-between"
-												>
-													<Label className="capitalize">{channel}</Label>
-													<Switch />
-												</div>
-											))}
-										</div>
-									</div>
-									<Separator />
-									<div className="space-y-3">
-										{[
-											"borrow_due",
-											"fine_issued",
-											"membership_expiry",
-											"reservation_ready",
-											"promotional",
-										].map((type) => (
-											<div
-												key={type}
-												className="flex items-center justify-between"
-											>
-												<Label className="capitalize">
-													{type.replace("_", " ")}
-												</Label>
-												<Switch defaultChecked />
-											</div>
-										))}
-									</div>
+						{sortedNotifications.length === 0 ? (
+							<div className="flex flex-col items-center justify-center py-16 text-center">
+								<div className="p-4 bg-linear-to-br from-muted/50 to-muted/30 rounded-2xl mb-6">
+									<Bell className="h-16 w-16 text-muted-foreground/50" />
 								</div>
-							</ScrollArea>
-						) : sortedNotifications.length === 0 ? (
-							<div className="flex flex-col items-center justify-center py-12 text-center">
-								<Bell className="h-12 w-12 text-muted-foreground/50 mb-4" />
-								<h4 className="font-semibold text-lg mb-2">
+								<h4 className="font-bold text-xl mb-2">
 									Žiadne notifikácie
 								</h4>
-								<p className="text-sm text-muted-foreground max-w-xs">
-									Nemáte žiadne notifikácie v tejto kategórii
+								<p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
+									Nemáte žiadne notifikácie v tejto kategórii. Keď príde niečo nové, uvidíte to tu.
 								</p>
 							</div>
 						) : (
-							<ScrollArea className="h-[400px]">
-								<div className="p-4 space-y-3">
+							<ScrollArea className="h-112.5">
+								<div className="p-5 space-y-3">
 									{sortedNotifications.map((notification) => (
 										<NotificationItem
 											key={notification.id}
@@ -705,34 +646,34 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 						)}
 					</div>
 
-					{/* Footer */}
-					{!showSettings && sortedNotifications.length > 0 && (
-						<div className="sticky bottom-0 border-t bg-background/95 backdrop-blur-sm p-3">
+					{sortedNotifications.length > 0 && (
+						<div className="sticky bottom-0 border-t border-border/50 bg-linear-to-t from-background to-background/95 backdrop-blur-xl p-4">
 							<div className="flex items-center justify-between">
 								<Button
 									variant="ghost"
-									className="text-sm"
+									className="text-sm font-medium hover:bg-primary/10 hover:text-primary rounded-xl transition-all duration-200"
 									onClick={() => console.log("View all")}
 									size="sm"
 								>
-									Zobraziť všetky
+									Zobraziť všetky notifikácie
 									<ChevronRight className="h-4 w-4 ml-2" />
 								</Button>
 
 								<Button
 									variant="outline"
 									size="sm"
+									className="rounded-xl border-border/50 hover:bg-accent/50 hover:border-primary/30 transition-all duration-200"
 									onClick={() => setIsExpanded(!isExpanded)}
 								>
 									{isExpanded ? (
 										<>
 											<ChevronUp className="h-4 w-4 mr-2" />
-											Zbaliť
+											Zbaliť panel
 										</>
 									) : (
 										<>
 											<ChevronDown className="h-4 w-4 mr-2" />
-											Rozbaliť
+											Rozbaliť panel
 										</>
 									)}
 								</Button>
@@ -744,3 +685,5 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({
 		</div>
 	);
 };
+
+export default NotificationDropdown;
