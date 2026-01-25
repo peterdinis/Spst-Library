@@ -9,10 +9,12 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as BooksRouteImport } from './routes/books'
 import { Route as AuthorsRouteImport } from './routes/authors'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProfileIndexRouteImport } from './routes/profile.index'
 import { Route as CategoriesIndexRouteImport } from './routes/categories.index'
 import { Route as BooksIndexRouteImport } from './routes/books.index'
 import { Route as AuthorsIndexRouteImport } from './routes/authors.index'
@@ -25,6 +27,11 @@ import { Route as AuthorsAuthorIdRouteImport } from './routes/authors.$authorId'
 import { Route as ApiUploadthingRouteRouteImport } from './routes/api/uploadthing/route'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CategoriesRoute = CategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
@@ -44,6 +51,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileIndexRoute = ProfileIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProfileRoute,
 } as any)
 const CategoriesIndexRoute = CategoriesIndexRouteImport.update({
   id: '/',
@@ -106,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/authors': typeof AuthorsRouteWithChildren
   '/books': typeof BooksRouteWithChildren
   '/categories': typeof CategoriesRouteWithChildren
+  '/profile': typeof ProfileRouteWithChildren
   '/api/uploadthing': typeof ApiUploadthingRouteRoute
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/authors/create': typeof AuthorsCreateRoute
@@ -116,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/authors/': typeof AuthorsIndexRoute
   '/books/': typeof BooksIndexRoute
   '/categories/': typeof CategoriesIndexRoute
+  '/profile/': typeof ProfileIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
@@ -130,6 +144,7 @@ export interface FileRoutesByTo {
   '/authors': typeof AuthorsIndexRoute
   '/books': typeof BooksIndexRoute
   '/categories': typeof CategoriesIndexRoute
+  '/profile': typeof ProfileIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
@@ -138,6 +153,7 @@ export interface FileRoutesById {
   '/authors': typeof AuthorsRouteWithChildren
   '/books': typeof BooksRouteWithChildren
   '/categories': typeof CategoriesRouteWithChildren
+  '/profile': typeof ProfileRouteWithChildren
   '/api/uploadthing': typeof ApiUploadthingRouteRoute
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/authors/create': typeof AuthorsCreateRoute
@@ -148,6 +164,7 @@ export interface FileRoutesById {
   '/authors/': typeof AuthorsIndexRoute
   '/books/': typeof BooksIndexRoute
   '/categories/': typeof CategoriesIndexRoute
+  '/profile/': typeof ProfileIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
@@ -157,6 +174,7 @@ export interface FileRouteTypes {
     | '/authors'
     | '/books'
     | '/categories'
+    | '/profile'
     | '/api/uploadthing'
     | '/authors/$authorId'
     | '/authors/create'
@@ -167,6 +185,7 @@ export interface FileRouteTypes {
     | '/authors/'
     | '/books/'
     | '/categories/'
+    | '/profile/'
     | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -181,6 +200,7 @@ export interface FileRouteTypes {
     | '/authors'
     | '/books'
     | '/categories'
+    | '/profile'
     | '/api/auth/$'
   id:
     | '__root__'
@@ -188,6 +208,7 @@ export interface FileRouteTypes {
     | '/authors'
     | '/books'
     | '/categories'
+    | '/profile'
     | '/api/uploadthing'
     | '/authors/$authorId'
     | '/authors/create'
@@ -198,6 +219,7 @@ export interface FileRouteTypes {
     | '/authors/'
     | '/books/'
     | '/categories/'
+    | '/profile/'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
@@ -206,12 +228,20 @@ export interface RootRouteChildren {
   AuthorsRoute: typeof AuthorsRouteWithChildren
   BooksRoute: typeof BooksRouteWithChildren
   CategoriesRoute: typeof CategoriesRouteWithChildren
+  ProfileRoute: typeof ProfileRouteWithChildren
   ApiUploadthingRouteRoute: typeof ApiUploadthingRouteRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/categories': {
       id: '/categories'
       path: '/categories'
@@ -239,6 +269,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/profile/': {
+      id: '/profile/'
+      path: '/'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof ProfileIndexRouteImport
+      parentRoute: typeof ProfileRoute
     }
     '/categories/': {
       id: '/categories/'
@@ -365,11 +402,23 @@ const CategoriesRouteWithChildren = CategoriesRoute._addFileChildren(
   CategoriesRouteChildren,
 )
 
+interface ProfileRouteChildren {
+  ProfileIndexRoute: typeof ProfileIndexRoute
+}
+
+const ProfileRouteChildren: ProfileRouteChildren = {
+  ProfileIndexRoute: ProfileIndexRoute,
+}
+
+const ProfileRouteWithChildren =
+  ProfileRoute._addFileChildren(ProfileRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthorsRoute: AuthorsRouteWithChildren,
   BooksRoute: BooksRouteWithChildren,
   CategoriesRoute: CategoriesRouteWithChildren,
+  ProfileRoute: ProfileRouteWithChildren,
   ApiUploadthingRouteRoute: ApiUploadthingRouteRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
