@@ -1,4 +1,4 @@
-import { FC, useState} from "react";
+import { FC, useState } from "react";
 import {
 	Bell,
 	Clock,
@@ -271,18 +271,24 @@ const NotificationItem = ({
 			)}
 
 			<div className="flex items-start gap-4">
-				<div 
+				<div
 					className={cn(
 						"relative flex items-center justify-center h-11 w-11 rounded-xl",
 						"bg-linear-to-br shadow-sm transition-transform duration-300",
 						"group-hover:scale-110",
 						!isRead && "animate-pulse-slow",
-						notification.type === "borrow_due" && "from-amber-100 to-amber-200 dark:from-amber-900/30 dark:to-amber-800/20",
-						notification.type === "fine_issued" && "from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/20",
-						notification.type === "membership_expiry" && "from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/20",
-						notification.type === "reservation_ready" && "from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/20",
-						notification.type === "system" && "from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/20",
-						notification.type === "promotional" && "from-pink-100 to-pink-200 dark:from-pink-900/30 dark:to-pink-800/20",
+						notification.type === "borrow_due" &&
+							"from-amber-100 to-amber-200 dark:from-amber-900/30 dark:to-amber-800/20",
+						notification.type === "fine_issued" &&
+							"from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/20",
+						notification.type === "membership_expiry" &&
+							"from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/20",
+						notification.type === "reservation_ready" &&
+							"from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/20",
+						notification.type === "system" &&
+							"from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/20",
+						notification.type === "promotional" &&
+							"from-pink-100 to-pink-200 dark:from-pink-900/30 dark:to-pink-800/20",
 					)}
 				>
 					{getNotificationIcon(notification.type)}
@@ -301,7 +307,10 @@ const NotificationItem = ({
 									{notification.title}
 								</h4>
 								{notification.priority === "high" && (
-									<Badge variant="destructive" className="h-6 px-2 text-[10px] font-semibold shadow-sm">
+									<Badge
+										variant="destructive"
+										className="h-6 px-2 text-[10px] font-semibold shadow-sm"
+									>
 										<AlertTriangle className="h-3 w-3 mr-1" />
 										Urgentné
 									</Badge>
@@ -334,8 +343,8 @@ const NotificationItem = ({
 							</Badge>
 						)}
 						{notification.data?.fineAmount && (
-							<Badge 
-								variant="destructive" 
+							<Badge
+								variant="destructive"
 								className="text-xs px-2.5 py-1 shadow-sm font-semibold"
 							>
 								<DollarSign className="h-3 w-3 mr-1" />
@@ -343,8 +352,8 @@ const NotificationItem = ({
 							</Badge>
 						)}
 						{notification.data?.daysRemaining !== undefined && (
-							<Badge 
-								variant="secondary" 
+							<Badge
+								variant="secondary"
 								className="text-xs px-2.5 py-1 bg-amber-100 dark:bg-amber-950/30 text-amber-900 dark:text-amber-100 border-amber-200/50 dark:border-amber-800/30 font-medium"
 							>
 								<Clock className="h-3 w-3 mr-1.5" />
@@ -363,7 +372,10 @@ const NotificationItem = ({
 							</div>
 
 							{notification.status === "failed" && (
-								<Badge variant="destructive" className="text-xs px-2 py-0.5 shadow-sm">
+								<Badge
+									variant="destructive"
+									className="text-xs px-2 py-0.5 shadow-sm"
+								>
 									<AlertCircle className="h-3 w-3 mr-1" />
 									Zlyhalo odoslanie
 								</Badge>
@@ -427,13 +439,16 @@ interface NotificationDropdownProps {
 export const NotificationDropdown: FC<NotificationDropdownProps> = ({
 	className,
 }) => {
-	const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+	const [notifications, setNotifications] =
+		useState<Notification[]>(mockNotifications);
 	const [isOpen, setIsOpen] = useState(false);
 	const [activeTab, setActiveTab] = useState("all");
 	const [isExpanded, setIsExpanded] = useState(false);
 
 	const unreadCount = notifications.filter((n) => !n.readAt).length;
-	const highPriorityCount = notifications.filter((n) => n.priority === "high").length;
+	const highPriorityCount = notifications.filter(
+		(n) => n.priority === "high",
+	).length;
 
 	const filteredNotifications = notifications.filter((notification) => {
 		if (activeTab === "unread") return !notification.readAt;
@@ -534,9 +549,9 @@ export const NotificationDropdown: FC<NotificationDropdownProps> = ({
 							<div className="flex items-center gap-2">
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
-										<Button 
-											variant="outline" 
-											size="icon" 
+										<Button
+											variant="outline"
+											size="icon"
 											className="h-9 w-9 rounded-xl border-border/50 hover:bg-accent/50 hover:border-primary/30 transition-all duration-200"
 										>
 											<MoreVertical className="h-4 w-4" />
@@ -573,8 +588,8 @@ export const NotificationDropdown: FC<NotificationDropdownProps> = ({
 							className="w-full"
 						>
 							<TabsList className="grid grid-cols-3 w-full h-10 bg-muted/40 p-1 rounded-xl">
-								<TabsTrigger 
-									value="all" 
+								<TabsTrigger
+									value="all"
 									className="text-xs font-medium rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
 								>
 									<span className="mr-1.5">Všetky</span>
@@ -585,8 +600,8 @@ export const NotificationDropdown: FC<NotificationDropdownProps> = ({
 										{notifications.length}
 									</Badge>
 								</TabsTrigger>
-								<TabsTrigger 
-									value="unread" 
+								<TabsTrigger
+									value="unread"
 									className="text-xs font-medium rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
 								>
 									<span className="mr-1.5">Nové</span>
@@ -599,8 +614,8 @@ export const NotificationDropdown: FC<NotificationDropdownProps> = ({
 										</Badge>
 									)}
 								</TabsTrigger>
-								<TabsTrigger 
-									value="high" 
+								<TabsTrigger
+									value="high"
 									className="text-xs font-medium rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all duration-200"
 								>
 									<span className="mr-1.5">Urgentné</span>
@@ -623,11 +638,10 @@ export const NotificationDropdown: FC<NotificationDropdownProps> = ({
 								<div className="p-4 bg-linear-to-br from-muted/50 to-muted/30 rounded-2xl mb-6">
 									<Bell className="h-16 w-16 text-muted-foreground/50" />
 								</div>
-								<h4 className="font-bold text-xl mb-2">
-									Žiadne notifikácie
-								</h4>
+								<h4 className="font-bold text-xl mb-2">Žiadne notifikácie</h4>
 								<p className="text-sm text-muted-foreground max-w-xs leading-relaxed">
-									Nemáte žiadne notifikácie v tejto kategórii. Keď príde niečo nové, uvidíte to tu.
+									Nemáte žiadne notifikácie v tejto kategórii. Keď príde niečo
+									nové, uvidíte to tu.
 								</p>
 							</div>
 						) : (
