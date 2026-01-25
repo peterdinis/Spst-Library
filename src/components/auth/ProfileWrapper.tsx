@@ -5,7 +5,7 @@ import {
   Bookmark, ArrowUpRight, ArrowDownRight, Library,
   TrendingUp, Zap, Flame, CheckCircle2, User, Mail,
   MapPin, Phone, Edit, Settings, LogOut, Trophy,
-  Target, BarChart3, Activity
+  Target, BarChart3, Activity, X, CheckCircle
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,8 +15,40 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Toaster, toast } from 'sonner';
 
-const mockBorrowedBooks = [
+interface Book {
+  id: string;
+  title: string;
+  subtitle: string;
+  author: string;
+  coverImage: string;
+  borrowedDate: string;
+  dueDate: string;
+  status: "active" | "overdue" | "returned";
+  daysRemaining: number;
+  renewalsLeft: number;
+  isOverdue: boolean;
+  fineAmount: number;
+  rating: number;
+  pages: number;
+  category: string;
+  progress: number;
+  isFavorite: boolean;
+  tags: string[];
+}
+
+const initialBorrowedBooks: Book[] = [
   {
     id: "1",
     title: "Clean Code",
@@ -77,6 +109,26 @@ const mockBorrowedBooks = [
     isFavorite: false,
     tags: ["patterns", "gang-of-four"],
   },
+  {
+    id: "4",
+    title: "You Don't Know JS",
+    subtitle: "Scope & Closures",
+    author: "Kyle Simpson",
+    coverImage: "/api/placeholder/400/600",
+    borrowedDate: "2024-01-15",
+    dueDate: "2024-01-29",
+    status: "active",
+    daysRemaining: 7,
+    renewalsLeft: 1,
+    isOverdue: false,
+    fineAmount: 0,
+    rating: 4.5,
+    pages: 278,
+    category: "JavaScript",
+    progress: 50,
+    isFavorite: false,
+    tags: ["javascript", "advanced"],
+  },
 ];
 
 const userProfile = {
@@ -95,14 +147,285 @@ const userProfile = {
 const ProfileWrapper: FC = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [searchQuery, setSearchQuery] = useState("");
+  const [books, setBooks] = useState<Book[]>(initialBorrowedBooks);
+  const [bookToReturn, setBookToReturn] = useState<Book | null>(null);
+  const [showReturnDialog, setShowReturnDialog] = useState(false);
+  const [returnStatus, setReturnStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
+  const [returnMessage, setReturnMessage] = useState('');
 
-  const filteredBooks = mockBorrowedBooks.filter((book) =>
+  const filteredBooks = books.filter((book) =>
     book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     book.author.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const activeBooksCount = books.filter(b => b.status === "active").length;
+  const overdueBooksCount = books.filter(b => b.status === "overdue").length;
+
+  // Funkcia pre vrátenie knihy
+  const handleReturnBook = async () => {
+    if (!bookToReturn) return;
+
+    setReturnStatus('processing');
+    
+    // Simulácia API callu
+    setTimeout(() => {
+      try {
+        // Kontrola pokuty
+        let message = '';
+        let hasFine = false;
+
+        if (bookToReturn.isOverdue) {
+          message = `Kniha bola vrátená s omeškaním. Pokuta €${bookToReturn.fineAmount.toFixed(2)} bola pridaná k vášmu kontu.`;
+          hasFine = true;
+        } else {
+          message = 'Kniha bola úspešne vrátená!';
+        }
+
+        // Aktualizácia stavu knihy
+        setBooks(prevBooks => 
+          prevBooks.map(book => 
+            book.id === bookToReturn.id 
+              ? { ...book, status: "returned" as const, isOverdue: false }
+              : book
+          )
+        );
+
+        setReturnMessage(message);
+        setReturnStatus('success');
+        
+        // Ukáž notifikáciu pomocou sonner
+        if (hasFine) {
+          toast.warning('Kniha vrátená s omeškaním', {
+            description: `Pokuta €${bookToReturn.fineAmount.toFixed(2)} bola pridaná k vášmu kontu.`,
+            duration: 5000,
+            icon: <AlertTriangle className="w-5 h-5 text-amber-500" />,
+          });
+        } else {
+          toast.success('Kniha úspešne vrátená', {
+            description: 'Kniha bola označená ako vrátená.',
+            duration: 3000,
+            icon: <CheckCircle className="w-5 h-5 text-emerald-500" />,
+          });
+        }
+
+        // Resetuj po 2 sekundách
+        setTimeout(() => {
+          setShowReturnDialog(false);
+          setReturnStatus('idle');
+          setBookToReturn(null);
+        }, 2000);
+
+      } catch (error) {
+        setReturnStatus('error');
+        setReturnMessage('Nastala chyba pri vrátení knihy. Skúste to znova.');
+        toast.error('Chyba pri vrátení knihy', {
+          description: 'Skúste to prosím znova neskôr.',
+          duration: 3000,
+          icon: <X className="w-5 h-5 text-red-500" />,
+        });
+      }
+    }, 1000);
+  };
+
+  // Funkcia pre obnovenie výpožičky
+  const handleRenewBook = (bookId: string) => {
+    setBooks(prevBooks => 
+      prevBooks.map(book => {
+        if (book.id === bookId && book.renewalsLeft > 0) {
+          const newDueDate = new Date(book.dueDate);
+          newDueDate.setDate(newDueDate.getDate() + 14); // Pridá 14 dní
+          
+          toast.success('Kniha obnovená', {
+            description: `Nový dátum splatnosti: ${newDueDate.toLocaleDateString('sk')}`,
+            duration: 3000,
+            icon: <RefreshCw className="w-5 h-5 text-blue-500" />,
+          });
+
+          return {
+            ...book,
+            dueDate: newDueDate.toISOString().split('T')[0],
+            daysRemaining: 14,
+            renewalsLeft: book.renewalsLeft - 1,
+            isOverdue: false,
+            status: "active" as const
+          };
+        }
+        return book;
+      })
+    );
+  };
+
+  // Funkcia pre označenie/odznačenie ako obľúbené
+  const handleToggleFavorite = (bookId: string) => {
+    const book = books.find(b => b.id === bookId);
+    
+    setBooks(prevBooks => 
+      prevBooks.map(book => 
+        book.id === bookId 
+          ? { ...book, isFavorite: !book.isFavorite }
+          : book
+      )
+    );
+
+    if (book) {
+      if (!book.isFavorite) {
+        toast('Pridané do obľúbených', {
+          description: `"${book.title}" bola pridaná do obľúbených.`,
+          duration: 2000,
+          icon: <Heart className="w-5 h-5 fill-red-500 text-red-500" />,
+        });
+      } else {
+        toast('Odobrané z obľúbených', {
+          description: `"${book.title}" bola odobraná z obľúbených.`,
+          duration: 2000,
+          icon: <Heart className="w-5 h-5 text-gray-400" />,
+        });
+      }
+    }
+  };
+
+  // Reset všetkých kníh
+  const handleResetAllBooks = () => {
+    setBooks(initialBorrowedBooks);
+    toast.info('Stav kníh obnovený', {
+      description: 'Všetky knihy boli obnovené na pôvodný stav.',
+      duration: 3000,
+      icon: <RefreshCw className="w-5 h-5 text-indigo-500" />,
+    });
+  };
+
   return (
     <div className="min-h-screen">
+      <Toaster 
+        position="top-right"
+        expand={false}
+        richColors
+        closeButton
+        theme="dark"
+        className="font-sans"
+        toastOptions={{
+          classNames: {
+            toast: 'group toast group-[.toaster]:bg-slate-900 group-[.toaster]:text-slate-200 group-[.toaster]:border-slate-800',
+            description: 'group-[.toast]:text-slate-400',
+            actionButton: 'group-[.toast]:bg-indigo-600 group-[.toast]:text-white',
+            cancelButton: 'group-[.toast]:bg-slate-800 group-[.toast]:text-slate-300',
+          },
+        }}
+      />
+      
+      {/* Return Book Dialog */}
+      <AlertDialog open={showReturnDialog} onOpenChange={setShowReturnDialog}>
+        <AlertDialogContent className="bg-slate-900 border-slate-800 text-slate-200">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl">
+              {returnStatus === 'processing' ? 'Vraciam knihu...' : 
+               returnStatus === 'success' ? 'Kniha vrátená!' : 
+               'Vrátiť knihu?'}
+            </AlertDialogTitle>
+            
+            {returnStatus === 'idle' && bookToReturn && (
+              <AlertDialogDescription className="space-y-4">
+                <div className="flex items-start gap-4 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+                  <div className="w-16 h-24 rounded overflow-hidden bg-slate-700 flex-shrink-0">
+                    <img src={bookToReturn.coverImage} alt={bookToReturn.title} className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg text-slate-100 mb-1">{bookToReturn.title}</h4>
+                    <p className="text-sm text-slate-400 mb-2">{bookToReturn.author}</p>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <Badge className="bg-slate-800 text-slate-300 border-slate-700">
+                        Splatnosť: {new Date(bookToReturn.dueDate).toLocaleDateString('sk')}
+                      </Badge>
+                      {bookToReturn.isOverdue && (
+                        <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+                          Pokuta: €{bookToReturn.fineAmount.toFixed(2)}
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                {bookToReturn.isOverdue && (
+                  <div className="p-3 bg-red-900/20 rounded-lg border border-red-800/50">
+                    <div className="flex items-center gap-2 text-red-400 mb-1">
+                      <AlertTriangle className="w-4 h-4" />
+                      <span className="font-semibold">Pozor: Omeškaná kniha</span>
+                    </div>
+                    <p className="text-sm text-red-300">
+                      Táto kniha je omeškaná. Po vrátení bude k vášmu kontu pridaná pokuta €{bookToReturn.fineAmount.toFixed(2)}.
+                    </p>
+                  </div>
+                )}
+                
+                <p className="text-slate-300">
+                  Ste si istý, že chcete vrátiť túto knihu? Táto akcia sa nedá vrátiť späť.
+                </p>
+              </AlertDialogDescription>
+            )}
+
+            {returnStatus === 'processing' && (
+              <div className="py-8 text-center">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mb-4"></div>
+                <p className="text-slate-400">Prebieha vracanie knihy...</p>
+              </div>
+            )}
+
+            {returnStatus === 'success' && (
+              <div className="py-8 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/20 mb-4">
+                  <CheckCircle className="w-8 h-8 text-emerald-500" />
+                </div>
+                <p className="text-slate-300 mb-2">{returnMessage}</p>
+                <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                  Kniha vrátená
+                </Badge>
+              </div>
+            )}
+
+            {returnStatus === 'error' && (
+              <div className="py-8 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-500/20 mb-4">
+                  <X className="w-8 h-8 text-red-500" />
+                </div>
+                <p className="text-red-400 mb-2">{returnMessage}</p>
+                <p className="text-sm text-slate-400">Skúste to prosím znova neskôr.</p>
+              </div>
+            )}
+          </AlertDialogHeader>
+
+          <AlertDialogFooter className="gap-2">
+            {returnStatus === 'idle' && (
+              <>
+                <AlertDialogCancel className="bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white">
+                  Zrušiť
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleReturnBook}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  disabled={returnStatus === 'processing'}
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Potvrdiť vrátenie
+                </AlertDialogAction>
+              </>
+            )}
+            
+            {(returnStatus === 'success' || returnStatus === 'error') && (
+              <AlertDialogAction
+                onClick={() => {
+                  setShowReturnDialog(false);
+                  setReturnStatus('idle');
+                  setBookToReturn(null);
+                }}
+                className="bg-slate-800 border-slate-700 hover:bg-slate-700"
+              >
+                Zavrieť
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="max-w-7xl mx-auto p-4 md:p-8 space-y-6">
         
         {/* Profile Header */}
@@ -142,6 +465,15 @@ const ProfileWrapper: FC = () => {
               </div>
 
               <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300 rounded-xl"
+                  onClick={handleResetAllBooks}
+                  title="Obnoviť všetky knihy"
+                >
+                  <RefreshCw className="w-5 h-5" />
+                </Button>
                 <Button variant="outline" size="icon" className="bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300 rounded-xl">
                   <Settings className="w-5 h-5" />
                 </Button>
@@ -158,7 +490,7 @@ const ProfileWrapper: FC = () => {
                 <div className="text-sm text-slate-400">Celkom prečítaných</div>
               </div>
               <div className="text-center p-4 bg-slate-800/50 rounded-xl border border-slate-800">
-                <div className="text-3xl font-bold text-slate-100 mb-1">4</div>
+                <div className="text-3xl font-bold text-slate-100 mb-1">{activeBooksCount}</div>
                 <div className="text-sm text-slate-400">Aktívne výpožičky</div>
               </div>
               <div className="text-center p-4 bg-slate-800/50 rounded-xl border border-slate-800">
@@ -166,7 +498,9 @@ const ProfileWrapper: FC = () => {
                 <div className="text-sm text-slate-400">Dní série</div>
               </div>
               <div className="text-center p-4 bg-slate-800/50 rounded-xl border border-slate-800">
-                <div className="text-3xl font-bold text-slate-100 mb-1">€1.50</div>
+                <div className="text-3xl font-bold text-slate-100 mb-1">
+                  €{books.reduce((sum, book) => sum + (book.isOverdue ? book.fineAmount : 0), 0).toFixed(2)}
+                </div>
                 <div className="text-sm text-slate-400">Celková pokuta</div>
               </div>
             </div>
@@ -188,7 +522,7 @@ const ProfileWrapper: FC = () => {
               className="rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400 px-6 py-2.5"
             >
               <BookOpen className="w-4 h-4 mr-2" />
-              Moje knihy ({mockBorrowedBooks.length})
+              Moje knihy ({books.filter(b => b.status !== "returned").length})
             </TabsTrigger>
             <TabsTrigger 
               value="stats" 
@@ -213,7 +547,7 @@ const ProfileWrapper: FC = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-4xl font-bold text-slate-100 mb-2">4</div>
+                  <div className="text-4xl font-bold text-slate-100 mb-2">{activeBooksCount}</div>
                   <div className="flex items-center gap-2 text-sm text-emerald-400">
                     <ArrowUpRight className="w-4 h-4" />
                     <span>+2 tento týždeň</span>
@@ -232,9 +566,11 @@ const ProfileWrapper: FC = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-4xl font-bold text-slate-100 mb-2">1</div>
+                  <div className="text-4xl font-bold text-slate-100 mb-2">{overdueBooksCount}</div>
                   <div className="flex items-center gap-2 text-sm text-red-400">
-                    <span>Pokuta: €1.50</span>
+                    <span>
+                      Pokuta: €{books.filter(b => b.isOverdue).reduce((sum, book) => sum + book.fineAmount, 0).toFixed(2)}
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -264,8 +600,8 @@ const ProfileWrapper: FC = () => {
                 <CardTitle className="text-xl text-slate-200">Aktuálne čítanie</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {mockBorrowedBooks.filter(b => b.status === "active").slice(0, 3).map((book) => (
-                  <div key={book.id} className="flex items-center gap-4 p-4 bg-slate-800/50 rounded-xl border border-slate-800 hover:border-indigo-600 transition-all">
+                {books.filter(b => b.status === "active").slice(0, 3).map((book) => (
+                  <div key={book.id} className="flex items-center gap-4 p-4 bg-slate-800/50 rounded-xl border border-slate-800 hover:border-indigo-600 transition-all group">
                     <div className="h-20 w-14 rounded-lg overflow-hidden bg-slate-700 flex-shrink-0">
                       <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover" />
                     </div>
@@ -297,9 +633,44 @@ const ProfileWrapper: FC = () => {
               />
             </div>
 
+            {/* Filter Buttons */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className={`rounded-xl ${activeTab === 'books' ? 'border-indigo-600 text-indigo-400' : 'border-slate-700 text-slate-400'}`}
+                onClick={() => setActiveTab('books')}
+              >
+                Všetky ({books.length})
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl border-slate-700 text-slate-400"
+              >
+                Aktívne ({activeBooksCount})
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl border-slate-700 text-slate-400"
+              >
+                Omeškané ({overdueBooksCount})
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl border-slate-700 text-slate-400"
+              >
+                Obľúbené ({books.filter(b => b.isFavorite).length})
+              </Button>
+            </div>
+
             {/* Books Grid */}
             <div className="grid gap-6">
-              {filteredBooks.map((book) => (
+              {filteredBooks
+                .filter(book => book.status !== "returned")
+                .map((book) => (
                 <Card key={book.id} className="bg-slate-900 border-slate-800 overflow-hidden hover:border-indigo-600 transition-all group">
                   <CardContent className="p-0">
                     <div className="flex flex-col md:flex-row">
@@ -324,7 +695,10 @@ const ProfileWrapper: FC = () => {
                           
                           {book.isFavorite && (
                             <div className="absolute top-3 right-3">
-                              <div className="bg-slate-900/80 backdrop-blur-sm p-2 rounded-full border border-slate-800">
+                              <div 
+                                className="bg-slate-900/80 backdrop-blur-sm p-2 rounded-full border border-slate-800 cursor-pointer hover:bg-red-500/20"
+                                onClick={() => handleToggleFavorite(book.id)}
+                              >
                                 <Heart className="w-4 h-4 fill-red-500 text-red-500" />
                               </div>
                             </div>
@@ -359,6 +733,12 @@ const ProfileWrapper: FC = () => {
                             <Badge className="bg-indigo-900/50 text-indigo-300 border-indigo-800">
                               {book.category}
                             </Badge>
+                            {book.status === "returned" && (
+                              <Badge className="bg-emerald-900/50 text-emerald-300 border-emerald-800">
+                                <CheckCircle className="w-3 h-3 mr-1" />
+                                Vrátené
+                              </Badge>
+                            )}
                           </div>
 
                           <div className="grid md:grid-cols-2 gap-4">
@@ -403,19 +783,43 @@ const ProfileWrapper: FC = () => {
 
                           <div className="flex flex-wrap gap-3 pt-4 border-t border-slate-800">
                             <Button
-                              disabled={book.renewalsLeft === 0}
-                              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl"
+                              onClick={() => handleRenewBook(book.id)}
+                              disabled={book.renewalsLeft === 0 || book.isOverdue}
+                              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                              title={book.isOverdue ? "Omeškané knihy nemožno obnoviť" : `Zostáva ${book.renewalsLeft} obnovení`}
                             >
                               <RefreshCw className="w-4 h-4 mr-2" />
-                              Obnoviť
+                              Obnoviť ({book.renewalsLeft})
                             </Button>
-                            <Button variant="outline" className="rounded-xl border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white">
-                              <Eye className="w-4 h-4 mr-2" />
-                              Detaily
+                            
+                            <Button
+                              onClick={() => {
+                                setBookToReturn(book);
+                                setShowReturnDialog(true);
+                              }}
+                              variant="outline"
+                              className="rounded-xl border-slate-700 text-slate-300 hover:bg-slate-800 hover:text-white"
+                            >
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              Vrátiť knihu
                             </Button>
-                            <Button variant="ghost" className="rounded-xl text-slate-400 hover:text-white hover:bg-slate-800">
-                              <Bookmark className="w-4 h-4 mr-2" />
-                              {book.isFavorite ? "Odobrať" : "Pridať"}
+                            
+                            <Button
+                              variant="ghost"
+                              className="rounded-xl text-slate-400 hover:text-white hover:bg-slate-800"
+                              onClick={() => handleToggleFavorite(book.id)}
+                            >
+                              {book.isFavorite ? (
+                                <>
+                                  <Heart className="w-4 h-4 mr-2 fill-red-500 text-red-500" />
+                                  Odobrať
+                                </>
+                              ) : (
+                                <>
+                                  <Heart className="w-4 h-4 mr-2" />
+                                  Pridať
+                                </>
+                              )}
                             </Button>
                           </div>
                         </div>
@@ -425,6 +829,38 @@ const ProfileWrapper: FC = () => {
                 </Card>
               ))}
             </div>
+
+            {/* Returned Books Section */}
+            {filteredBooks.filter(book => book.status === "returned").length > 0 && (
+              <div className="mt-12">
+                <h3 className="text-xl font-bold text-slate-200 mb-4 flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-emerald-500" />
+                  Vrátené knihy
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredBooks
+                    .filter(book => book.status === "returned")
+                    .map(book => (
+                      <Card key={book.id} className="bg-slate-900/50 border-slate-800">
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="w-16 h-24 rounded overflow-hidden bg-slate-800 flex-shrink-0">
+                              <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-slate-200 mb-1">{book.title}</h4>
+                              <p className="text-sm text-slate-400 mb-2">{book.author}</p>
+                              <Badge className="bg-emerald-900/30 text-emerald-400 border-emerald-800">
+                                Vrátené {new Date().toLocaleDateString('sk')}
+                              </Badge>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           {/* Stats Tab */}
@@ -443,8 +879,8 @@ const ProfileWrapper: FC = () => {
                     <span className="text-2xl font-bold text-slate-100">{userProfile.totalBooksRead}</span>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl border border-slate-800">
-                    <span className="text-slate-300">Obľúbený žáner</span>
-                    <span className="text-xl font-semibold text-indigo-400">{userProfile.favoriteGenre}</span>
+                    <span className="text-slate-300">Aktívne výpožičky</span>
+                    <span className="text-xl font-semibold text-blue-400">{activeBooksCount}</span>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl border border-slate-800">
                     <span className="text-slate-300">Priemerný čas</span>
@@ -483,6 +919,46 @@ const ProfileWrapper: FC = () => {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Recent Returns */}
+            <Card className="bg-slate-900 border-slate-800">
+              <CardHeader>
+                <CardTitle className="text-xl text-slate-200 flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-emerald-400" />
+                  Nedávno vrátené knihy
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {books
+                    .filter(book => book.status === "returned")
+                    .slice(0, 3)
+                    .map(book => (
+                      <div key={book.id} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg border border-slate-800">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-14 rounded overflow-hidden bg-slate-700">
+                            <img src={book.coverImage} alt={book.title} className="w-full h-full object-cover" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-slate-200">{book.title}</h4>
+                            <p className="text-sm text-slate-400">{book.author}</p>
+                          </div>
+                        </div>
+                        <Badge className="bg-emerald-900/30 text-emerald-400 border-emerald-800">
+                          Vrátené
+                        </Badge>
+                      </div>
+                    ))}
+                  
+                  {books.filter(book => book.status === "returned").length === 0 && (
+                    <div className="text-center py-8 text-slate-500">
+                      <CheckCircle className="w-12 h-12 mx-auto mb-3 text-slate-700" />
+                      <p>Zatiaľ žiadne vrátené knihy</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
