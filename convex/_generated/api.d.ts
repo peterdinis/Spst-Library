@@ -13,6 +13,7 @@ import type * as books from "../books.js";
 import type * as categories from "../categories.js";
 import type * as files from "../files.js";
 import type * as notifications from "../notifications.js";
+import type * as orders from "../orders.js";
 
 import type {
   ApiFromModules,
@@ -26,6 +27,7 @@ declare const fullApi: ApiFromModules<{
   categories: typeof categories;
   files: typeof files;
   notifications: typeof notifications;
+  orders: typeof orders;
 }>;
 
 /**
