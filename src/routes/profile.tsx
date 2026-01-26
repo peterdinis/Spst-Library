@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useUser } from "@workos-inc/authkit-react";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { useAuth } from "@/lib/auth-context";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "convex/_generated/api";
 import { useState, useEffect, FormEvent, ChangeEvent } from "react";
@@ -11,56 +11,55 @@ import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { Loader2, Save } from "lucide-react";
-import { Navigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/profile")({
 	component: ProfilePage,
 });
 
 function ProfilePage() {
-	const { user: workosUser } = useUser();
-	const convexUser = useQuery(
-		api.users.getCurrentUser,
-		workosUser?.id ? { workosId: workosUser.id } : "skip",
+	const { user } = useAuth();
+	const fullUser = useQuery(
+		api.users.getById,
+		user?._id ? { id: user._id } : "skip",
 	);
 	const updateProfile = useMutation(api.users.updateProfile);
 
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [formData, setFormData] = useState({
-		firstName: convexUser?.firstName || workosUser?.firstName || "",
-		lastName: convexUser?.lastName || workosUser?.lastName || "",
-		phone: convexUser?.phone || "",
+		firstName: "",
+		lastName: "",
+		phone: "",
 		address: {
-			line1: convexUser?.address?.line1 || "",
-			line2: convexUser?.address?.line2 || "",
-			city: convexUser?.address?.city || "",
-			state: convexUser?.address?.state || "",
-			postalCode: convexUser?.address?.postalCode || "",
-			country: convexUser?.address?.country || "",
+			line1: "",
+			line2: "",
+			city: "",
+			state: "",
+			postalCode: "",
+			country: "",
 		},
 	});
 
-	// Update form data when convexUser loads
+	// Update form data when full user loads
 	useEffect(() => {
-		if (convexUser) {
+		if (fullUser) {
 			setFormData({
-				firstName: convexUser.firstName,
-				lastName: convexUser.lastName,
-				phone: convexUser.phone || "",
+				firstName: fullUser.firstName,
+				lastName: fullUser.lastName,
+				phone: fullUser.phone || "",
 				address: {
-					line1: convexUser.address?.line1 || "",
-					line2: convexUser.address?.line2 || "",
-					city: convexUser.address?.city || "",
-					state: convexUser.address?.state || "",
-					postalCode: convexUser.address?.postalCode || "",
-					country: convexUser.address?.country || "",
+					line1: fullUser.address?.line1 || "",
+					line2: fullUser.address?.line2 || "",
+					city: fullUser.address?.city || "",
+					state: fullUser.address?.state || "",
+					postalCode: fullUser.address?.postalCode || "",
+					country: fullUser.address?.country || "",
 				},
 			});
 		}
-	}, [convexUser]);
+	}, [fullUser]);
 
-	if (!workosUser) {
-		return <Navigate to="/" />;
+	if (!user) {
+		return <Navigate to="/login" />;
 	}
 
 	const handleInputChange = (
@@ -87,13 +86,13 @@ function ProfilePage() {
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
-		if (!convexUser) return;
+		if (!user) return;
 
 		setIsSubmitting(true);
 
 		try {
 			await updateProfile({
-				userId: convexUser._id,
+				userId: user._id,
 				firstName: formData.firstName,
 				lastName: formData.lastName,
 				phone: formData.phone || undefined,
@@ -119,10 +118,7 @@ function ProfilePage() {
 		}
 	};
 
-	const displayName =
-		convexUser?.fullName ||
-		`${workosUser.firstName || ""} ${workosUser.lastName || ""}`.trim() ||
-		workosUser.email;
+	const displayName = user.fullName || `${user.firstName} ${user.lastName}`;
 	const initials = displayName
 		.split(" ")
 		.map((n) => n[0])
@@ -143,17 +139,12 @@ function ProfilePage() {
 				<CardHeader>
 					<div className="flex items-center gap-4">
 						<Avatar className="h-20 w-20">
-							<AvatarImage
-								src={workosUser.profilePictureUrl || convexUser?.imageUrl}
-								alt={displayName}
-							/>
+							<AvatarImage src={user.imageUrl} alt={displayName} />
 							<AvatarFallback className="text-2xl">{initials}</AvatarFallback>
 						</Avatar>
 						<div>
 							<CardTitle>{displayName}</CardTitle>
-							<p className="text-sm text-muted-foreground">
-								{workosUser.email}
-							</p>
+							<p className="text-sm text-muted-foreground">{user.email}</p>
 						</div>
 					</div>
 				</CardHeader>

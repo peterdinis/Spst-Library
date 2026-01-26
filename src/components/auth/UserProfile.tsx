@@ -1,4 +1,4 @@
-import { useAuth, useUser } from "@workos-inc/authkit-react";
+import { useAuth } from "@/lib/auth-context";
 import { useQuery } from "convex/react";
 import { api } from "convex/_generated/api";
 import {
@@ -12,23 +12,17 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { LogOut, User, Settings } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 
 export function UserProfile() {
-	const { user: workosUser } = useUser();
-	const { signOut } = useAuth();
-	const convexUser = useQuery(
-		api.users.getCurrentUser,
-		workosUser?.id ? { workosId: workosUser.id } : "skip",
-	);
+	const { user, logout } = useAuth();
+	const navigate = useNavigate();
 
-	if (!workosUser) {
+	if (!user) {
 		return null;
 	}
 
-	const displayName =
-		convexUser?.fullName ||
-		`${workosUser.firstName || ""} ${workosUser.lastName || ""}`.trim() ||
-		workosUser.email;
+	const displayName = user.fullName || `${user.firstName} ${user.lastName}`;
 	const initials = displayName
 		.split(" ")
 		.map((n) => n[0])
@@ -36,15 +30,17 @@ export function UserProfile() {
 		.toUpperCase()
 		.slice(0, 2);
 
+	const handleLogout = async () => {
+		await logout();
+		navigate({ to: "/" });
+	};
+
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
 				<Button variant="ghost" className="relative h-10 w-10 rounded-full">
 					<Avatar className="h-10 w-10">
-						<AvatarImage
-							src={workosUser.profilePictureUrl || convexUser?.imageUrl}
-							alt={displayName}
-						/>
+						<AvatarImage src={user.imageUrl} alt={displayName} />
 						<AvatarFallback>{initials}</AvatarFallback>
 					</Avatar>
 				</Button>
@@ -54,7 +50,7 @@ export function UserProfile() {
 					<div className="flex flex-col space-y-1">
 						<p className="text-sm font-medium leading-none">{displayName}</p>
 						<p className="text-xs leading-none text-muted-foreground">
-							{workosUser.email}
+							{user.email}
 						</p>
 					</div>
 				</DropdownMenuLabel>
@@ -72,7 +68,7 @@ export function UserProfile() {
 					</a>
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
-				<DropdownMenuItem onClick={() => signOut()}>
+				<DropdownMenuItem onClick={handleLogout}>
 					<LogOut className="mr-2 h-4 w-4" />
 					<span>Odhlásiť sa</span>
 				</DropdownMenuItem>

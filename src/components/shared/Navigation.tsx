@@ -5,12 +5,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "../ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { LoginButton, RegisterButton, UserProfile } from "../auth";
-import { useUser } from "@workos-inc/authkit-react";
+import { useAuth } from "@/lib/auth-context";
 
 export function Navigation() {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const router = useRouter();
-	const { user } = useUser();
+	const { user } = useAuth();
 
 	const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 	const closeMenu = () => setIsMenuOpen(false);

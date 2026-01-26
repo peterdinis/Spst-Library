@@ -1,119 +1,6 @@
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { ConvexError } from "convex/values";
 import { Doc, Id } from "./_generated/dataModel";
-
-/**
- * Create or update user from WorkOS
- */
-export const createOrUpdateFromWorkOS = mutation({
-	args: {
-		workosId: v.string(),
-		email: v.string(),
-		firstName: v.string(),
-		lastName: v.string(),
-		fullName: v.string(),
-		imageUrl: v.optional(v.string()),
-		workosOrganizationId: v.optional(v.string()),
-		workosConnectionId: v.optional(v.string()),
-		workosProfile: v.optional(
-			v.object({
-				idpId: v.optional(v.string()),
-				firstName: v.optional(v.string()),
-				lastName: v.optional(v.string()),
-				email: v.optional(v.string()),
-				username: v.optional(v.string()),
-				rawAttributes: v.optional(v.any()),
-			}),
-		),
-	},
-	handler: async (ctx, args) => {
-		const now = Date.now();
-
-		// Check if user already exists by workosId
-		const existingUser = await ctx.db
-			.query("users")
-			.withIndex("by_workos_id", (q) => q.eq("workosId", args.workosId))
-			.first();
-
-		// Build searchable text
-		const searchableText = [
-			args.email,
-			args.firstName,
-			args.lastName,
-			args.fullName,
-		]
-			.filter(Boolean)
-			.join(" ")
-			.toLowerCase();
-
-		if (existingUser) {
-			// Update existing user
-			await ctx.db.patch(existingUser._id, {
-				email: args.email,
-				firstName: args.firstName,
-				lastName: args.lastName,
-				fullName: args.fullName,
-				imageUrl: args.imageUrl,
-				workosOrganizationId: args.workosOrganizationId,
-				workosConnectionId: args.workosConnectionId,
-				workosProfile: args.workosProfile,
-				workosStatus: "active" as const,
-				lastLoginAt: now,
-				lastSyncWithWorkos: now,
-				updatedAt: now,
-				searchableText,
-			});
-
-			return existingUser._id;
-		}
-
-		// Create new user
-		const userId = await ctx.db.insert("users", {
-			workosId: args.workosId,
-			email: args.email,
-			emailVerified: true,
-			firstName: args.firstName,
-			lastName: args.lastName,
-			fullName: args.fullName,
-			imageUrl: args.imageUrl,
-			workosOrganizationId: args.workosOrganizationId,
-			workosConnectionId: args.workosConnectionId,
-			workosProfile: args.workosProfile,
-			membershipType: "regular" as const,
-			membershipStartDate: now,
-			roles: ["member"] as const[],
-			workosStatus: "active" as const,
-			totalBorrowed: 0,
-			currentBorrowed: 0,
-			totalReservations: 0,
-			totalFines: 0,
-			currentFines: 0,
-			createdAt: now,
-			updatedAt: now,
-			lastLoginAt: now,
-			lastSyncWithWorkos: now,
-			searchableText,
-		});
-
-		return userId;
-	},
-});
-
-/**
- * Get user by WorkOS ID
- */
-export const getByWorkOSId = query({
-	args: { workosId: v.string() },
-	handler: async (ctx, args) => {
-		const user = await ctx.db
-			.query("users")
-			.withIndex("by_workos_id", (q) => q.eq("workosId", args.workosId))
-			.first();
-
-		return user;
-	},
-});
 
 /**
  * Get user by email
@@ -123,10 +10,15 @@ export const getByEmail = query({
 	handler: async (ctx, args) => {
 		const user = await ctx.db
 			.query("users")
-			.withIndex("by_email", (q) => q.eq("email", args.email))
+			.withIndex("by_email", (q) => q.eq("email", args.email.toLowerCase()))
 			.first();
 
-		return user;
+		if (user) {
+			const { passwordHash, ...userWithoutPassword } = user;
+			return userWithoutPassword;
+		}
+
+		return null;
 	},
 });
 
@@ -137,7 +29,11 @@ export const getById = query({
 	args: { id: v.id("users") },
 	handler: async (ctx, args) => {
 		const user = await ctx.db.get(args.id);
-		return user;
+		if (user) {
+			const { passwordHash, ...userWithoutPassword } = user;
+			return userWithoutPassword;
+		}
+		return null;
 	},
 });
 
@@ -231,20 +127,5 @@ export const updateLastLogin = mutation({
 			lastLoginAt: Date.now(),
 			updatedAt: Date.now(),
 		});
-	},
-});
-
-/**
- * Get current user (by WorkOS session)
- */
-export const getCurrentUser = query({
-	args: { workosId: v.string() },
-	handler: async (ctx, args) => {
-		const user = await ctx.db
-			.query("users")
-			.withIndex("by_workos_id", (q) => q.eq("workosId", args.workosId))
-			.first();
-
-		return user;
 	},
 });

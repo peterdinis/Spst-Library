@@ -3,13 +3,9 @@ import { v } from "convex/values";
 
 export default defineSchema({
   users: defineTable({
-    // WorkOS identifikácia
-    workosId: v.string(),
-    workosOrganizationId: v.optional(v.string()),
-    workosConnectionId: v.optional(v.string()),
-    
-    // Identifikácia
+    // Autentifikácia
     email: v.string(),
+    passwordHash: v.string(),
     emailVerified: v.boolean(),
     
     // Základné informácie
@@ -17,18 +13,6 @@ export default defineSchema({
     lastName: v.string(),
     fullName: v.string(),
     imageUrl: v.optional(v.string()),
-    
-    // WorkOS metadata
-    workosProfile: v.optional(
-      v.object({
-        idpId: v.optional(v.string()),
-        firstName: v.optional(v.string()),
-        lastName: v.optional(v.string()),
-        email: v.optional(v.string()),
-        username: v.optional(v.string()),
-        rawAttributes: v.optional(v.any()),
-      })
-    ),
     
     // Kontaktné informácie
     phone: v.optional(v.string()),
@@ -56,7 +40,7 @@ export default defineSchema({
     membershipStartDate: v.number(),
     membershipEndDate: v.optional(v.number()),
     
-    // Role a oprávnenia (môže byť synchronizované s WorkOS)
+    // Role a oprávnenia
     roles: v.array(
       v.union(
         v.literal("member"),
@@ -66,8 +50,8 @@ export default defineSchema({
       )
     ),
     
-    // WorkOS status
-    workosStatus: v.union(
+    // Status
+    status: v.union(
       v.literal("active"),
       v.literal("inactive"),
       v.literal("suspended")
@@ -101,22 +85,32 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     lastLoginAt: v.optional(v.number()),
-    lastSyncWithWorkos: v.optional(v.number()),
     
     // Indexované polia pre vyhľadávanie
     searchableText: v.string(),
   })
-    .index("by_workos_id", ["workosId"])
     .index("by_email", ["email"])
     .index("by_library_card", ["libraryCardNumber"])
     .index("by_membership_type", ["membershipType"])
-    .index("by_status", ["workosStatus"])
-    .index("by_organization", ["workosOrganizationId"])
-    .index("by_connection", ["workosConnectionId"])
+    .index("by_status", ["status"])
     .searchIndex("search_users", {
       searchField: "searchableText",
-      filterFields: ["membershipType", "workosStatus", "workosOrganizationId"],
+      filterFields: ["membershipType", "status"],
     }),
+
+  // Sessions pre autentifikáciu
+  sessions: defineTable({
+    userId: v.id("users"),
+    token: v.string(),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+    lastUsedAt: v.number(),
+    ipAddress: v.optional(v.string()),
+    userAgent: v.optional(v.string()),
+  })
+    .index("by_token", ["token"])
+    .index("by_user", ["userId"])
+    .index("by_expires", ["expiresAt"]),
 
   // Author tabuľka (z pôvodného kódu)
   authors: defineTable({

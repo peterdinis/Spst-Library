@@ -5,7 +5,6 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import WorkOSProvider from "../integrations/workos/provider";
 import ConvexProvider from "../integrations/convex/provider";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import appCss from "../styles.css?url";
@@ -14,6 +13,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import Navigation from "@/components/shared/Navigation";
 import { ThemeProvider } from "@/integrations/next-themes/ThemeProvider";
 import { ScrollToTop } from "@/components/shared/ScrollToTop";
+import { AuthProvider } from "@/lib/auth-context";
 
 interface MyRouterContext {
 	queryClient: QueryClient;
@@ -57,9 +57,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 					enableSystem
 					disableTransitionOnChange
 				>
-					<Navigation />
-					<WorkOSProvider>
-						<ConvexProvider>
+					<ConvexProvider>
+						<AuthProvider>
+							<Navigation />
 							{children}
 							<ScrollToTop />
 							<TanStackDevtools
@@ -74,8 +74,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 									TanStackQueryDevtools,
 								]}
 							/>
-						</ConvexProvider>
-					</WorkOSProvider>
+						</AuthProvider>
+					</ConvexProvider>
 					<Scripts />
 				</ThemeProvider>
 			</body>
