@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as CategoriesRouteImport } from './routes/categories'
 import { Route as BooksRouteImport } from './routes/books'
 import { Route as AuthorsRouteImport } from './routes/authors'
@@ -27,9 +29,19 @@ import { Route as AuthorsAuthorIdRouteImport } from './routes/authors.$authorId'
 import { Route as ApiUploadthingRouteRouteImport } from './routes/api/uploadthing/route'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CategoriesRoute = CategoriesRouteImport.update({
@@ -118,7 +130,9 @@ export interface FileRoutesByFullPath {
   '/authors': typeof AuthorsRouteWithChildren
   '/books': typeof BooksRouteWithChildren
   '/categories': typeof CategoriesRouteWithChildren
+  '/login': typeof LoginRoute
   '/profile': typeof ProfileRouteWithChildren
+  '/register': typeof RegisterRoute
   '/api/uploadthing': typeof ApiUploadthingRouteRoute
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/authors/create': typeof AuthorsCreateRoute
@@ -134,6 +148,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
   '/api/uploadthing': typeof ApiUploadthingRouteRoute
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/authors/create': typeof AuthorsCreateRoute
@@ -153,7 +169,9 @@ export interface FileRoutesById {
   '/authors': typeof AuthorsRouteWithChildren
   '/books': typeof BooksRouteWithChildren
   '/categories': typeof CategoriesRouteWithChildren
+  '/login': typeof LoginRoute
   '/profile': typeof ProfileRouteWithChildren
+  '/register': typeof RegisterRoute
   '/api/uploadthing': typeof ApiUploadthingRouteRoute
   '/authors/$authorId': typeof AuthorsAuthorIdRoute
   '/authors/create': typeof AuthorsCreateRoute
@@ -174,7 +192,9 @@ export interface FileRouteTypes {
     | '/authors'
     | '/books'
     | '/categories'
+    | '/login'
     | '/profile'
+    | '/register'
     | '/api/uploadthing'
     | '/authors/$authorId'
     | '/authors/create'
@@ -190,6 +210,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/login'
+    | '/register'
     | '/api/uploadthing'
     | '/authors/$authorId'
     | '/authors/create'
@@ -208,7 +230,9 @@ export interface FileRouteTypes {
     | '/authors'
     | '/books'
     | '/categories'
+    | '/login'
     | '/profile'
+    | '/register'
     | '/api/uploadthing'
     | '/authors/$authorId'
     | '/authors/create'
@@ -228,18 +252,34 @@ export interface RootRouteChildren {
   AuthorsRoute: typeof AuthorsRouteWithChildren
   BooksRoute: typeof BooksRouteWithChildren
   CategoriesRoute: typeof CategoriesRouteWithChildren
+  LoginRoute: typeof LoginRoute
   ProfileRoute: typeof ProfileRouteWithChildren
+  RegisterRoute: typeof RegisterRoute
   ApiUploadthingRouteRoute: typeof ApiUploadthingRouteRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/categories': {
@@ -418,7 +458,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthorsRoute: AuthorsRouteWithChildren,
   BooksRoute: BooksRouteWithChildren,
   CategoriesRoute: CategoriesRouteWithChildren,
+  LoginRoute: LoginRoute,
   ProfileRoute: ProfileRouteWithChildren,
+  RegisterRoute: RegisterRoute,
   ApiUploadthingRouteRoute: ApiUploadthingRouteRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
