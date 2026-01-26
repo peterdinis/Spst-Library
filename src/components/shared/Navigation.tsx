@@ -4,10 +4,13 @@ import { BookOpen, Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "../ui/button";
 import { ThemeToggle } from "./ThemeToggle";
+import { LoginButton, RegisterButton, UserProfile } from "../auth";
+import { useUser } from "@workos-inc/authkit-react";
 
 export function Navigation() {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
 	const router = useRouter();
+	const { user } = useUser();
 
 	const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 	const closeMenu = () => setIsMenuOpen(false);
@@ -75,23 +78,15 @@ export function Navigation() {
 					</nav>
 
 					<div className="hidden md:flex items-center space-x-4">
-						<div className="flex items-center space-x-2">
-							<Button
-								variant="outline"
-								size="sm"
-								onClick={() => router.navigate({ to: "/login" })}
-							>
-								Prihlásenie
-							</Button>
-							<Button
-								variant="default"
-								size="sm"
-								onClick={() => router.navigate({ to: "/register" })}
-							>
-								Registrácia
-							</Button>
-							<ThemeToggle />
-						</div>
+						{user ? (
+							<UserProfile />
+						) : (
+							<>
+								<LoginButton />
+								<RegisterButton />
+							</>
+						)}
+						<ThemeToggle />
 					</div>
 
 					{/* Mobile Menu Button */}
@@ -187,28 +182,20 @@ export function Navigation() {
 										}}
 										className="pt-2 space-y-2"
 									>
-										<Button
-											variant="outline"
-											size="sm"
-											className="w-full"
-											onClick={() => {
-												router.navigate({ to: "/login" });
-												closeMenu();
-											}}
-										>
-											Prihlásenie
-										</Button>
-										<Button
-											variant="default"
-											size="sm"
-											className="w-full"
-											onClick={() => {
-												router.navigate({ to: "/register" });
-												closeMenu();
-											}}
-										>
-											Registrácia
-										</Button>
+										{user ? (
+											<div className="flex justify-center px-4">
+												<UserProfile />
+											</div>
+										) : (
+											<>
+												<div className="px-4">
+													<LoginButton />
+												</div>
+												<div className="px-4">
+													<RegisterButton />
+												</div>
+											</>
+										)}
 									</motion.div>
 
 									{/* Mobile Theme Toggle */}
