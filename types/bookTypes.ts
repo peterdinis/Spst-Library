@@ -59,3 +59,12 @@ export type CreateBookInput = z.infer<typeof CreateBookSchema>;
 export type UpdateBookInput = z.infer<typeof UpdateBookSchema>;
 export type GetBooksQuery = z.infer<typeof GetBooksQuerySchema>;
 export type BookStatusType = z.infer<typeof BookStatus>;
+
+export interface ReservationData {
+  name: string;
+  email: string;
+  phone: string;
+  note: string;
+  period: string;
+  customPeriod: string;
+}
