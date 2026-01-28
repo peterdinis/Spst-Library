@@ -756,3 +756,61 @@ export const getReservationStats = query({
     return stats;
   },
 });
+
+/**
+ * Získanie výpožičiek používateľa
+ */
+export const getUserBorrowings = query({
+  args: {
+    userId: v.id("users"),
+    status: v.optional(
+      v.union(
+        v.literal("active"),
+        v.literal("returned"),
+        v.literal("overdue"),
+        v.literal("lost")
+      )
+    ),
+  },
+  handler: async (ctx, args) => {
+    let query = ctx.db
+      .query("borrowings")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .order("desc");
+
+    const borrowings = await query.collect();
+
+    // Filter by status if provided
+    const filteredBorrowings = args.status
+      ? borrowings.filter((b) => b.status === args.status)
+      : borrowings;
+
+    // Fetch book and author details for each borrowing
+    const borrowingsWithDetails = await Promise.all(
+      filteredBorrowings.map(async (borrowing) => {
+        const book = await ctx.db.get(borrowing.bookId);
+        const author = book ? await ctx.db.get(book.authorId) : null;
+
+        return {
+          ...borrowing,
+          book: book
+            ? {
+                _id: book._id,
+                title: book.title,
+                coverImageUrl: book.coverImageUrl,
+                isbn: book.isbn,
+              }
+            : null,
+          author: author
+            ? {
+                _id: author._id,
+                name: author.name,
+              }
+            : null,
+        };
+      })
+    );
+
+    return borrowingsWithDetails;
+  },
+});

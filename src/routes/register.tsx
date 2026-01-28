@@ -102,10 +102,10 @@ function RegisterPage() {
 				formData.lastName,
 			);
 			toast.success("Úspešne zaregistrovaný", {
-				description: "Vitajte v knižnici!",
+				description: "Teraz sa môžete prihlásiť!",
 			});
-			// Navigate to redirect path or home
-			navigate({ to: search.redirect || "/" });
+			// Navigate to login page after registration
+			navigate({ to: "/login", search: { redirect: "/" } });
 		} catch (error: any) {
 			console.error("Registration error:", error);
 			const errorMessage = error.data || error.message || "Skúste to znova";

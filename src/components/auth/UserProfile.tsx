@@ -1,6 +1,4 @@
 import { useAuth } from "@/lib/auth-context";
-import { useQuery } from "convex/react";
-import { api } from "convex/_generated/api";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -11,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { LogOut, User, Settings } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 
 export function UserProfile() {
@@ -59,12 +57,6 @@ export function UserProfile() {
 					<a href="/profile" className="cursor-pointer">
 						<User className="mr-2 h-4 w-4" />
 						<span>Profil</span>
-					</a>
-				</DropdownMenuItem>
-				<DropdownMenuItem asChild>
-					<a href="/settings" className="cursor-pointer">
-						<Settings className="mr-2 h-4 w-4" />
-						<span>Nastavenia</span>
 					</a>
 				</DropdownMenuItem>
 				<DropdownMenuSeparator />
