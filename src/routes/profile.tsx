@@ -1,4 +1,4 @@
-import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "convex/_generated/api";
@@ -10,14 +10,33 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export const Route = createFileRoute("/profile")({
+	beforeLoad: ({ location }) => {
+		// Check if user is authenticated (only on client side)
+		if (typeof window === 'undefined') {
+			// Skip auth check on server
+			return;
+		}
+
+		const token = localStorage.getItem("auth_token");
+		if (!token) {
+			// Redirect to login with return path
+			throw redirect({
+				to: "/login",
+				search: {
+					redirect: location.pathname,
+				},
+			});
+		}
+	},
 	component: ProfilePage,
 });
 
 function ProfilePage() {
-	const { user } = useAuth();
+	const { user, isLoading: authLoading } = useAuth();
 	const fullUser = useQuery(
 		api.users.getById,
 		user?._id ? { id: user._id } : "skip",
@@ -28,15 +47,6 @@ function ProfilePage() {
 	const [formData, setFormData] = useState({
 		firstName: "",
 		lastName: "",
-		phone: "",
-		address: {
-			line1: "",
-			line2: "",
-			city: "",
-			state: "",
-			postalCode: "",
-			country: "",
-		},
 	});
 
 	// Update form data when full user loads
@@ -45,43 +55,47 @@ function ProfilePage() {
 			setFormData({
 				firstName: fullUser.firstName,
 				lastName: fullUser.lastName,
-				phone: fullUser.phone || "",
-				address: {
-					line1: fullUser.address?.line1 || "",
-					line2: fullUser.address?.line2 || "",
-					city: fullUser.address?.city || "",
-					state: fullUser.address?.state || "",
-					postalCode: fullUser.address?.postalCode || "",
-					country: fullUser.address?.country || "",
-				},
 			});
 		}
 	}, [fullUser]);
 
+	// Show loading state while auth is loading
+	if (authLoading) {
+		return (
+			<div className="container max-w-4xl mx-auto py-8">
+				<div className="flex items-center justify-center min-h-[400px]">
+					<div className="text-center space-y-4">
+						<Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+						<p className="text-muted-foreground">Načítavam profil...</p>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	// Show error if user is not loaded
 	if (!user) {
-		return <Navigate to="/login" />;
+		return (
+			<div className="container max-w-4xl mx-auto py-8">
+				<Alert variant="destructive">
+					<AlertCircle className="h-4 w-4" />
+					<AlertTitle>Chyba</AlertTitle>
+					<AlertDescription>
+						Nepodarilo sa načítať používateľa. Prosím skúste sa prihlásiť znova.
+					</AlertDescription>
+				</Alert>
+			</div>
+		);
 	}
 
 	const handleInputChange = (
 		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
 	) => {
 		const { name, value } = e.target;
-
-		if (name.startsWith("address.")) {
-			const addressField = name.split(".")[1];
-			setFormData((prev) => ({
-				...prev,
-				address: {
-					...prev.address,
-					[addressField]: value,
-				},
-			}));
-		} else {
-			setFormData((prev) => ({
-				...prev,
-				[name]: value,
-			}));
-		}
+		setFormData((prev) => ({
+			...prev,
+			[name]: value,
+		}));
 	};
 
 	const handleSubmit = async (e: FormEvent) => {
@@ -95,17 +109,6 @@ function ProfilePage() {
 				userId: user._id,
 				firstName: formData.firstName,
 				lastName: formData.lastName,
-				phone: formData.phone || undefined,
-				address: Object.values(formData.address).some((v) => v)
-					? {
-							line1: formData.address.line1 || undefined,
-							line2: formData.address.line2 || undefined,
-							city: formData.address.city || undefined,
-							state: formData.address.state || undefined,
-							postalCode: formData.address.postalCode || undefined,
-							country: formData.address.country || undefined,
-						}
-					: undefined,
 			});
 
 			toast.success("Profil bol úspešne aktualizovaný");
@@ -172,90 +175,6 @@ function ProfilePage() {
 									onChange={handleInputChange}
 									disabled={isSubmitting}
 									required
-								/>
-							</div>
-						</div>
-
-						<div className="space-y-2">
-							<Label htmlFor="phone">Telefón</Label>
-							<Input
-								id="phone"
-								name="phone"
-								type="tel"
-								value={formData.phone}
-								onChange={handleInputChange}
-								disabled={isSubmitting}
-								placeholder="+421 912 345 678"
-							/>
-						</div>
-
-						<div className="space-y-4">
-							<h3 className="text-lg font-semibold">Adresa</h3>
-							<div className="space-y-2">
-								<Label htmlFor="address.line1">Adresa (riadok 1)</Label>
-								<Input
-									id="address.line1"
-									name="address.line1"
-									value={formData.address.line1}
-									onChange={handleInputChange}
-									disabled={isSubmitting}
-								/>
-							</div>
-
-							<div className="space-y-2">
-								<Label htmlFor="address.line2">Adresa (riadok 2)</Label>
-								<Input
-									id="address.line2"
-									name="address.line2"
-									value={formData.address.line2}
-									onChange={handleInputChange}
-									disabled={isSubmitting}
-								/>
-							</div>
-
-							<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-								<div className="space-y-2">
-									<Label htmlFor="address.city">Mesto</Label>
-									<Input
-										id="address.city"
-										name="address.city"
-										value={formData.address.city}
-										onChange={handleInputChange}
-										disabled={isSubmitting}
-									/>
-								</div>
-
-								<div className="space-y-2">
-									<Label htmlFor="address.state">Kraj</Label>
-									<Input
-										id="address.state"
-										name="address.state"
-										value={formData.address.state}
-										onChange={handleInputChange}
-										disabled={isSubmitting}
-									/>
-								</div>
-
-								<div className="space-y-2">
-									<Label htmlFor="address.postalCode">PSČ</Label>
-									<Input
-										id="address.postalCode"
-										name="address.postalCode"
-										value={formData.address.postalCode}
-										onChange={handleInputChange}
-										disabled={isSubmitting}
-									/>
-								</div>
-							</div>
-
-							<div className="space-y-2">
-								<Label htmlFor="address.country">Krajina</Label>
-								<Input
-									id="address.country"
-									name="address.country"
-									value={formData.address.country}
-									onChange={handleInputChange}
-									disabled={isSubmitting}
 								/>
 							</div>
 						</div>
