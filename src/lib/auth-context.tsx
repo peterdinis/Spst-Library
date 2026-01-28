@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+	createContext,
+	useContext,
+	useState,
+	useEffect,
+	ReactNode,
+} from "react";
 import { useMutation } from "convex/react";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
@@ -109,10 +115,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				if (retryCount < 2) {
 					debugLog(`Retrying... (attempt ${retryCount + 1}/2)`);
 					setRetryCount(retryCount + 1);
-					setTimeout(() => {
-						// Trigger re-fetch by updating a dummy state
-						setToken(token);
-					}, 1000 * (retryCount + 1)); // Exponential backoff
+					setTimeout(
+						() => {
+							// Trigger re-fetch by updating a dummy state
+							setToken(token);
+						},
+						1000 * (retryCount + 1),
+					); // Exponential backoff
 				} else {
 					debugLog("Max retries reached, clearing token");
 					setCurrentUser(null);
@@ -235,7 +244,7 @@ export function useAuth() {
 
 // Helper function to check if user is authenticated (can be used outside components)
 export function isUserAuthenticated(): boolean {
-	if (typeof window === 'undefined') {
+	if (typeof window === "undefined") {
 		return false; // On server, assume not authenticated
 	}
 	const token = localStorage.getItem("auth_token");

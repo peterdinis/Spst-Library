@@ -1,12 +1,30 @@
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	useNavigate,
+	useSearch,
+} from "@tanstack/react-router";
 import { useState, FormEvent, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+	CardDescription,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, UserPlus, CheckCircle2, XCircle, Eye, EyeOff, AlertCircle } from "lucide-react";
+import {
+	Loader2,
+	UserPlus,
+	CheckCircle2,
+	XCircle,
+	Eye,
+	EyeOff,
+	AlertCircle,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -50,7 +68,9 @@ function RegisterPage() {
 	useEffect(() => {
 		setPasswordValidation({
 			minLength: formData.password.length >= 6,
-			match: formData.password === formData.confirmPassword && formData.confirmPassword.length > 0,
+			match:
+				formData.password === formData.confirmPassword &&
+				formData.confirmPassword.length > 0,
 		});
 	}, [formData.password, formData.confirmPassword]);
 
@@ -218,8 +238,8 @@ function RegisterPage() {
 								</Button>
 							</div>
 							<div className="flex items-center gap-2 text-xs">
-								{formData.password.length > 0 && (
-									passwordValidation.minLength ? (
+								{formData.password.length > 0 &&
+									(passwordValidation.minLength ? (
 										<div className="flex items-center gap-1 text-green-600">
 											<CheckCircle2 className="h-3 w-3" />
 											<span>Minimálne 6 znakov</span>
@@ -229,8 +249,7 @@ function RegisterPage() {
 											<XCircle className="h-3 w-3" />
 											<span>Minimálne 6 znakov</span>
 										</div>
-									)
-								)}
+									))}
 							</div>
 						</div>
 
@@ -243,7 +262,10 @@ function RegisterPage() {
 									value={formData.confirmPassword}
 									onChange={(e) => {
 										setError(null);
-										setFormData({ ...formData, confirmPassword: e.target.value });
+										setFormData({
+											...formData,
+											confirmPassword: e.target.value,
+										});
 									}}
 									placeholder="••••••••"
 									required
@@ -270,8 +292,8 @@ function RegisterPage() {
 								</Button>
 							</div>
 							<div className="flex items-center gap-2 text-xs">
-								{formData.confirmPassword.length > 0 && (
-									passwordValidation.match ? (
+								{formData.confirmPassword.length > 0 &&
+									(passwordValidation.match ? (
 										<div className="flex items-center gap-1 text-green-600">
 											<CheckCircle2 className="h-3 w-3" />
 											<span>Heslá sa zhodujú</span>
@@ -281,15 +303,19 @@ function RegisterPage() {
 											<XCircle className="h-3 w-3" />
 											<span>Heslá sa nezhodujú</span>
 										</div>
-									)
-								)}
+									))}
 							</div>
 						</div>
 
 						<Button
 							type="submit"
 							className="w-full"
-							disabled={isSubmitting || authLoading || !passwordValidation.minLength || !passwordValidation.match}
+							disabled={
+								isSubmitting ||
+								authLoading ||
+								!passwordValidation.minLength ||
+								!passwordValidation.match
+							}
 						>
 							{isSubmitting || authLoading ? (
 								<>

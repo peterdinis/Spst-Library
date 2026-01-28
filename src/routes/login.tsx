@@ -1,7 +1,17 @@
-import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
+import {
+	createFileRoute,
+	useNavigate,
+	useSearch,
+} from "@tanstack/react-router";
 import { useState, FormEvent, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+	CardDescription,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -52,7 +62,8 @@ function LoginPage() {
 			navigate({ to: search.redirect || "/" });
 		} catch (error: any) {
 			console.error("Login error:", error);
-			const errorMessage = error.data || error.message || "Nesprávny email alebo heslo";
+			const errorMessage =
+				error.data || error.message || "Nesprávny email alebo heslo";
 			setError(errorMessage);
 			toast.error("Chyba pri prihlásení", {
 				description: errorMessage,

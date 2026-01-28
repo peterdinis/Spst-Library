@@ -4,7 +4,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 export const Route = createFileRoute("/profile/")({
 	beforeLoad: ({ location }) => {
 		// Check if user is authenticated (only on client side)
-		if (typeof window === 'undefined') {
+		if (typeof window === "undefined") {
 			// Skip auth check on server
 			return;
 		}

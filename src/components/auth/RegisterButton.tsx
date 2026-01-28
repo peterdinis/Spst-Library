@@ -6,10 +6,7 @@ export function RegisterButton() {
 	const navigate = useNavigate();
 
 	return (
-		<Button
-			onClick={() => navigate({ to: "/register" })}
-			variant="outline"
-		>
+		<Button onClick={() => navigate({ to: "/register" })} variant="outline">
 			<UserPlus className="mr-2 h-4 w-4" />
 			Registrovať sa
 		</Button>
