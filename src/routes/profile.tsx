@@ -68,7 +68,7 @@ function ProfilePage() {
 	if (authLoading) {
 		return (
 			<div className="container max-w-4xl mx-auto py-8">
-				<div className="flex items-center justify-center min-h-[400px]">
+				<div className="flex items-center justify-center min-h-100">
 					<div className="text-center space-y-4">
 						<Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
 						<p className="text-muted-foreground">Načítavam profil...</p>
