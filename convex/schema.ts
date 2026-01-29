@@ -303,6 +303,43 @@ export default defineSchema({
   // ---------------------------
   // KNIHOVNÍCKE OPERÁCIE
   // ---------------------------
+  
+  // Rezervácie kníh
+  reservations: defineTable({
+    userId: v.id("users"),
+    bookId: v.id("books"),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("confirmed"),
+      v.literal("ready_for_pickup"),
+      v.literal("picked_up"),
+      v.literal("cancelled"),
+      v.literal("expired")
+    ),
+    requestedAt: v.number(),
+    pickupLocation: v.optional(v.string()),
+    notes: v.optional(v.string()),
+    priority: v.number(),
+    metadata: v.object({
+      userEmail: v.string(),
+      userName: v.string(),
+      bookTitle: v.string(),
+      bookAuthorId: v.id("authors"),
+      confirmedBy: v.optional(v.string()),
+    }),
+    confirmedAt: v.optional(v.number()),
+    pickupDeadline: v.optional(v.number()),
+    readyAt: v.optional(v.number()),
+    cancelledAt: v.optional(v.number()),
+    cancelledReason: v.optional(v.string()),
+    pickedUpAt: v.optional(v.number()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_book", ["bookId"])
+    .index("by_status", ["status"])
+    .index("by_requested_at", ["requestedAt"])
+    .index("by_book_and_status", ["bookId", "status"])
+    .index("by_user_and_status", ["userId", "status"]),
 
   // Pôžičky kníh
   borrowings: defineTable({
@@ -322,6 +359,7 @@ export default defineSchema({
     lastRenewedAt: v.optional(v.number()),
     fineAmount: v.optional(v.number()),
     notes: v.optional(v.string()),
+    metadata: v.optional(v.any()),
   })
     .index("by_user", ["userId"])
     .index("by_book", ["bookId"])

@@ -59,6 +59,9 @@ import {
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Toaster, toast } from "sonner";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "convex/_generated/api";
+import { useAuth } from "@/lib/auth-context";
 
 interface Book {
 	id: string;
@@ -81,107 +84,72 @@ interface Book {
 	tags: string[];
 }
 
-const initialBorrowedBooks: Book[] = [
-	{
-		id: "1",
-		title: "Clean Code",
-		subtitle: "A Handbook of Agile Software Craftsmanship",
-		author: "Robert C. Martin",
-		coverImage: "/api/placeholder/400/600",
-		borrowedDate: "2024-01-10",
-		dueDate: "2024-01-24",
-		status: "active",
-		daysRemaining: 4,
-		renewalsLeft: 2,
-		isOverdue: false,
-		fineAmount: 0,
-		rating: 4.8,
-		pages: 464,
-		category: "Programming",
-		progress: 75,
-		isFavorite: true,
-		tags: ["clean-code", "best-practices"],
-	},
-	{
-		id: "2",
-		title: "The Pragmatic Programmer",
-		subtitle: "Your Journey to Mastery",
-		author: "David Thomas, Andrew Hunt",
-		coverImage: "/api/placeholder/400/600",
-		borrowedDate: "2024-01-05",
-		dueDate: "2024-01-19",
-		status: "overdue",
-		daysRemaining: -2,
-		renewalsLeft: 0,
-		isOverdue: true,
-		fineAmount: 1.5,
-		rating: 4.7,
-		pages: 352,
-		category: "Programming",
-		progress: 90,
-		isFavorite: true,
-		tags: ["pragmatic", "career"],
-	},
-	{
-		id: "3",
-		title: "Design Patterns",
-		subtitle: "Elements of Reusable Object-Oriented Software",
-		author: "Erich Gamma et al.",
-		coverImage: "/api/placeholder/400/600",
-		borrowedDate: "2024-01-12",
-		dueDate: "2024-01-26",
-		status: "active",
-		daysRemaining: 10,
-		renewalsLeft: 3,
-		isOverdue: false,
-		fineAmount: 0,
-		rating: 4.6,
-		pages: 395,
-		category: "Software Engineering",
-		progress: 30,
-		isFavorite: false,
-		tags: ["patterns", "gang-of-four"],
-	},
-	{
-		id: "4",
-		title: "You Don't Know JS",
-		subtitle: "Scope & Closures",
-		author: "Kyle Simpson",
-		coverImage: "/api/placeholder/400/600",
-		borrowedDate: "2024-01-15",
-		dueDate: "2024-01-29",
-		status: "active",
-		daysRemaining: 7,
-		renewalsLeft: 1,
-		isOverdue: false,
-		fineAmount: 0,
-		rating: 4.5,
-		pages: 278,
-		category: "JavaScript",
-		progress: 50,
-		isFavorite: false,
-		tags: ["javascript", "advanced"],
-	},
-];
 
-const userProfile = {
-	name: "Ján Novák",
-	email: "jan.novak@email.com",
-	memberSince: "2022-03-15",
-	location: "Bratislava, SK",
-	phone: "+421 900 123 456",
-	avatar: "/api/placeholder/150/150",
-	totalBooksRead: 42,
-	currentStreak: 7,
-	favoriteGenre: "Programovanie",
-	level: "Pokročilý čitateľ",
-};
 
 const ProfileWrapper: FC = () => {
+	const { user } = useAuth();
+	const borrowings = useQuery(
+		api.orders.getUserBorrowings,
+		user ? { userId: user._id } : "skip",
+	);
+	const reservations = useQuery(
+		api.orders.getUserReservations,
+		user ? { userId: user._id, includeBookDetails: true } : "skip",
+	);
+
+	const returnBookMutation = useMutation(api.orders.returnBook);
+	const renewBookMutation = useMutation(api.orders.renewBook);
+
 	const [activeTab, setActiveTab] = useState("overview");
 	const [searchQuery, setSearchQuery] = useState("");
-	const [books, setBooks] = useState<Book[]>(initialBorrowedBooks);
 	const [bookToReturn, setBookToReturn] = useState<Book | null>(null);
+
+	const books: Book[] = (borrowings || []).map((b: any) => ({
+		id: b._id,
+		title: b.book?.title || "Neznáma kniha",
+		subtitle: "",
+		author: b.author?.name || "Neznámy autor",
+		coverImage: b.book?.coverImageUrl || "/api/placeholder/400/600",
+		borrowedDate: new Date(b.borrowedAt).toISOString().split("T")[0],
+		dueDate: new Date(b.dueDate).toISOString().split("T")[0],
+		status: b.status,
+		daysRemaining: Math.ceil((b.dueDate - Date.now()) / (1000 * 60 * 60 * 24)),
+		renewalsLeft: 3 - (b.renewedCount || 0),
+		isOverdue:
+			b.status === "overdue" || (b.status === "active" && b.dueDate < Date.now()),
+		fineAmount: b.fineAmount || 0,
+		rating: 0,
+		pages: 0,
+		category: "",
+		progress: 0,
+		isFavorite: false,
+		tags: [],
+	}));
+
+	const userProfileData = {
+		name: user?.fullName || `${user?.firstName} ${user?.lastName}`,
+		email: user?.email,
+		memberSince: user?.createdAt
+			? new Date(user.createdAt).toISOString().split("T")[0]
+			: "2024-01-01",
+		location: "Slovensko",
+		phone: user?.phone || "",
+		avatar: user?.imageUrl || "/api/placeholder/150/150",
+		totalBooksRead: user?.totalBorrowed || 0,
+		currentStreak: 0,
+		favoriteGenre: "Programovanie",
+		level: user?.membershipType || "Člen",
+	};
+
+	if (borrowings === undefined || user === null) {
+		return (
+			<div className="min-h-screen flex flex-col items-center justify-center bg-slate-950 text-slate-200">
+				<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mb-4"></div>
+				<p className="text-slate-400 animate-pulse">Načítavam váš profil...</p>
+			</div>
+		);
+	}
+
 	const [showReturnDialog, setShowReturnDialog] = useState(false);
 	const [returnStatus, setReturnStatus] = useState<
 		"idle" | "processing" | "success" | "error"
@@ -203,129 +171,64 @@ const ProfileWrapper: FC = () => {
 
 		setReturnStatus("processing");
 
-		// Simulácia API callu
-		setTimeout(() => {
-			try {
-				// Kontrola pokuty
-				let message = "";
-				let hasFine = false;
+		try {
+			await returnBookMutation({ borrowingId: bookToReturn.id as any });
 
-				if (bookToReturn.isOverdue) {
-					message = `Kniha bola vrátená s omeškaním. Pokuta €${bookToReturn.fineAmount.toFixed(2)} bola pridaná k vášmu kontu.`;
-					hasFine = true;
-				} else {
-					message = "Kniha bola úspešne vrátená!";
-				}
+			setReturnMessage("Kniha bola úspešne vrátená!");
+			setReturnStatus("success");
 
-				// Aktualizácia stavu knihy
-				setBooks((prevBooks) =>
-					prevBooks.map((book) =>
-						book.id === bookToReturn.id
-							? { ...book, status: "returned" as const, isOverdue: false }
-							: book,
-					),
-				);
+			toast.success("Kniha úspešne vrátená", {
+				description: "Kniha bola označená ako vrátená.",
+				duration: 3000,
+				icon: <CheckCircle className="w-5 h-5 text-emerald-500" />,
+			});
 
-				setReturnMessage(message);
-				setReturnStatus("success");
-
-				// Ukáž notifikáciu pomocou sonner
-				if (hasFine) {
-					toast.warning("Kniha vrátená s omeškaním", {
-						description: `Pokuta €${bookToReturn.fineAmount.toFixed(2)} bola pridaná k vášmu kontu.`,
-						duration: 5000,
-						icon: <AlertTriangle className="w-5 h-5 text-amber-500" />,
-					});
-				} else {
-					toast.success("Kniha úspešne vrátená", {
-						description: "Kniha bola označená ako vrátená.",
-						duration: 3000,
-						icon: <CheckCircle className="w-5 h-5 text-emerald-500" />,
-					});
-				}
-
-				// Resetuj po 2 sekundách
-				setTimeout(() => {
-					setShowReturnDialog(false);
-					setReturnStatus("idle");
-					setBookToReturn(null);
-				}, 2000);
-			} catch (error) {
-				setReturnStatus("error");
-				setReturnMessage("Nastala chyba pri vrátení knihy. Skúste to znova.");
-				toast.error("Chyba pri vrátení knihy", {
-					description: "Skúste to prosím znova neskôr.",
-					duration: 3000,
-					icon: <X className="w-5 h-5 text-red-500" />,
-				});
-			}
-		}, 1000);
+			setTimeout(() => {
+				setShowReturnDialog(false);
+				setReturnStatus("idle");
+				setBookToReturn(null);
+			}, 2000);
+		} catch (error) {
+			setReturnStatus("error");
+			setReturnMessage("Nastala chyba pri vrátení knihy. Skúste to znova.");
+			toast.error("Chyba pri vrátení knihy", {
+				description: "Skúste to prosím znova neskôr.",
+				duration: 3000,
+				icon: <X className="w-5 h-5 text-red-500" />,
+			});
+		}
 	};
 
 	// Funkcia pre obnovenie výpožičky
-	const handleRenewBook = (bookId: string) => {
-		setBooks((prevBooks) =>
-			prevBooks.map((book) => {
-				if (book.id === bookId && book.renewalsLeft > 0) {
-					const newDueDate = new Date(book.dueDate);
-					newDueDate.setDate(newDueDate.getDate() + 14); // Pridá 14 dní
-
-					toast.success("Kniha obnovená", {
-						description: `Nový dátum splatnosti: ${newDueDate.toLocaleDateString("sk")}`,
-						duration: 3000,
-						icon: <RefreshCw className="w-5 h-5 text-blue-500" />,
-					});
-
-					return {
-						...book,
-						dueDate: newDueDate.toISOString().split("T")[0],
-						daysRemaining: 14,
-						renewalsLeft: book.renewalsLeft - 1,
-						isOverdue: false,
-						status: "active" as const,
-					};
-				}
-				return book;
-			}),
-		);
+	const handleRenewBook = async (bookId: string) => {
+		try {
+			await renewBookMutation({ borrowingId: bookId as any });
+			toast.success("Kniha obnovená", {
+				description: `Výpožička bola úspešne predĺžená.`,
+				duration: 3000,
+				icon: <RefreshCw className="w-5 h-5 text-blue-500" />,
+			});
+		} catch (error: any) {
+			toast.error("Chyba pri obnovení", {
+				description: error.message || "Nepodarilo sa obnoviť výpožičku.",
+				duration: 3000,
+			});
+		}
 	};
 
 	// Funkcia pre označenie/odznačenie ako obľúbené
 	const handleToggleFavorite = (bookId: string) => {
 		const book = books.find((b) => b.id === bookId);
 
-		setBooks((prevBooks) =>
-			prevBooks.map((book) =>
-				book.id === bookId ? { ...book, isFavorite: !book.isFavorite } : book,
-			),
-		);
-
 		if (book) {
-			if (!book.isFavorite) {
-				toast("Pridané do obľúbených", {
-					description: `"${book.title}" bola pridaná do obľúbených.`,
-					duration: 2000,
-					icon: <Heart className="w-5 h-5 fill-red-500 text-red-500" />,
-				});
-			} else {
-				toast("Odobrané z obľúbených", {
-					description: `"${book.title}" bola odobraná z obľúbených.`,
-					duration: 2000,
-					icon: <Heart className="w-5 h-5 text-gray-400" />,
-				});
-			}
+			toast.info("Funkcia obľúbených bude čoskoro dostupná", {
+				description: `"${book.title}" zatiaľ nie je možné pridať do obľúbených.`,
+				duration: 2000,
+			});
 		}
 	};
 
-	// Reset všetkých kníh
-	const handleResetAllBooks = () => {
-		setBooks(initialBorrowedBooks);
-		toast.info("Stav kníh obnovený", {
-			description: "Všetky knihy boli obnovené na pôvodný stav.",
-			duration: 3000,
-			icon: <RefreshCw className="w-5 h-5 text-indigo-500" />,
-		});
-	};
+	// Reset všetkých kníh (odstránené, teraz používame reálne dáta)
 
 	return (
 		<div className="min-h-screen">
@@ -457,7 +360,6 @@ const ProfileWrapper: FC = () => {
 								<AlertDialogAction
 									onClick={handleReturnBook}
 									className="bg-indigo-600 hover:bg-indigo-700 text-white"
-									disabled={returnStatus === "processing"}
 								>
 									<CheckCircle className="w-4 h-4 mr-2" />
 									Potvrdiť vrátenie
@@ -487,26 +389,26 @@ const ProfileWrapper: FC = () => {
 					<CardContent className="p-8">
 						<div className="flex flex-col md:flex-row items-start md:items-center gap-6">
 							<Avatar className="w-24 h-24 border-2 border-slate-700">
-								<AvatarImage src={userProfile.avatar} alt={userProfile.name} />
+								<AvatarImage src={userProfileData.avatar} alt={userProfileData.name} />
 								<AvatarFallback className="text-3xl bg-slate-800 text-slate-300">
-									JN
+									{userProfileData.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
 								</AvatarFallback>
 							</Avatar>
 
 							<div className="flex-1 space-y-3">
 								<div>
 									<h1 className="text-3xl md:text-4xl font-bold text-slate-100 mb-2">
-										{userProfile.name}
+										{userProfileData.name}
 									</h1>
 									<div className="flex flex-wrap items-center gap-4 text-slate-400">
 										<span className="flex items-center gap-2 text-sm">
 											<Mail className="w-4 h-4" />
-											{userProfile.email}
+											{userProfileData.email}
 										</span>
 										<span className="text-slate-700">•</span>
 										<span className="flex items-center gap-2 text-sm">
 											<MapPin className="w-4 h-4" />
-											{userProfile.location}
+											{userProfileData.location}
 										</span>
 									</div>
 								</div>
@@ -514,25 +416,16 @@ const ProfileWrapper: FC = () => {
 								<div className="flex flex-wrap gap-2">
 									<Badge className="bg-indigo-900/50 text-indigo-300 border-indigo-800 px-3 py-1">
 										<Trophy className="w-3 h-3 mr-1" />
-										{userProfile.level}
+										{userProfileData.level}
 									</Badge>
 									<Badge className="bg-slate-800 text-slate-300 border-slate-700 px-3 py-1">
 										Členstvo od{" "}
-										{new Date(userProfile.memberSince).getFullYear()}
+										{new Date(userProfileData.memberSince).getFullYear()}
 									</Badge>
 								</div>
 							</div>
 
 							<div className="flex gap-2">
-								<Button
-									variant="outline"
-									size="icon"
-									className="bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300 rounded-xl"
-									onClick={handleResetAllBooks}
-									title="Obnoviť všetky knihy"
-								>
-									<RefreshCw className="w-5 h-5" />
-								</Button>
 								<Button
 									variant="outline"
 									size="icon"
@@ -554,7 +447,7 @@ const ProfileWrapper: FC = () => {
 						<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-slate-800">
 							<div className="text-center p-4 bg-slate-800/50 rounded-xl border border-slate-800">
 								<div className="text-3xl font-bold text-slate-100 mb-1">
-									{userProfile.totalBooksRead}
+									{userProfileData.totalBooksRead}
 								</div>
 								<div className="text-sm text-slate-400">Celkom prečítaných</div>
 							</div>
@@ -566,7 +459,7 @@ const ProfileWrapper: FC = () => {
 							</div>
 							<div className="text-center p-4 bg-slate-800/50 rounded-xl border border-slate-800">
 								<div className="text-3xl font-bold text-slate-100 mb-1">
-									{userProfile.currentStreak}
+									{userProfileData.currentStreak}
 								</div>
 								<div className="text-sm text-slate-400">Dní série</div>
 							</div>
@@ -679,7 +572,7 @@ const ProfileWrapper: FC = () => {
 								</CardHeader>
 								<CardContent>
 									<div className="text-4xl font-bold text-slate-100 mb-2">
-										{userProfile.currentStreak}
+										{userProfileData.currentStreak}
 									</div>
 									<div className="flex items-center gap-2 text-sm text-orange-400">
 										<span>dní po sebe</span>
@@ -994,46 +887,46 @@ const ProfileWrapper: FC = () => {
 						{/* Returned Books Section */}
 						{filteredBooks.filter((book) => book.status === "returned").length >
 							0 && (
-							<div className="mt-12">
-								<h3 className="text-xl font-bold text-slate-200 mb-4 flex items-center gap-2">
-									<CheckCircle className="w-5 h-5 text-emerald-500" />
-									Vrátené knihy
-								</h3>
-								<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-									{filteredBooks
-										.filter((book) => book.status === "returned")
-										.map((book) => (
-											<Card
-												key={book.id}
-												className="bg-slate-900/50 border-slate-800"
-											>
-												<CardContent className="p-4">
-													<div className="flex items-start gap-3">
-														<div className="w-16 h-24 rounded overflow-hidden bg-slate-800 flex-shrink-0">
-															<img
-																src={book.coverImage}
-																alt={book.title}
-																className="w-full h-full object-cover"
-															/>
+								<div className="mt-12">
+									<h3 className="text-xl font-bold text-slate-200 mb-4 flex items-center gap-2">
+										<CheckCircle className="w-5 h-5 text-emerald-500" />
+										Vrátené knihy
+									</h3>
+									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+										{filteredBooks
+											.filter((book) => book.status === "returned")
+											.map((book) => (
+												<Card
+													key={book.id}
+													className="bg-slate-900/50 border-slate-800"
+												>
+													<CardContent className="p-4">
+														<div className="flex items-start gap-3">
+															<div className="w-16 h-24 rounded overflow-hidden bg-slate-800 flex-shrink-0">
+																<img
+																	src={book.coverImage}
+																	alt={book.title}
+																	className="w-full h-full object-cover"
+																/>
+															</div>
+															<div>
+																<h4 className="font-semibold text-slate-200 mb-1">
+																	{book.title}
+																</h4>
+																<p className="text-sm text-slate-400 mb-2">
+																	{book.author}
+																</p>
+																<Badge className="bg-emerald-900/30 text-emerald-400 border-emerald-800">
+																	Vrátené {new Date().toLocaleDateString("sk")}
+																</Badge>
+															</div>
 														</div>
-														<div>
-															<h4 className="font-semibold text-slate-200 mb-1">
-																{book.title}
-															</h4>
-															<p className="text-sm text-slate-400 mb-2">
-																{book.author}
-															</p>
-															<Badge className="bg-emerald-900/30 text-emerald-400 border-emerald-800">
-																Vrátené {new Date().toLocaleDateString("sk")}
-															</Badge>
-														</div>
-													</div>
-												</CardContent>
-											</Card>
-										))}
+													</CardContent>
+												</Card>
+											))}
+									</div>
 								</div>
-							</div>
-						)}
+							)}
 					</TabsContent>
 
 					{/* Stats Tab */}
@@ -1050,7 +943,7 @@ const ProfileWrapper: FC = () => {
 									<div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl border border-slate-800">
 										<span className="text-slate-300">Celkom prečítaných</span>
 										<span className="text-2xl font-bold text-slate-100">
-											{userProfile.totalBooksRead}
+											{userProfileData.totalBooksRead}
 										</span>
 									</div>
 									<div className="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl border border-slate-800">
@@ -1092,7 +985,7 @@ const ProfileWrapper: FC = () => {
 										<div className="text-center p-4 bg-slate-800/50 rounded-xl border border-slate-800">
 											<Flame className="w-6 h-6 text-orange-400 mx-auto mb-2" />
 											<div className="text-lg font-bold text-slate-100">
-												{userProfile.currentStreak}
+												{userProfileData.currentStreak}
 											</div>
 											<div className="text-xs text-slate-400">Dní série</div>
 										</div>
@@ -1144,11 +1037,11 @@ const ProfileWrapper: FC = () => {
 
 									{books.filter((book) => book.status === "returned").length ===
 										0 && (
-										<div className="text-center py-8 text-slate-500">
-											<CheckCircle className="w-12 h-12 mx-auto mb-3 text-slate-700" />
-											<p>Zatiaľ žiadne vrátené knihy</p>
-										</div>
-									)}
+											<div className="text-center py-8 text-slate-500">
+												<CheckCircle className="w-12 h-12 mx-auto mb-3 text-slate-700" />
+												<p>Zatiaľ žiadne vrátené knihy</p>
+											</div>
+										)}
 								</div>
 							</CardContent>
 						</Card>
