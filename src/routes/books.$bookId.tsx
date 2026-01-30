@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import {
@@ -36,6 +36,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { toast } from "sonner";
 import {
 	Dialog,
 	DialogContent,
@@ -63,6 +65,8 @@ export const Route = createFileRoute("/books/$bookId")({
 function BookDetailPage() {
 	const { bookId } = Route.useParams();
 	const navigate = useNavigate();
+	const { user } = useAuth();
+	const createReservation = useMutation(api.orders.createReservation);
 	const [isReservationOpen, setIsReservationOpen] = useState(false);
 	const [customPeriodEnabled, setCustomPeriodEnabled] = useState(false);
 	const [reservationData, setReservationData] = useState({
@@ -144,40 +148,49 @@ function BookDetailPage() {
 	const [isLoading, setIsLoading] = useState(false);
 
 	const handleReservationSubmit = async () => {
+		if (!user) {
+			toast.error("Musíte byť prihlásený", {
+				description: "Pre rezerváciu knihy sa prosím najskôr prihláste.",
+			});
+			return;
+		}
+
 		setIsLoading(true);
 
-		// Získanie finálnej doby výpožičky
-		const finalPeriod = customPeriodEnabled
-			? parseInt(reservationData.customPeriod)
-			: parseInt(reservationData.period);
-
-		// Simulácia API volania
-		await new Promise((resolve) => setTimeout(resolve, 1500));
-
-		// Tu by bola skutočná logika na odoslanie rezervácie
-		console.log("Reservation data:", {
-			...reservationData,
-			period: finalPeriod,
-			isCustomPeriod: customPeriodEnabled,
-		});
-
-		setIsLoading(false);
-		setReservationStep("success");
-
-		// Reset formulára po 3 sekundách
-		setTimeout(() => {
-			setIsReservationOpen(false);
-			setReservationStep("form");
-			setCustomPeriodEnabled(false);
-			setReservationData({
-				name: "",
-				email: "",
-				phone: "",
-				note: "",
-				period: "7",
-				customPeriod: "14",
+		try {
+			await createReservation({
+				userId: user._id,
+				bookId: bookId as Id<"books">,
+				notes: reservationData.note || undefined,
 			});
-		}, 3000);
+
+			setReservationStep("success");
+			toast.success("Rezervácia úspešná", {
+				description: `Kniha "${book?.title}" bola rezervovaná. Potvrdenie sme vám poslali emailom.`,
+			});
+
+			// Reset formulára po 3 sekundách
+			setTimeout(() => {
+				setIsReservationOpen(false);
+				setReservationStep("form");
+				setCustomPeriodEnabled(false);
+				setReservationData({
+					name: "",
+					email: "",
+					phone: "",
+					note: "",
+					period: "7",
+					customPeriod: "14",
+				});
+			}, 3000);
+		} catch (error: any) {
+			console.error("Reservation error:", error);
+			toast.error("Chyba pri rezervácii", {
+				description: error.message || "Nepodarilo sa vytvoriť rezerváciu. Skúste to znova.",
+			});
+		} finally {
+			setIsLoading(false);
+		}
 	};
 
 	const handleCustomPeriodChange = (value: string) => {
@@ -317,9 +330,8 @@ function BookDetailPage() {
 								)}
 								<div className="absolute top-4 right-4">
 									<Badge
-										className={`${
-											statusColors[book.status]
-										} font-semibold px-3 py-1`}
+										className={`${statusColors[book.status]
+											} font-semibold px-3 py-1`}
 									>
 										{statusLabels[book.status]}
 									</Badge>
