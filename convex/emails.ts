@@ -1,3 +1,5 @@
+"use node";
+
 import { v } from "convex/values";
 import { internalAction } from "./_generated/server";
 import nodemailer from "nodemailer";
@@ -12,7 +14,7 @@ export const sendEmail = internalAction({
 		text: v.string(),
 		html: v.optional(v.string()),
 	},
-	handler: async (ctx, args) => {
+	handler: async (_ctx, args) => {
 		const host = process.env.SMTP_HOST;
 		const port = process.env.SMTP_PORT;
 		const user = process.env.SMTP_USER;

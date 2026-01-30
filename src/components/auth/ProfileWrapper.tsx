@@ -84,8 +84,6 @@ interface Book {
 	tags: string[];
 }
 
-
-
 const ProfileWrapper: FC = () => {
 	const { user } = useAuth();
 	const borrowings = useQuery(
@@ -116,7 +114,8 @@ const ProfileWrapper: FC = () => {
 		daysRemaining: Math.ceil((b.dueDate - Date.now()) / (1000 * 60 * 60 * 24)),
 		renewalsLeft: 3 - (b.renewedCount || 0),
 		isOverdue:
-			b.status === "overdue" || (b.status === "active" && b.dueDate < Date.now()),
+			b.status === "overdue" ||
+			(b.status === "active" && b.dueDate < Date.now()),
 		fineAmount: b.fineAmount || 0,
 		rating: 0,
 		pages: 0,
@@ -389,9 +388,17 @@ const ProfileWrapper: FC = () => {
 					<CardContent className="p-8">
 						<div className="flex flex-col md:flex-row items-start md:items-center gap-6">
 							<Avatar className="w-24 h-24 border-2 border-slate-700">
-								<AvatarImage src={userProfileData.avatar} alt={userProfileData.name} />
+								<AvatarImage
+									src={userProfileData.avatar}
+									alt={userProfileData.name}
+								/>
 								<AvatarFallback className="text-3xl bg-slate-800 text-slate-300">
-									{userProfileData.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+									{userProfileData.name
+										.split(" ")
+										.map((n) => n[0])
+										.join("")
+										.toUpperCase()
+										.slice(0, 2)}
 								</AvatarFallback>
 							</Avatar>
 
@@ -887,46 +894,46 @@ const ProfileWrapper: FC = () => {
 						{/* Returned Books Section */}
 						{filteredBooks.filter((book) => book.status === "returned").length >
 							0 && (
-								<div className="mt-12">
-									<h3 className="text-xl font-bold text-slate-200 mb-4 flex items-center gap-2">
-										<CheckCircle className="w-5 h-5 text-emerald-500" />
-										Vrátené knihy
-									</h3>
-									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-										{filteredBooks
-											.filter((book) => book.status === "returned")
-											.map((book) => (
-												<Card
-													key={book.id}
-													className="bg-slate-900/50 border-slate-800"
-												>
-													<CardContent className="p-4">
-														<div className="flex items-start gap-3">
-															<div className="w-16 h-24 rounded overflow-hidden bg-slate-800 flex-shrink-0">
-																<img
-																	src={book.coverImage}
-																	alt={book.title}
-																	className="w-full h-full object-cover"
-																/>
-															</div>
-															<div>
-																<h4 className="font-semibold text-slate-200 mb-1">
-																	{book.title}
-																</h4>
-																<p className="text-sm text-slate-400 mb-2">
-																	{book.author}
-																</p>
-																<Badge className="bg-emerald-900/30 text-emerald-400 border-emerald-800">
-																	Vrátené {new Date().toLocaleDateString("sk")}
-																</Badge>
-															</div>
+							<div className="mt-12">
+								<h3 className="text-xl font-bold text-slate-200 mb-4 flex items-center gap-2">
+									<CheckCircle className="w-5 h-5 text-emerald-500" />
+									Vrátené knihy
+								</h3>
+								<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+									{filteredBooks
+										.filter((book) => book.status === "returned")
+										.map((book) => (
+											<Card
+												key={book.id}
+												className="bg-slate-900/50 border-slate-800"
+											>
+												<CardContent className="p-4">
+													<div className="flex items-start gap-3">
+														<div className="w-16 h-24 rounded overflow-hidden bg-slate-800 flex-shrink-0">
+															<img
+																src={book.coverImage}
+																alt={book.title}
+																className="w-full h-full object-cover"
+															/>
 														</div>
-													</CardContent>
-												</Card>
-											))}
-									</div>
+														<div>
+															<h4 className="font-semibold text-slate-200 mb-1">
+																{book.title}
+															</h4>
+															<p className="text-sm text-slate-400 mb-2">
+																{book.author}
+															</p>
+															<Badge className="bg-emerald-900/30 text-emerald-400 border-emerald-800">
+																Vrátené {new Date().toLocaleDateString("sk")}
+															</Badge>
+														</div>
+													</div>
+												</CardContent>
+											</Card>
+										))}
 								</div>
-							)}
+							</div>
+						)}
 					</TabsContent>
 
 					{/* Stats Tab */}
@@ -1037,11 +1044,11 @@ const ProfileWrapper: FC = () => {
 
 									{books.filter((book) => book.status === "returned").length ===
 										0 && (
-											<div className="text-center py-8 text-slate-500">
-												<CheckCircle className="w-12 h-12 mx-auto mb-3 text-slate-700" />
-												<p>Zatiaľ žiadne vrátené knihy</p>
-											</div>
-										)}
+										<div className="text-center py-8 text-slate-500">
+											<CheckCircle className="w-12 h-12 mx-auto mb-3 text-slate-700" />
+											<p>Zatiaľ žiadne vrátené knihy</p>
+										</div>
+									)}
 								</div>
 							</CardContent>
 						</Card>

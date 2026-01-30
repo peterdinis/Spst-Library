@@ -10,7 +10,14 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { Loader2, Save, AlertCircle, Book, Calendar, Clock } from "lucide-react";
+import {
+	Loader2,
+	Save,
+	AlertCircle,
+	Book,
+	Calendar,
+	Clock,
+} from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 
@@ -137,7 +144,9 @@ function ProfilePage() {
 	const formatDueDate = (dueDate: number) => {
 		const date = new Date(dueDate);
 		const now = new Date();
-		const daysUntilDue = Math.ceil((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+		const daysUntilDue = Math.ceil(
+			(date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+		);
 
 		return {
 			formatted: date.toLocaleDateString("sk-SK"),
@@ -268,7 +277,12 @@ function ProfilePage() {
 												<div className="flex flex-wrap items-center gap-3 mt-2">
 													<div className="flex items-center gap-1 text-sm">
 														<Calendar className="h-4 w-4" />
-														<span>Požičané: {new Date(borrowing.borrowedAt).toLocaleDateString("sk-SK")}</span>
+														<span>
+															Požičané:{" "}
+															{new Date(
+																borrowing.borrowedAt,
+															).toLocaleDateString("sk-SK")}
+														</span>
 													</div>
 
 													<div className="flex items-center gap-1 text-sm">
@@ -280,15 +294,24 @@ function ProfilePage() {
 												<div className="mt-2">
 													{dueInfo.isOverdue ? (
 														<Badge variant="destructive">
-															Po termíne ({Math.abs(dueInfo.daysUntilDue)} {Math.abs(dueInfo.daysUntilDue) === 1 ? "deň" : "dni"})
+															Po termíne ({Math.abs(dueInfo.daysUntilDue)}{" "}
+															{Math.abs(dueInfo.daysUntilDue) === 1
+																? "deň"
+																: "dni"}
+															)
 														</Badge>
 													) : dueInfo.isDueSoon ? (
-														<Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100">
-															Blíži sa termín ({dueInfo.daysUntilDue} {dueInfo.daysUntilDue === 1 ? "deň" : "dni"})
+														<Badge
+															variant="secondary"
+															className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100"
+														>
+															Blíži sa termín ({dueInfo.daysUntilDue}{" "}
+															{dueInfo.daysUntilDue === 1 ? "deň" : "dni"})
 														</Badge>
 													) : (
 														<Badge variant="outline">
-															Aktívne ({dueInfo.daysUntilDue} {dueInfo.daysUntilDue === 1 ? "deň" : "dní"})
+															Aktívne ({dueInfo.daysUntilDue}{" "}
+															{dueInfo.daysUntilDue === 1 ? "deň" : "dní"})
 														</Badge>
 													)}
 												</div>

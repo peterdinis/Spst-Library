@@ -1,5 +1,5 @@
 import { v, ConvexError } from "convex/values";
-import { mutation, internalMutation } from "./_generated/server";
+import { mutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 
 // Simple password hashing using Web Crypto API (available in Convex)
