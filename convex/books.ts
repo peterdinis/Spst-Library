@@ -387,6 +387,14 @@ export const getAll = query({
     search: v.optional(v.string()),
     limit: v.optional(v.number()),
     offset: v.optional(v.number()),
+    sortBy: v.optional(
+      v.union(
+        v.literal("newest"),
+        v.literal("oldest"),
+        v.literal("title_asc"),
+        v.literal("title_desc")
+      )
+    ),
   },
   handler: async (ctx, args): Promise<BookWithAllRelations[]> => { // Zmenený return type
     // Pripraviť query parametre pre validáciu
@@ -402,43 +410,57 @@ export const getAll = query({
     
     let books: Doc<"books">[] = [];
     
-    // Aplikovať filtre
-    if (queryParams.categoryId) {
-      books = await ctx.db
-        .query("books")
-        .withIndex("by_category", (q) => 
-          q.eq("categoryId", queryParams.categoryId as Id<"categories">)
-        )
-        .order("desc")
-        .collect();
-    } else if (queryParams.authorId) {
-      books = await ctx.db
-        .query("books")
-        .withIndex("by_author", (q) => 
-          q.eq("authorId", queryParams.authorId as Id<"authors">)
-        )
-        .order("desc")
-        .collect();
-    } else if (queryParams.status) {
-      books = await ctx.db
-        .query("books")
-        .withIndex("by_status", (q) => 
-          q.eq("status", queryParams.status!)
-        )
-        .order("desc")
-        .collect();
-    } else if (queryParams.search) {
-      books = await ctx.db
+    // Aplikovať filtre (postupne ak je to možné, alebo použiť najlepší index)
+    if (args.categoryId) {
+      books = await ctx.db.query("books").withIndex("by_category", (q) => q.eq("categoryId", args.categoryId!)).collect();
+    } else if (args.authorId) {
+      books = await ctx.db.query("books").withIndex("by_author", (q) => q.eq("authorId", args.authorId!)).collect();
+    } else if (args.status) {
+      books = await ctx.db.query("books").withIndex("by_status", (q) => q.eq("status", args.status!)).collect();
+    } else {
+      books = await ctx.db.query("books").collect();
+    }
+
+    // Dodatočné filtrovanie v pamäti pre kombinácie
+    if (args.categoryId && (args.authorId || args.status)) {
+       if (args.authorId) books = books.filter(b => b.authorId === args.authorId);
+       if (args.status) books = books.filter(b => b.status === args.status);
+    } else if (args.authorId && args.status) {
+       books = books.filter(b => b.status === args.status);
+    }
+    
+    if (args.search) {
+      const searchResults = await ctx.db
         .query("books")
         .withSearchIndex("search_books", (q) =>
-          q.search("searchableText", queryParams.search!.toLowerCase())
+          q.search("searchableText", args.search!.toLowerCase())
         )
         .collect();
-    } else {
-      books = await ctx.db
-        .query("books")
-        .order("desc")
-        .collect();
+      
+      // Ak máme iné filtre, urobíme prienik
+      if (args.categoryId || args.authorId || args.status) {
+        const searchIds = new Set(searchResults.map(b => b._id));
+        books = books.filter(b => searchIds.has(b._id));
+      } else {
+        books = searchResults;
+      }
+    }
+
+    // Aplikovať zoradenie
+    const sort = args.sortBy || "newest";
+    switch (sort) {
+      case "newest":
+        books.sort((a, b) => b.addedAt - a.addedAt);
+        break;
+      case "oldest":
+        books.sort((a, b) => a.addedAt - b.addedAt);
+        break;
+      case "title_asc":
+        books.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case "title_desc":
+        books.sort((a, b) => b.title.localeCompare(a.title));
+        break;
     }
     
     // Paginácia

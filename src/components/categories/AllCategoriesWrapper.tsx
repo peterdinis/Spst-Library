@@ -12,7 +12,16 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Grid, BookOpen, Loader2, RefreshCw } from "lucide-react";
+import { Grid, BookOpen, Loader2, Search, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { useState, useMemo } from "react";
 
 interface Category {
 	_id: string;
@@ -27,6 +36,8 @@ interface Category {
 
 const AllCategoriesWrapper: FC = () => {
 	const navigate = useNavigate();
+	const [searchQuery, setSearchQuery] = useState("");
+	const [sortBy, setSortBy] = useState<string>("name_asc");
 
 	// Fetch categories using Convex - bez pagination pre jednoduchosť
 	const categoriesData = useQuery(api.categories.getCategories, {
@@ -111,7 +122,37 @@ const AllCategoriesWrapper: FC = () => {
 		);
 	}
 
-	const categories = categoriesData?.page || [];
+	// Filter and sort categories
+	const filteredCategories = useMemo(() => {
+		if (!categoriesData?.page) return [];
+
+		let result = [...categoriesData.page];
+
+		// Search
+		if (searchQuery.trim()) {
+			result = result.filter(
+				(c) =>
+					c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					(c.description &&
+						c.description.toLowerCase().includes(searchQuery.toLowerCase())),
+			);
+		}
+
+		// Sort
+		result.sort((a, b) => {
+			if (sortBy === "name_asc") return a.name.localeCompare(b.name);
+			if (sortBy === "name_desc") return b.name.localeCompare(a.name);
+			if (sortBy === "books_desc")
+				return getCategoryBookCount(b._id) - getCategoryBookCount(a._id);
+			if (sortBy === "books_asc")
+				return getCategoryBookCount(a._id) - getCategoryBookCount(b._id);
+			return 0;
+		});
+
+		return result;
+	}, [categoriesData, searchQuery, sortBy, booksData]);
+
+	const categories = filteredCategories;
 
 	return (
 		<section className="py-16 bg-linear-to-b from-background to-muted/30">
@@ -134,18 +175,52 @@ const AllCategoriesWrapper: FC = () => {
 					</div>
 					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						Preskúmajte našu zbierku kníh podľa kategórií. Vyberte si z{" "}
-						{categories.length} kategórií a {totalBooksCount} kníh.
+						{categoriesData?.page.length || 0} kategórií a {totalBooksCount} kníh.
 					</p>
 				</motion.div>
 
-				{/* Results Count */}
+				{/* Search and Filters */}
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.5, delay: 0.2 }}
-					className="mb-8"
+					transition={{ duration: 0.5, delay: 0.1 }}
+					className="max-w-4xl mx-auto mb-10"
 				>
-					<div className="text-center text-sm text-muted-foreground mt-4">
+					<div className="flex flex-col md:flex-row gap-4">
+						<div className="relative flex-1">
+							<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+							<Input
+								placeholder="Hľadať kategórie..."
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+								className="pl-10 h-12 bg-background/50 border-border/50 rounded-xl"
+							/>
+							{searchQuery && (
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => setSearchQuery("")}
+									className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+								>
+									<X className="h-4 w-4" />
+								</Button>
+							)}
+						</div>
+
+						<Select value={sortBy} onValueChange={setSortBy}>
+							<SelectTrigger className="w-full md:w-56 h-12 bg-background/50 border-border/50 rounded-xl">
+								<SelectValue placeholder="Zoradiť podľa" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="name_asc">Názov (A-Z)</SelectItem>
+								<SelectItem value="name_desc">Názov (Z-A)</SelectItem>
+								<SelectItem value="books_desc">Počet kníh (najviac)</SelectItem>
+								<SelectItem value="books_asc">Počet kníh (najmenej)</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+
+					<div className="mt-4 text-center text-sm text-muted-foreground">
 						{categories.length === 0 ? (
 							"Nenašli sa žiadne kategórie"
 						) : (
@@ -161,30 +236,35 @@ const AllCategoriesWrapper: FC = () => {
 					</div>
 				</motion.div>
 
-				{/* Categories Grid */}
+				{/* Categories Content */}
 				{categories.length === 0 ? (
 					<motion.div
 						initial={{ opacity: 0, scale: 0.9 }}
 						animate={{ opacity: 1, scale: 1 }}
-						className="text-center py-12"
+						className="text-center py-16"
 					>
 						<div className="mx-auto max-w-md">
-							<div className="rounded-full bg-muted p-6 w-24 h-24 flex items-center justify-center mx-auto mb-6">
-								<Grid className="h-12 w-12 text-muted-foreground" />
+							<div className="rounded-full bg-muted p-8 w-28 h-28 flex items-center justify-center mx-auto mb-6 shadow-sm border border-border/50">
+								<Search className="h-12 w-12 text-muted-foreground/50" />
 							</div>
-							<h3 className="text-xl font-semibold mb-2">
-								Nenašli sa žiadne kategórie
+							<h3 className="text-2xl font-bold mb-3">
+								{searchQuery ? "Nenašli sa žiadne kategórie" : "Žiadne kategórie"}
 							</h3>
-							<p className="text-muted-foreground mb-6">
-								V knižnici sa momentálne nenachádzajú žiadne kategórie.
+							<p className="text-muted-foreground mb-8">
+								{searchQuery
+									? `Pre hľadaný výraz "${searchQuery}" neexistujú žiadne kategórie.`
+									: "V knižnici sa momentálne nenachádzajú žiadne kategórie."}
 							</p>
-							<Button
-								variant="outline"
-								onClick={() => window.location.reload()}
-							>
-								<RefreshCw className="mr-2 h-4 w-4" />
-								Skúsiť znova
-							</Button>
+							{searchQuery && (
+								<Button
+									variant="outline"
+									onClick={() => setSearchQuery("")}
+									className="rounded-xl px-6"
+								>
+									<X className="mr-2 h-4 w-4" />
+									Zmazať hľadanie
+								</Button>
+							)}
 						</div>
 					</motion.div>
 				) : (
