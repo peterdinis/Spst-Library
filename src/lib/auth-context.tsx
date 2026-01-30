@@ -21,7 +21,7 @@ interface User {
 }
 
 interface AuthContextType {
-	user: User | null;
+	user: any | null;
 	token: string | null;
 	login: (email: string, password: string) => Promise<void>;
 	register: (
