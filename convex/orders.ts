@@ -152,7 +152,7 @@ export const confirmReservation = mutation({
       pickupDeadline,
       metadata: {
         ...reservation.metadata,
-        confirmedBy: ctx.auth?.subject || "system",
+        confirmedBy: "system",
       },
     });
 
@@ -417,15 +417,13 @@ export const getAllReservations = query({
     offset: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    let query = ctx.db.query("reservations");
-
-    // Filtre
+    let query;
     if (args.status) {
-      query = query.withIndex("by_status", (q) => q.eq("status", args.status));
+      query = ctx.db.query("reservations").withIndex("by_status", (q) => q.eq("status", args.status!));
     } else if (args.bookId) {
-      query = query.withIndex("by_book", (q) => q.eq("bookId", args.bookId));
+      query = ctx.db.query("reservations").withIndex("by_book", (q) => q.eq("bookId", args.bookId!));
     } else {
-      query = query.withIndex("by_requested_at");
+      query = ctx.db.query("reservations").withIndex("by_requested_at");
     }
 
     const reservations = await query.order("desc").collect();
@@ -508,11 +506,11 @@ export const deleteAllReservations = mutation({
       throw new Error("Please confirm deletion");
     }
 
-    let query = ctx.db.query("reservations");
-
-    // Filtre
+    let query;
     if (args.olderThan) {
-      query = query.withIndex("by_requested_at", (q) => q.lt("requestedAt", args.olderThan));
+      query = ctx.db.query("reservations").withIndex("by_requested_at", (q) => q.lt("requestedAt", args.olderThan!));
+    } else {
+      query = ctx.db.query("reservations");
     }
 
     const allReservations = await query.collect();
@@ -650,7 +648,7 @@ async function processNextReservation(ctx: any, bookId: any) {
 async function getNextPendingReservation(ctx: any, bookId: any) {
   const pendingReservations = await ctx.db
     .query("reservations")
-    .withIndex("by_book_and_status", (q) =>
+    .withIndex("by_book_and_status", (q: any) =>
       q.eq("bookId", bookId).eq("status", "pending")
     )
     .order("asc")
@@ -662,7 +660,7 @@ async function getNextPendingReservation(ctx: any, bookId: any) {
 async function updateReservationPriorities(ctx: any, bookId: any) {
   const pendingReservations = await ctx.db
     .query("reservations")
-    .withIndex("by_book_and_status", (q) =>
+    .withIndex("by_book_and_status", (q: any) =>
       q.eq("bookId", bookId).eq("status", "pending")
     )
     .order("asc")
@@ -686,10 +684,10 @@ async function calculateWaitTime(ctx: any, reservation: any) {
   // Počet rezervácií pred touto
   const reservationsBefore = await ctx.db
     .query("reservations")
-    .withIndex("by_book_and_status", (q) =>
+    .withIndex("by_book_and_status", (q: any) =>
       q.eq("bookId", reservation.bookId).eq("status", "pending")
     )
-    .filter((q) => q.lt(q.field("priority"), reservation.priority || 0))
+    .filter((q: any) => q.lt(q.field("priority"), reservation.priority || 0))
     .collect();
 
   // Odhad: priemer 7 dní na rezerváciu
@@ -754,5 +752,209 @@ export const getReservationStats = query({
     }
 
     return stats;
+  },
+});
+
+/**
+ * Získanie výpožičiek používateľa
+ */
+export const getUserBorrowings = query({
+  args: {
+    userId: v.id("users"),
+    status: v.optional(
+      v.union(
+        v.literal("active"),
+        v.literal("returned"),
+        v.literal("overdue"),
+        v.literal("lost")
+      )
+    ),
+  },
+  handler: async (ctx, args) => {
+    let query = ctx.db
+      .query("borrowings")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .order("desc");
+
+    const borrowings = await query.collect();
+
+    // Filter by status if provided
+    const filteredBorrowings = args.status
+      ? borrowings.filter((b) => b.status === args.status)
+      : borrowings;
+
+    // Fetch book and author details for each borrowing
+    const borrowingsWithDetails = await Promise.all(
+      filteredBorrowings.map(async (borrowing) => {
+        const book = await ctx.db.get(borrowing.bookId);
+        const author = book ? await ctx.db.get(book.authorId) : null;
+
+        return {
+          ...borrowing,
+          book: book
+            ? {
+                _id: book._id,
+                title: book.title,
+                coverImageUrl: book.coverImageUrl,
+                isbn: book.isbn,
+              }
+            : null,
+          author: author
+            ? {
+                _id: author._id,
+                name: author.name,
+              }
+            : null,
+        };
+      })
+    );
+
+    return borrowingsWithDetails;
+  },
+});
+
+/**
+ * Vrátenie knihy
+ */
+export const returnBook = mutation({
+  args: {
+    borrowingId: v.id("borrowings"),
+  },
+  handler: async (ctx, args) => {
+    const borrowing = await ctx.db.get(args.borrowingId);
+    if (!borrowing) {
+      throw new Error("Borrowing not found");
+    }
+
+    if (borrowing.status === "returned") {
+      throw new Error("Book already returned");
+    }
+
+    const now = Date.now();
+    const isOverdue = borrowing.dueDate < now;
+
+    // Aktualizácia stavu výpožičky
+    await ctx.db.patch(args.borrowingId, {
+      status: "returned",
+      returnedAt: now,
+    });
+
+    // Aktualizácia knihy
+    const book = await ctx.db.get(borrowing.bookId);
+    if (book) {
+      await ctx.db.patch(borrowing.bookId, {
+        availableCopies: book.availableCopies + 1,
+        status: "available",
+      });
+
+      // Spracovanie nasledujúcej rezervácie
+      await processNextReservation(ctx, borrowing.bookId);
+    }
+
+    // Aktualizácia štatistík používateľa
+    const user = await ctx.db.get(borrowing.userId);
+    if (user) {
+      await ctx.db.patch(borrowing.userId, {
+        currentBorrowed: Math.max(0, (user.currentBorrowed || 0) - 1),
+      });
+    }
+
+    // Notifikácia
+    await ctx.db.insert("notifications", {
+      userId: borrowing.userId,
+      type: "system",
+      title: "Kniha vrátená",
+      message: `Kniha "${book?.title || "neznáma"}" bola úspešne vrátená.`,
+      channel: "in_app",
+      status: "pending",
+      createdAt: now,
+    });
+
+    // Aktivita
+    await ctx.db.insert("userActivities", {
+      userId: borrowing.userId,
+      type: "return",
+      description: `Returned book: ${book?.title || "unknown"}`,
+      metadata: {
+        borrowingId: args.borrowingId,
+        bookId: borrowing.bookId,
+        isOverdue,
+      },
+      occurredAt: now,
+    });
+
+    return true;
+  },
+});
+
+/**
+ * Predĺženie výpožičky
+ */
+export const renewBook = mutation({
+  args: {
+    borrowingId: v.id("borrowings"),
+  },
+  handler: async (ctx, args) => {
+    const borrowing = await ctx.db.get(args.borrowingId);
+    if (!borrowing) {
+      throw new Error("Borrowing not found");
+    }
+
+    if (borrowing.status !== "active") {
+      throw new Error("Only active borrowings can be renewed");
+    }
+
+    if ((borrowing.renewedCount || 0) >= 3) {
+      throw new Error("Maximum renewal limit reached (3)");
+    }
+
+    // Skontrolovať či nie je kniha rezervovaná niekým iným
+    const hasActiveReservations = await ctx.db
+      .query("reservations")
+      .withIndex("by_book_and_status", (q) =>
+        q.eq("bookId", borrowing.bookId).eq("status", "pending")
+      )
+      .first();
+
+    if (hasActiveReservations) {
+      throw new Error("Cannot renew: book has pending reservations");
+    }
+
+    const now = Date.now();
+    const newDueDate = borrowing.dueDate + 14 * 24 * 60 * 60 * 1000; // +14 dní
+
+    await ctx.db.patch(args.borrowingId, {
+      dueDate: newDueDate,
+      renewedCount: (borrowing.renewedCount || 0) + 1,
+      lastRenewedAt: now,
+    });
+
+    const book = await ctx.db.get(borrowing.bookId);
+
+    // Notifikácia
+    await ctx.db.insert("notifications", {
+      userId: borrowing.userId,
+      type: "system",
+      title: "Výpožička predĺžená",
+      message: `Výpožička knihy "${book?.title || "neznáma"}" bola predĺžená do ${new Date(newDueDate).toLocaleDateString()}.`,
+      channel: "in_app",
+      status: "pending",
+      createdAt: now,
+    });
+
+    // Aktivita
+    await ctx.db.insert("userActivities", {
+      userId: borrowing.userId,
+      type: "borrow",
+      description: `Renewed book: ${book?.title || "unknown"}`,
+      metadata: {
+        borrowingId: args.borrowingId,
+        bookId: borrowing.bookId,
+        newDueDate,
+      },
+      occurredAt: now,
+    });
+
+    return true;
   },
 });
