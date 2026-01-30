@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Doc} from "./_generated/dataModel";
 import { z } from "zod";
@@ -10,7 +10,12 @@ import { authorWithDatesSchema } from "types/authorTypes";
  * Validate author data with Zod
  */
 function validateAuthorData(data: unknown): z.infer<typeof authorWithDatesSchema> {
-  return authorWithDatesSchema.parse(data);
+  const result = authorWithDatesSchema.safeParse(data);
+  if (!result.success) {
+    const errorMsg = result.error.issues[0]?.message || "Neplatné údaje autora";
+    throw new ConvexError(errorMsg);
+  }
+  return result.data;
 }
 
 /**
@@ -298,7 +303,7 @@ export const create = mutation({
       .first();
 
     if (existing) {
-      throw new Error(`Author with name "${validatedData.name}" already exists`);
+      throw new ConvexError(`Autor s menom "${validatedData.name}" už existuje.`);
     }
 
     const authorId = await ctx.db.insert("authors", {

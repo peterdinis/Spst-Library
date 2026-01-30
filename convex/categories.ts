@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { paginationOptsValidator } from "convex/server";
 import { Id } from "./_generated/dataModel";
@@ -287,7 +287,7 @@ export const createCategory = mutation({
     // Validate with Zod
     const validationResult = categoryCreateSchema.safeParse(data);
     if (!validationResult.success) {
-      throw new Error(`Validation error: ${validationResult.error.message}`);
+      throw new ConvexError(validationResult.error.issues[0]?.message || "Neplatné údaje kategórie");
     }
     
     const existingCategory = await ctx.db
@@ -296,13 +296,13 @@ export const createCategory = mutation({
       .first();
 
     if (existingCategory) {
-      throw new Error(`Category with slug "${data.slug}" already exists`);
+      throw new ConvexError(`Kategória so slugom "${data.slug}" už existuje.`);
     }
 
     if (parentCategoryId) {
       const parentCategory = await ctx.db.get(parentCategoryId);
       if (!parentCategory) {
-        throw new Error(`Parent category with ID "${parentCategoryId}" not found`);
+        throw new ConvexError(`Nadradená kategória nebola nájdená.`);
       }
     }
 

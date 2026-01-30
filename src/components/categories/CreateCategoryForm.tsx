@@ -1,4 +1,8 @@
 import { FC, useState, useEffect } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { categoryCreateSchema } from "types/categoryTypes";
+import z from "zod";
 import { motion } from "framer-motion";
 import {
 	Card,
@@ -290,21 +294,7 @@ const ALL_ICONS: IconType[] = [
 	{ name: "CheckCircle2", component: CheckCircle2, category: "other" },
 ];
 
-interface CategoryFormData {
-	name: string;
-	slug: string;
-	description: string;
-	color: string;
-	icon: string;
-}
-
-interface FormErrors {
-	name?: string;
-	slug?: string;
-	description?: string;
-	color?: string;
-	icon?: string;
-}
+type CategoryFormDataInput = z.infer<typeof categoryCreateSchema>;
 
 const CreateCategoryForm: FC = () => {
 	const [isSubmitted, setIsSubmitted] = useState(false);
@@ -314,16 +304,26 @@ const CreateCategoryForm: FC = () => {
 
 	const createCategory = useMutation(api.categories.createCategory);
 
-	const [formData, setFormData] = useState<CategoryFormData>({
-		name: "",
-		slug: "",
-		description: "",
-		color: "#8b5cf6",
-		icon: "",
+	const {
+		register,
+		handleSubmit,
+		formState: { errors: formErrors, isSubmitting: isLoading },
+		setValue,
+		control,
+		trigger,
+	} = useForm<CategoryFormDataInput>({
+		resolver: zodResolver(categoryCreateSchema),
+		defaultValues: {
+			name: "",
+			slug: "",
+			description: "",
+			color: "#8b5cf6",
+			icon: "",
+			isActive: true,
+		},
 	});
 
-	const [errors, setErrors] = useState<FormErrors>({});
-	const [isLoading, setIsLoading] = useState(false);
+	const formData = useWatch({ control });
 
 	useEffect(() => {
 		if (formError) {
@@ -332,92 +332,26 @@ const CreateCategoryForm: FC = () => {
 		}
 	}, [formError]);
 
-	const validateForm = (): boolean => {
-		const newErrors: FormErrors = {};
-
-		if (!formData.name.trim()) {
-			newErrors.name = "Názov kategórie je povinný";
-		} else if (formData.name.length > 100) {
-			newErrors.name = "Názov môže mať maximálne 100 znakov";
-		}
-
-		if (!formData.slug.trim()) {
-			newErrors.slug = "Slug je povinný";
-		} else if (!/^[a-z0-9-]+$/.test(formData.slug)) {
-			newErrors.slug = "Slug môže obsahovať len malé písmená, čísla a pomlčky";
-		} else if (formData.slug.length > 100) {
-			newErrors.slug = "Slug môže mať maximálne 100 znakov";
-		}
-
-		if (formData.description && formData.description.length > 500) {
-			newErrors.description = "Popis môže mať maximálne 500 znakov";
-		}
-
-		if (formData.color && !/^#[0-9A-Fa-f]{6}$/.test(formData.color)) {
-			newErrors.color = "Neplatný formát farby (použite #RRGGBB)";
-		}
-
-		if (formData.icon && formData.icon.length > 50) {
-			newErrors.icon = "Ikona môže mať maximálne 50 znakov";
-		}
-
-		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0;
-	};
-
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const onSubmit = async (data: CategoryFormDataInput) => {
 		setFormError("");
 
-		if (!validateForm()) {
-			return;
-		}
-
-		setIsLoading(true);
-
 		try {
-			const categoryData = {
-				name: formData.name,
-				slug: formData.slug,
-				description: formData.description || undefined,
-				color: formData.color || undefined,
-				icon: formData.icon || undefined,
-				isActive: true,
-			};
-
-			const result = await createCategory(categoryData);
+			const result = await createCategory(data);
 
 			if (result) {
 				setIsSubmitted(true);
 			}
 		} catch (error: any) {
-			if (error.message?.includes("already exists")) {
-				setErrors((prev) => ({
-					...prev,
-					slug: "Kategória s týmto slugom už existuje",
-				}));
-			} else if (error.message?.includes("Validation error")) {
-				setFormError("Nesprávne vyplnené údaje. Skontrolujte formulár.");
+			if (error.message?.includes("already exists") || error.message?.includes("už existuje")) {
+				setFormError(`Kategória so slugom "${data.slug}" už existuje.`);
 			} else {
-				setFormError("Nastala chyba pri vytváraní kategórie. Skúste to znova.");
+				setFormError(error.message || "Nastala chyba pri vytváraní kategórie. Skúste to znova.");
 			}
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
-	const updateField = <K extends keyof CategoryFormData>(
-		field: K,
-		value: CategoryFormData[K],
-	) => {
-		setFormData((prev) => ({ ...prev, [field]: value }));
-		if (errors[field as keyof FormErrors]) {
-			setErrors((prev) => ({ ...prev, [field]: "" }));
 		}
 	};
 
 	const generateSlug = () => {
-		if (!formData.name.trim()) return;
+		if (!formData.name?.trim()) return;
 
 		const slug = formData.name
 			.toLowerCase()
@@ -426,18 +360,15 @@ const CreateCategoryForm: FC = () => {
 			.replace(/[^a-z0-9]+/g, "-")
 			.replace(/^-+|-+$/g, "");
 
-		updateField("slug", slug);
+		setValue("slug", slug, { shouldValidate: true });
 	};
 
 	const resetForm = () => {
-		setFormData({
-			name: "",
-			slug: "",
-			description: "",
-			color: "#8b5cf6",
-			icon: "",
-		});
-		setErrors({});
+		setValue("name", "");
+		setValue("slug", "");
+		setValue("description", "");
+		setValue("color", "#8b5cf6");
+		setValue("icon", "");
 		setFormError("");
 		setIsSubmitted(false);
 		setSearchQuery("");
@@ -445,7 +376,7 @@ const CreateCategoryForm: FC = () => {
 	};
 
 	const selectIcon = (iconName: string) => {
-		updateField("icon", iconName);
+		setValue("icon", iconName, { shouldValidate: true });
 	};
 
 	const filteredIcons = ALL_ICONS.filter((icon) => {
@@ -639,7 +570,7 @@ const CreateCategoryForm: FC = () => {
 							</motion.div>
 						)}
 
-						<form onSubmit={handleSubmit} className="space-y-6">
+						<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 							{/* Názov kategórie */}
 							<motion.div variants={itemVariants} className="space-y-2">
 								<Label
@@ -651,26 +582,24 @@ const CreateCategoryForm: FC = () => {
 								</Label>
 								<Input
 									id="name"
-									value={formData.name}
-									onChange={(e) => updateField("name", e.target.value)}
+									{...register("name")}
 									onBlur={generateSlug}
 									placeholder="napr. Science Fiction"
-									className={`transition-all h-11 ${errors.name ? "border-red-500 focus-visible:ring-red-500" : "focus-visible:ring-violet-500"}`}
-									maxLength={100}
+									className={`transition-all h-11 ${formErrors.name ? "border-red-500 focus-visible:ring-red-500" : "focus-visible:ring-violet-500"}`}
 									disabled={isLoading}
 								/>
 								<div className="flex justify-between items-center">
-									{errors.name && (
+									{formErrors.name && (
 										<motion.p
 											initial={{ opacity: 0, y: -10 }}
 											animate={{ opacity: 1, y: 0 }}
 											className="text-sm text-red-500"
 										>
-											{errors.name}
+											{formErrors.name.message}
 										</motion.p>
 									)}
 									<span className="text-xs text-muted-foreground ml-auto">
-										{formData.name.length}/100
+										{formData.name?.length || 0}/100
 									</span>
 								</div>
 							</motion.div>
@@ -687,11 +616,9 @@ const CreateCategoryForm: FC = () => {
 								<div className="flex gap-2">
 									<Input
 										id="slug"
-										value={formData.slug}
-										onChange={(e) => updateField("slug", e.target.value)}
+										{...register("slug")}
 										placeholder="science-fiction"
-										className={`transition-all h-11 font-mono ${errors.slug ? "border-red-500 focus-visible:ring-red-500" : "focus-visible:ring-violet-500"}`}
-										maxLength={100}
+										className={`transition-all h-11 font-mono ${formErrors.slug ? "border-red-500 focus-visible:ring-red-500" : "focus-visible:ring-violet-500"}`}
 										disabled={isLoading}
 									/>
 									<Button
@@ -705,17 +632,17 @@ const CreateCategoryForm: FC = () => {
 									</Button>
 								</div>
 								<div className="flex justify-between items-center">
-									{errors.slug && (
+									{formErrors.slug && (
 										<motion.p
 											initial={{ opacity: 0, y: -10 }}
 											animate={{ opacity: 1, y: 0 }}
 											className="text-sm text-red-500"
 										>
-											{errors.slug}
+											{formErrors.slug.message}
 										</motion.p>
 									)}
 									<span className="text-xs text-muted-foreground ml-auto">
-										{formData.slug.length}/100
+										{formData.slug?.length || 0}/100
 									</span>
 								</div>
 							</motion.div>
@@ -731,26 +658,24 @@ const CreateCategoryForm: FC = () => {
 								</Label>
 								<Textarea
 									id="description"
-									value={formData.description}
-									onChange={(e) => updateField("description", e.target.value)}
+									{...register("description")}
 									placeholder="Krátky popis kategórie..."
 									rows={4}
 									className="focus-visible:ring-violet-500 resize-none"
-									maxLength={500}
 									disabled={isLoading}
 								/>
 								<div className="flex justify-between items-center">
-									{errors.description && (
+									{formErrors.description && (
 										<motion.p
 											initial={{ opacity: 0, y: -10 }}
 											animate={{ opacity: 1, y: 0 }}
 											className="text-sm text-red-500"
 										>
-											{errors.description}
+											{formErrors.description.message}
 										</motion.p>
 									)}
 									<span className="text-xs text-muted-foreground ml-auto">
-										{formData.description.length}/500
+										{formData.description?.length || 0}/500
 									</span>
 								</div>
 							</motion.div>
@@ -770,11 +695,9 @@ const CreateCategoryForm: FC = () => {
 											<Input
 												id="color"
 												type="text"
-												value={formData.color}
-												onChange={(e) => updateField("color", e.target.value)}
+												{...register("color")}
 												placeholder="#8b5cf6"
-												className={`transition-all h-11 font-mono pr-12 ${errors.color ? "border-red-500 focus-visible:ring-red-500" : "focus-visible:ring-violet-500"}`}
-												maxLength={7}
+												className={`transition-all h-11 font-mono pr-12 ${formErrors.color ? "border-red-500 focus-visible:ring-red-500" : "focus-visible:ring-violet-500"}`}
 												disabled={isLoading}
 											/>
 											<div
@@ -785,18 +708,18 @@ const CreateCategoryForm: FC = () => {
 										<input
 											type="color"
 											value={formData.color}
-											onChange={(e) => updateField("color", e.target.value)}
+											onChange={(e) => setValue("color", e.target.value, { shouldValidate: true })}
 											className="w-12 h-11 rounded border cursor-pointer"
 											disabled={isLoading}
 										/>
 									</div>
-									{errors.color && (
+									{formErrors.color && (
 										<motion.p
 											initial={{ opacity: 0, y: -10 }}
 											animate={{ opacity: 1, y: 0 }}
 											className="text-sm text-red-500"
 										>
-											{errors.color}
+											{formErrors.color.message}
 										</motion.p>
 									)}
 								</motion.div>

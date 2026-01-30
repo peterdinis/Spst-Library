@@ -6,22 +6,22 @@ import z from "zod";
  * Zod schema for author validation
  */
 export const authorSchema = z.object({
-  name: z.string().min(1, "Name is required").max(200, "Name too long"),
-  biography: z.string().max(5000, "Biography too long").optional(),
+  name: z.string().min(1, "Meno je povinné").max(200, "Meno je príliš dlhé (max 200 znakov)"),
+  biography: z.string().max(5000, "Životopis je príliš dlhý (max 5000 znakov)").optional(),
   birthYear: z
     .number()
-    .int()
-    .min(1000, "Birth year must be after 1000")
-    .max(new Date().getFullYear(), "Birth year cannot be in the future")
+    .int("Rok musí byť celé číslo")
+    .min(1000, "Rok narodenia musí byť po roku 1000")
+    .max(new Date().getFullYear(), "Rok narodenia nemôže byť v budúcnosti")
     .optional(),
   deathYear: z
     .number()
-    .int()
-    .min(1000, "Death year must be after 1000")
-    .max(new Date().getFullYear() + 10, "Death year seems unrealistic")
+    .int("Rok musí byť celé číslo")
+    .min(1000, "Rok úmrtia musí byť po roku 1000")
+    .max(new Date().getFullYear() + 10, "Rok úmrtia je nereálny")
     .optional(),
-  nationality: z.string().max(100, "Nationality too long").optional(),
-  website: z.string().url("Invalid URL").optional().or(z.literal("")),
+  nationality: z.string().max(100, "Národnosť je príliš dlhá (max 100 znakov)").optional(),
+  website: z.string().url("Neplatná URL adresa").optional().or(z.literal("")),
 });
 
 /**
