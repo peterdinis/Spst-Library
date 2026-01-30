@@ -24,22 +24,21 @@ const AllBooksWrapper: FC = () => {
 	const itemsPerPage = 12;
 
 	// Opravený input pre books query
-	const books = useQuery(
-		api.books.getAll,
-		{
-			search: searchQuery.trim() || undefined,
-			status: status !== "all" ? (status as any) : undefined,
-			categoryId: category !== "all" ? (category as any) : undefined,
-			authorId: author !== "all" ? (author as any) : undefined,
-			sortBy: sortBy as any,
-			limit: itemsPerPage,
-			offset: (page - 1) * itemsPerPage,
-		},
-	);
+	const books = useQuery(api.books.getAll, {
+		search: searchQuery.trim() || undefined,
+		status: status !== "all" ? (status as any) : undefined,
+		categoryId: category !== "all" ? (category as any) : undefined,
+		authorId: author !== "all" ? (author as any) : undefined,
+		sortBy: sortBy as any,
+		limit: itemsPerPage,
+		offset: (page - 1) * itemsPerPage,
+	});
 
 	// Fetch filters data
 	const categories = useQuery(api.categories.getCategoriesWithStats);
-	const authors = useQuery(api.authors.list, { paginationOpts: { numItems: 100 } });
+	const authors = useQuery(api.authors.list, {
+		paginationOpts: { numItems: 100 },
+	});
 
 	// Štatistiky kníh
 	const stats = useQuery(api.books.getStats);
@@ -90,7 +89,12 @@ const AllBooksWrapper: FC = () => {
 		setPage(1);
 	};
 
-	const hasActiveFilters = searchQuery || status !== "all" || category !== "all" || author !== "all" || sortBy !== "newest";
+	const hasActiveFilters =
+		searchQuery ||
+		status !== "all" ||
+		category !== "all" ||
+		author !== "all" ||
+		sortBy !== "newest";
 
 	// Počet strán pre pagináciu - berie do úvahy search
 	const totalPages = searchQuery.trim()
@@ -223,13 +227,14 @@ const AllBooksWrapper: FC = () => {
 								<Filter className="h-4 w-4" />
 								Filtre{" "}
 								{hasActiveFilters &&
-									`(${[
-										searchQuery,
-										status !== "all" && "stav",
-										category !== "all" && "kategória",
-										author !== "all" && "autor",
-										sortBy !== "newest" && "zoradenie",
-									].filter(Boolean).length
+									`(${
+										[
+											searchQuery,
+											status !== "all" && "stav",
+											category !== "all" && "kategória",
+											author !== "all" && "autor",
+											sortBy !== "newest" && "zoradenie",
+										].filter(Boolean).length
 									})`}
 							</Button>
 						</motion.div>
@@ -289,7 +294,10 @@ const AllBooksWrapper: FC = () => {
 							</Badge>
 						)}
 						{status !== "all" && (
-							<Badge variant="secondary" className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 gap-1 pr-1 py-1">
+							<Badge
+								variant="secondary"
+								className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 gap-1 pr-1 py-1"
+							>
 								Stav:{" "}
 								{status === "available"
 									? "Dostupné"
@@ -312,8 +320,13 @@ const AllBooksWrapper: FC = () => {
 							</Badge>
 						)}
 						{category !== "all" && (
-							<Badge variant="secondary" className="bg-purple-500/10 text-purple-400 border-purple-500/20 gap-1 pr-1 py-1">
-								Kategória: {categories?.find((c: any) => c._id === category)?.name || category}
+							<Badge
+								variant="secondary"
+								className="bg-purple-500/10 text-purple-400 border-purple-500/20 gap-1 pr-1 py-1"
+							>
+								Kategória:{" "}
+								{categories?.find((c: any) => c._id === category)?.name ||
+									category}
 								<Button
 									variant="ghost"
 									size="sm"
@@ -326,8 +339,13 @@ const AllBooksWrapper: FC = () => {
 							</Badge>
 						)}
 						{author !== "all" && (
-							<Badge variant="secondary" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 gap-1 pr-1 py-1">
-								Autor: {authors?.page.find((a: any) => a._id === author)?.name || author}
+							<Badge
+								variant="secondary"
+								className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 gap-1 pr-1 py-1"
+							>
+								Autor:{" "}
+								{authors?.page.find((a: any) => a._id === author)?.name ||
+									author}
 								<Button
 									variant="ghost"
 									size="sm"
@@ -340,12 +358,18 @@ const AllBooksWrapper: FC = () => {
 							</Badge>
 						)}
 						{sortBy !== "newest" && (
-							<Badge variant="secondary" className="bg-amber-500/10 text-amber-400 border-amber-500/20 gap-1 pr-1 py-1">
-								Zoradenie: {
-									sortBy === "oldest" ? "Najstaršie" :
-										sortBy === "title_asc" ? "Názov (A-Z)" :
-											sortBy === "title_desc" ? "Názov (Z-A)" : sortBy
-								}
+							<Badge
+								variant="secondary"
+								className="bg-amber-500/10 text-amber-400 border-amber-500/20 gap-1 pr-1 py-1"
+							>
+								Zoradenie:{" "}
+								{sortBy === "oldest"
+									? "Najstaršie"
+									: sortBy === "title_asc"
+										? "Názov (A-Z)"
+										: sortBy === "title_desc"
+											? "Názov (Z-A)"
+											: sortBy}
 								<Button
 									variant="ghost"
 									size="sm"

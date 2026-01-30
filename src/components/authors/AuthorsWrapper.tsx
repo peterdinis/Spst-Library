@@ -80,8 +80,10 @@ export function AllAuthorsWrapper() {
 		result.sort((a, b) => {
 			if (sortBy === "name_asc") return a.name.localeCompare(b.name);
 			if (sortBy === "name_desc") return b.name.localeCompare(a.name);
-			if (sortBy === "books_desc") return (b.bookCount || 0) - (a.bookCount || 0);
-			if (sortBy === "books_asc") return (a.bookCount || 0) - (b.bookCount || 0);
+			if (sortBy === "books_desc")
+				return (b.bookCount || 0) - (a.bookCount || 0);
+			if (sortBy === "books_asc")
+				return (a.bookCount || 0) - (b.bookCount || 0);
 			return 0;
 		});
 
@@ -168,7 +170,8 @@ export function AllAuthorsWrapper() {
 					</div>
 					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						Spoznajte autorov kníh v našej knižnici. Máme celkovo{" "}
-						{stats?.totalAuthors || 0} autorov z {stats?.topNationalities.length || 0} krajín.
+						{stats?.totalAuthors || 0} autorov z{" "}
+						{stats?.topNationalities.length || 0} krajín.
 					</p>
 				</motion.div>
 
@@ -331,7 +334,7 @@ export function AllAuthorsWrapper() {
 															{(author.bookCount || 0) === 1
 																? "kniha"
 																: (author.bookCount || 0) >= 2 &&
-																	(author.bookCount || 0) <= 4
+																		(author.bookCount || 0) <= 4
 																	? "knihy"
 																	: "kníh"}
 														</span>

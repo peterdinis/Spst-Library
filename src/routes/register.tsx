@@ -102,7 +102,8 @@ function RegisterPage() {
 				formData.lastName,
 			);
 			toast.success("Úspešne zaregistrovaný", {
-				description: "Potvrdzujúci email bol odoslaný. Teraz sa môžete prihlásiť!",
+				description:
+					"Potvrdzujúci email bol odoslaný. Teraz sa môžete prihlásiť!",
 			});
 			// Navigate to login page after registration
 			navigate({ to: "/login", search: { redirect: "/" } });

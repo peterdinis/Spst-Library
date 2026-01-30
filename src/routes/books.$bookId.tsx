@@ -186,7 +186,9 @@ function BookDetailPage() {
 		} catch (error: any) {
 			console.error("Reservation error:", error);
 			toast.error("Chyba pri rezervácii", {
-				description: error.message || "Nepodarilo sa vytvoriť rezerváciu. Skúste to znova.",
+				description:
+					error.message ||
+					"Nepodarilo sa vytvoriť rezerváciu. Skúste to znova.",
 			});
 		} finally {
 			setIsLoading(false);
@@ -330,8 +332,9 @@ function BookDetailPage() {
 								)}
 								<div className="absolute top-4 right-4">
 									<Badge
-										className={`${statusColors[book.status]
-											} font-semibold px-3 py-1`}
+										className={`${
+											statusColors[book.status]
+										} font-semibold px-3 py-1`}
 									>
 										{statusLabels[book.status]}
 									</Badge>

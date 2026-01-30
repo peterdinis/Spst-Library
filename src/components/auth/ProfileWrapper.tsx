@@ -180,7 +180,8 @@ const ProfileWrapper: FC = () => {
 			setReturnStatus("success");
 
 			toast.success("Kniha úspešne vrátená", {
-				description: "Kniha bola označená ako vrátená. Potvrdenie sme vám poslali emailom.",
+				description:
+					"Kniha bola označená ako vrátená. Potvrdenie sme vám poslali emailom.",
 				duration: 3000,
 				icon: <CheckCircle className="w-5 h-5 text-emerald-500" />,
 			});
@@ -516,7 +517,14 @@ const ProfileWrapper: FC = () => {
 							className="rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400 px-6 py-2.5"
 						>
 							<Calendar className="w-4 h-4 mr-2" />
-							Rezervácie ({reservations?.filter((r: any) => r.status !== "picked_up" && r.status !== "cancelled" && r.status !== "expired").length || 0})
+							Rezervácie (
+							{reservations?.filter(
+								(r: any) =>
+									r.status !== "picked_up" &&
+									r.status !== "cancelled" &&
+									r.status !== "expired",
+							).length || 0}
+							)
 						</TabsTrigger>
 						<TabsTrigger
 							value="stats"
@@ -904,46 +912,46 @@ const ProfileWrapper: FC = () => {
 						{/* Returned Books Section */}
 						{filteredBooks.filter((book) => book.status === "returned").length >
 							0 && (
-								<div className="mt-12">
-									<h3 className="text-xl font-bold text-slate-200 mb-4 flex items-center gap-2">
-										<CheckCircle className="w-5 h-5 text-emerald-500" />
-										Vrátené knihy
-									</h3>
-									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-										{filteredBooks
-											.filter((book) => book.status === "returned")
-											.map((book) => (
-												<Card
-													key={book.id}
-													className="bg-slate-900/50 border-slate-800"
-												>
-													<CardContent className="p-4">
-														<div className="flex items-start gap-3">
-															<div className="w-16 h-24 rounded overflow-hidden bg-slate-800 flex-shrink-0">
-																<img
-																	src={book.coverImage}
-																	alt={book.title}
-																	className="w-full h-full object-cover"
-																/>
-															</div>
-															<div>
-																<h4 className="font-semibold text-slate-200 mb-1">
-																	{book.title}
-																</h4>
-																<p className="text-sm text-slate-400 mb-2">
-																	{book.author}
-																</p>
-																<Badge className="bg-emerald-900/30 text-emerald-400 border-emerald-800">
-																	Vrátené {new Date().toLocaleDateString("sk")}
-																</Badge>
-															</div>
+							<div className="mt-12">
+								<h3 className="text-xl font-bold text-slate-200 mb-4 flex items-center gap-2">
+									<CheckCircle className="w-5 h-5 text-emerald-500" />
+									Vrátené knihy
+								</h3>
+								<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+									{filteredBooks
+										.filter((book) => book.status === "returned")
+										.map((book) => (
+											<Card
+												key={book.id}
+												className="bg-slate-900/50 border-slate-800"
+											>
+												<CardContent className="p-4">
+													<div className="flex items-start gap-3">
+														<div className="w-16 h-24 rounded overflow-hidden bg-slate-800 flex-shrink-0">
+															<img
+																src={book.coverImage}
+																alt={book.title}
+																className="w-full h-full object-cover"
+															/>
 														</div>
-													</CardContent>
-												</Card>
-											))}
-									</div>
+														<div>
+															<h4 className="font-semibold text-slate-200 mb-1">
+																{book.title}
+															</h4>
+															<p className="text-sm text-slate-400 mb-2">
+																{book.author}
+															</p>
+															<Badge className="bg-emerald-900/30 text-emerald-400 border-emerald-800">
+																Vrátené {new Date().toLocaleDateString("sk")}
+															</Badge>
+														</div>
+													</div>
+												</CardContent>
+											</Card>
+										))}
 								</div>
-							)}
+							</div>
+						)}
 					</TabsContent>
 
 					{/* Reservations Tab */}
@@ -962,7 +970,9 @@ const ProfileWrapper: FC = () => {
 								) : reservations.length === 0 ? (
 									<div className="text-center py-12 text-slate-500">
 										<Calendar className="w-16 h-16 mx-auto mb-4 opacity-20" />
-										<p className="text-lg">Momentálne nemáte žiadne rezervácie</p>
+										<p className="text-lg">
+											Momentálne nemáte žiadne rezervácie
+										</p>
 										<Button
 											variant="link"
 											className="text-indigo-400 mt-2"
@@ -1002,20 +1012,33 @@ const ProfileWrapper: FC = () => {
 																{res.book?.author || "Neznámy autor"}
 															</p>
 															<div className="flex items-center gap-2 mt-2">
-																<Badge className={`
-																${res.status === "ready_for_pickup" ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" :
-																		res.status === "pending" ? "bg-amber-500/20 text-amber-400 border-amber-500/30" :
-																			"bg-slate-700 text-slate-300 border-slate-600"}
-															`}>
-																	{res.status === "ready_for_pickup" ? "Pripravená" :
-																		res.status === "pending" ? "Čaká v poradí" :
-																			res.status === "confirmed" ? "Potvrdená" :
-																				res.status === "cancelled" ? "Zrušená" :
-																					res.status === "expired" ? "Expirovaná" :
-																						res.status}
+																<Badge
+																	className={`
+																${
+																	res.status === "ready_for_pickup"
+																		? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+																		: res.status === "pending"
+																			? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+																			: "bg-slate-700 text-slate-300 border-slate-600"
+																}
+															`}
+																>
+																	{res.status === "ready_for_pickup"
+																		? "Pripravená"
+																		: res.status === "pending"
+																			? "Čaká v poradí"
+																			: res.status === "confirmed"
+																				? "Potvrdená"
+																				: res.status === "cancelled"
+																					? "Zrušená"
+																					: res.status === "expired"
+																						? "Expirovaná"
+																						: res.status}
 																</Badge>
 																<span className="text-xs text-slate-500">
-																	{new Date(res.requestedAt).toLocaleDateString("sk")}
+																	{new Date(res.requestedAt).toLocaleDateString(
+																		"sk",
+																	)}
 																</span>
 															</div>
 														</div>
@@ -1026,15 +1049,19 @@ const ProfileWrapper: FC = () => {
 															<div className="text-right">
 																<p className="text-xs text-emerald-400 font-medium mb-1 flex items-center gap-1 justify-end">
 																	<Clock className="w-3 h-3" />
-																	Vyzdvihnúť do: {new Date(res.pickupDeadline).toLocaleDateString("sk")}
+																	Vyzdvihnúť do:{" "}
+																	{new Date(
+																		res.pickupDeadline,
+																	).toLocaleDateString("sk")}
 																</p>
 															</div>
 														)}
-														{res.status === "pending" && res.estimatedWaitTime && (
-															<p className="text-xs text-slate-400">
-																Odhadovaný čas: {res.estimatedWaitTime}
-															</p>
-														)}
+														{res.status === "pending" &&
+															res.estimatedWaitTime && (
+																<p className="text-xs text-slate-400">
+																	Odhadovaný čas: {res.estimatedWaitTime}
+																</p>
+															)}
 													</div>
 												</div>
 											))}
@@ -1152,11 +1179,11 @@ const ProfileWrapper: FC = () => {
 
 									{books.filter((book) => book.status === "returned").length ===
 										0 && (
-											<div className="text-center py-8 text-slate-500">
-												<CheckCircle className="w-12 h-12 mx-auto mb-3 text-slate-700" />
-												<p>Zatiaľ žiadne vrátené knihy</p>
-											</div>
-										)}
+										<div className="text-center py-8 text-slate-500">
+											<CheckCircle className="w-12 h-12 mx-auto mb-3 text-slate-700" />
+											<p>Zatiaľ žiadne vrátené knihy</p>
+										</div>
+									)}
 								</div>
 							</CardContent>
 						</Card>

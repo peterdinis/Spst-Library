@@ -175,7 +175,8 @@ const AllCategoriesWrapper: FC = () => {
 					</div>
 					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						Preskúmajte našu zbierku kníh podľa kategórií. Vyberte si z{" "}
-						{categoriesData?.page.length || 0} kategórií a {totalBooksCount} kníh.
+						{categoriesData?.page.length || 0} kategórií a {totalBooksCount}{" "}
+						kníh.
 					</p>
 				</motion.div>
 
@@ -248,7 +249,9 @@ const AllCategoriesWrapper: FC = () => {
 								<Search className="h-12 w-12 text-muted-foreground/50" />
 							</div>
 							<h3 className="text-2xl font-bold mb-3">
-								{searchQuery ? "Nenašli sa žiadne kategórie" : "Žiadne kategórie"}
+								{searchQuery
+									? "Nenašli sa žiadne kategórie"
+									: "Žiadne kategórie"}
 							</h3>
 							<p className="text-muted-foreground mb-8">
 								{searchQuery
