@@ -843,7 +843,6 @@ export const returnBook = mutation({
     }
 
     const now = Date.now();
-    const isOverdue = borrowing.dueDate < now;
 
     // Aktualizácia stavu výpožičky
     await ctx.db.patch(args.borrowingId, {
