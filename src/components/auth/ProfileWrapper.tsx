@@ -1,32 +1,20 @@
-import React, { FC, useState } from "react";
+import { FC, useState } from "react";
 import {
 	BookOpen,
 	Calendar,
 	Clock,
-	Eye,
 	RefreshCw,
 	AlertTriangle,
 	Search,
 	Heart,
-	MoreVertical,
 	Award,
-	Timer,
 	Star,
-	Bookmark,
 	ArrowUpRight,
-	ArrowDownRight,
-	Library,
-	TrendingUp,
-	Zap,
 	Flame,
-	CheckCircle2,
-	User,
 	Mail,
 	MapPin,
-	Phone,
 	Edit,
 	Settings,
-	LogOut,
 	Trophy,
 	Target,
 	BarChart3,
@@ -41,13 +29,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -270,7 +251,7 @@ const ProfileWrapper: FC = () => {
 						{returnStatus === "idle" && bookToReturn && (
 							<AlertDialogDescription className="space-y-4">
 								<div className="flex items-start gap-4 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
-									<div className="w-16 h-24 rounded overflow-hidden bg-slate-700 flex-shrink-0">
+									<div className="w-16 h-24 rounded overflow-hidden bg-slate-700 shrink-0">
 										<img
 											src={bookToReturn.coverImage}
 											alt={bookToReturn.title}
@@ -622,7 +603,7 @@ const ProfileWrapper: FC = () => {
 											key={book.id}
 											className="flex items-center gap-4 p-4 bg-slate-800/50 rounded-xl border border-slate-800 hover:border-indigo-600 transition-all group"
 										>
-											<div className="h-20 w-14 rounded-lg overflow-hidden bg-slate-700 flex-shrink-0">
+											<div className="h-20 w-14 rounded-lg overflow-hidden bg-slate-700 shrink-0">
 												<img
 													src={book.coverImage}
 													alt={book.title}
@@ -641,7 +622,7 @@ const ProfileWrapper: FC = () => {
 													className="h-2 bg-slate-700"
 												/>
 											</div>
-											<div className="text-right flex-shrink-0">
+											<div className="text-right shrink-0">
 												<div className="text-2xl font-bold text-indigo-400">
 													{book.progress}%
 												</div>
@@ -714,13 +695,13 @@ const ProfileWrapper: FC = () => {
 											<div className="flex flex-col md:flex-row">
 												{/* Book Cover */}
 												<div className="md:w-48 relative overflow-hidden bg-slate-800">
-													<div className="aspect-[3/4] md:aspect-auto md:h-full relative">
+													<div className="aspect-3/4 md:aspect-auto md:h-full relative">
 														<img
 															src={book.coverImage}
 															alt={book.title}
 															className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
 														/>
-														<div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+														<div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"></div>
 
 														{book.isOverdue && (
 															<div className="absolute top-3 left-3">
@@ -927,7 +908,7 @@ const ProfileWrapper: FC = () => {
 											>
 												<CardContent className="p-4">
 													<div className="flex items-start gap-3">
-														<div className="w-16 h-24 rounded overflow-hidden bg-slate-800 flex-shrink-0">
+														<div className="w-16 h-24 rounded overflow-hidden bg-slate-800 shrink-0">
 															<img
 																src={book.coverImage}
 																alt={book.title}
@@ -991,7 +972,7 @@ const ProfileWrapper: FC = () => {
 													className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 bg-slate-800/30 rounded-xl border border-slate-800 hover:border-slate-700 transition-all"
 												>
 													<div className="flex items-center gap-4 w-full md:w-auto">
-														<div className="h-20 w-14 rounded-lg overflow-hidden bg-slate-700 flex-shrink-0">
+														<div className="h-20 w-14 rounded-lg overflow-hidden bg-slate-700 shrink-0">
 															{res.book?.coverImageUrl ? (
 																<img
 																	src={res.book.coverImageUrl}

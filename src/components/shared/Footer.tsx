@@ -1,7 +1,6 @@
 import { FC } from "react";
 import { motion } from "framer-motion";
 import { Facebook, Instagram, Mail, MapPin, Phone } from "lucide-react";
-import { Link } from "@tanstack/react-router";
 
 const Footer: FC = () => {
 	const currentYear = new Date().getFullYear();
@@ -62,41 +61,6 @@ const Footer: FC = () => {
 								<Mail className="w-4 h-4" />
 								<span>knižnica@skola.sk</span>
 							</div>
-						</div>
-					</motion.div>
-
-					{/* Rýchle odkazy */}
-					<motion.div
-						initial={{ opacity: 0, y: 20 }}
-						whileInView={{ opacity: 1, y: 0 }}
-						transition={{ duration: 0.5, delay: 0.2 }}
-					>
-						<h4 className="font-semibold mb-3">Odkazy</h4>
-						<div className="grid grid-cols-2 gap-2 text-sm">
-							<Link
-								to="/catalog"
-								className="text-muted-foreground hover:text-foreground transition-colors"
-							>
-								Katalóg
-							</Link>
-							<Link
-								to="/about"
-								className="text-muted-foreground hover:text-foreground transition-colors"
-							>
-								O knižnici
-							</Link>
-							<Link
-								to="/rules"
-								className="text-muted-foreground hover:text-foreground transition-colors"
-							>
-								Pravidlá
-							</Link>
-							<Link
-								to="/contact"
-								className="text-muted-foreground hover:text-foreground transition-colors"
-							>
-								Kontakt
-							</Link>
 						</div>
 					</motion.div>
 				</div>

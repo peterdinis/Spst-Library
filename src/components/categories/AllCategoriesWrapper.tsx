@@ -190,7 +190,7 @@ const AllCategoriesWrapper: FC = () => {
 								{filteredCategories.length === 1
 									? "kategória"
 									: filteredCategories.length >= 2 &&
-										filteredCategories.length <= 4
+											filteredCategories.length <= 4
 										? "kategórie"
 										: "kategórií"}
 							</>

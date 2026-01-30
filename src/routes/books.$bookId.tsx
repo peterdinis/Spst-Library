@@ -67,7 +67,7 @@ function BookDetailPage() {
 	const navigate = useNavigate();
 	const { user } = useAuth();
 	const createReservation = useMutation(api.orders.createReservation);
-	const [isReservationOpen, setIsReservationOpen] = useState(false);
+	const [, setIsReservationOpen] = useState(false);
 	const [customPeriodEnabled, setCustomPeriodEnabled] = useState(false);
 	const [reservationData, setReservationData] = useState({
 		name: "",
@@ -338,8 +338,9 @@ function BookDetailPage() {
 								)}
 								<div className="absolute top-4 right-4">
 									<Badge
-										className={`${statusColors[book.status]
-											} font-semibold px-3 py-1`}
+										className={`${
+											statusColors[book.status]
+										} font-semibold px-3 py-1`}
 									>
 										{statusLabels[book.status]}
 									</Badge>

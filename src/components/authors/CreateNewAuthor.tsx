@@ -1,8 +1,4 @@
-import {
-	useState,
-	useCallback,
-	SetStateAction,
-} from "react";
+import { useState, useCallback, SetStateAction } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authorSchema } from "types/authorTypes";
@@ -90,21 +86,35 @@ export default function NewAuthorPage() {
 	const [uploadProgress, setUploadProgress] = useState(0);
 
 	// Form schema for the UI (handling string inputs for years)
-	const authorFormSchema = authorSchema.extend({
-		birthYear: z.coerce.number().int().min(1000).max(new Date().getFullYear()).optional().or(z.literal(0).transform(() => undefined)),
-		deathYear: z.coerce.number().int().min(1000).max(new Date().getFullYear() + 10).optional().or(z.literal(0).transform(() => undefined)),
-	}).refine(
-		(data) => {
-			if (data.birthYear && data.deathYear) {
-				return data.deathYear >= data.birthYear;
-			}
-			return true;
-		},
-		{
-			message: "Rok úmrtia musí byť po roku narodenia",
-			path: ["deathYear"],
-		}
-	);
+	const authorFormSchema = authorSchema
+		.extend({
+			birthYear: z.coerce
+				.number()
+				.int()
+				.min(1000)
+				.max(new Date().getFullYear())
+				.optional()
+				.or(z.literal(0).transform(() => undefined)),
+			deathYear: z.coerce
+				.number()
+				.int()
+				.min(1000)
+				.max(new Date().getFullYear() + 10)
+				.optional()
+				.or(z.literal(0).transform(() => undefined)),
+		})
+		.refine(
+			(data) => {
+				if (data.birthYear && data.deathYear) {
+					return data.deathYear >= data.birthYear;
+				}
+				return true;
+			},
+			{
+				message: "Rok úmrtia musí byť po roku narodenia",
+				path: ["deathYear"],
+			},
+		);
 
 	type AuthorFormData = z.infer<typeof authorFormSchema>;
 
@@ -112,7 +122,6 @@ export default function NewAuthorPage() {
 		register,
 		handleSubmit,
 		formState: { errors: formErrors },
-		setValue,
 		watch,
 	} = useForm<AuthorFormData>({
 		resolver: zodResolver(authorFormSchema) as any,
@@ -151,7 +160,6 @@ export default function NewAuthorPage() {
 			});
 		},
 	});
-
 
 	// Handle image selection
 	const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -284,8 +292,7 @@ export default function NewAuthorPage() {
 			setUploadProgress(90);
 			toast.loading("Ukladám informácie o autorovi...", { id: toastId });
 
-			const website =
-				data.website?.trim() === "" ? undefined : data.website;
+			const website = data.website?.trim() === "" ? undefined : data.website;
 
 			const authorId = await createAuthor({
 				name: data.name,
@@ -325,7 +332,9 @@ export default function NewAuthorPage() {
 	return (
 		<div className="container max-w-4xl mx-auto py-8">
 			<div className="mb-8">
-				<h1 className="text-3xl font-bold tracking-tight">Pridať nového autora</h1>
+				<h1 className="text-3xl font-bold tracking-tight">
+					Pridať nového autora
+				</h1>
 				<p className="text-muted-foreground mt-2">
 					Pridajte nového autora do databázy knižnice
 				</p>
@@ -432,7 +441,8 @@ export default function NewAuthorPage() {
 										disabled={isSubmitting || isUploading}
 									/>
 									<p className="text-sm text-muted-foreground">
-										Odporúčané: Štvorcový obrázok, max 5MB. JPEG, PNG alebo WebP.
+										Odporúčané: Štvorcový obrázok, max 5MB. JPEG, PNG alebo
+										WebP.
 									</p>
 									{isUploading && (
 										<p className="text-sm text-blue-600">Nahrávam obrázok...</p>
@@ -453,7 +463,9 @@ export default function NewAuthorPage() {
 								disabled={isSubmitting || isUploading}
 							/>
 							{formErrors.name && (
-								<p className="text-sm text-destructive">{formErrors.name.message}</p>
+								<p className="text-sm text-destructive">
+									{formErrors.name.message}
+								</p>
 							)}
 						</div>
 
@@ -472,7 +484,9 @@ export default function NewAuthorPage() {
 									{formValues.biography?.length || 0}/5000 znakov
 								</p>
 								{formErrors.biography && (
-									<p className="text-sm text-destructive">{formErrors.biography.message}</p>
+									<p className="text-sm text-destructive">
+										{formErrors.biography.message}
+									</p>
 								)}
 							</div>
 						</div>
@@ -489,7 +503,9 @@ export default function NewAuthorPage() {
 									disabled={isSubmitting || isUploading}
 								/>
 								{formErrors.birthYear && (
-									<p className="text-sm text-destructive">{formErrors.birthYear.message}</p>
+									<p className="text-sm text-destructive">
+										{formErrors.birthYear.message}
+									</p>
 								)}
 							</div>
 
@@ -503,7 +519,9 @@ export default function NewAuthorPage() {
 									disabled={isSubmitting || isUploading}
 								/>
 								{formErrors.deathYear && (
-									<p className="text-sm text-destructive">{formErrors.deathYear.message}</p>
+									<p className="text-sm text-destructive">
+										{formErrors.deathYear.message}
+									</p>
 								)}
 							</div>
 						</div>
@@ -535,7 +553,9 @@ export default function NewAuthorPage() {
 									disabled={isSubmitting || isUploading}
 								/>
 								{formErrors.website && (
-									<p className="text-sm text-destructive">{formErrors.website.message}</p>
+									<p className="text-sm text-destructive">
+										{formErrors.website.message}
+									</p>
 								)}
 							</div>
 						</div>
