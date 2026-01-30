@@ -33,7 +33,9 @@ import {
 	Activity,
 	X,
 	CheckCircle,
+	Loader2,
 } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -84,9 +86,8 @@ interface Book {
 	tags: string[];
 }
 
-
-
 const ProfileWrapper: FC = () => {
+	const navigate = useNavigate();
 	const { user } = useAuth();
 	const borrowings = useQuery(
 		api.orders.getUserBorrowings,
@@ -116,7 +117,8 @@ const ProfileWrapper: FC = () => {
 		daysRemaining: Math.ceil((b.dueDate - Date.now()) / (1000 * 60 * 60 * 24)),
 		renewalsLeft: 3 - (b.renewedCount || 0),
 		isOverdue:
-			b.status === "overdue" || (b.status === "active" && b.dueDate < Date.now()),
+			b.status === "overdue" ||
+			(b.status === "active" && b.dueDate < Date.now()),
 		fineAmount: b.fineAmount || 0,
 		rating: 0,
 		pages: 0,
@@ -178,7 +180,8 @@ const ProfileWrapper: FC = () => {
 			setReturnStatus("success");
 
 			toast.success("Kniha úspešne vrátená", {
-				description: "Kniha bola označená ako vrátená.",
+				description:
+					"Kniha bola označená ako vrátená. Potvrdenie sme vám poslali emailom.",
 				duration: 3000,
 				icon: <CheckCircle className="w-5 h-5 text-emerald-500" />,
 			});
@@ -204,7 +207,7 @@ const ProfileWrapper: FC = () => {
 		try {
 			await renewBookMutation({ borrowingId: bookId as any });
 			toast.success("Kniha obnovená", {
-				description: `Výpožička bola úspešne predĺžená.`,
+				description: `Výpožička bola úspešne predĺžená. Informovali sme vás emailom.`,
 				duration: 3000,
 				icon: <RefreshCw className="w-5 h-5 text-blue-500" />,
 			});
@@ -389,9 +392,17 @@ const ProfileWrapper: FC = () => {
 					<CardContent className="p-8">
 						<div className="flex flex-col md:flex-row items-start md:items-center gap-6">
 							<Avatar className="w-24 h-24 border-2 border-slate-700">
-								<AvatarImage src={userProfileData.avatar} alt={userProfileData.name} />
+								<AvatarImage
+									src={userProfileData.avatar}
+									alt={userProfileData.name}
+								/>
 								<AvatarFallback className="text-3xl bg-slate-800 text-slate-300">
-									{userProfileData.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+									{userProfileData.name
+										.split(" ")
+										.map((n: any[]) => n[0])
+										.join("")
+										.toUpperCase()
+										.slice(0, 2)}
 								</AvatarFallback>
 							</Avatar>
 
@@ -500,6 +511,20 @@ const ProfileWrapper: FC = () => {
 						>
 							<BookOpen className="w-4 h-4 mr-2" />
 							Moje knihy ({books.filter((b) => b.status !== "returned").length})
+						</TabsTrigger>
+						<TabsTrigger
+							value="reservations"
+							className="rounded-xl data-[state=active]:bg-indigo-600 data-[state=active]:text-white text-slate-400 px-6 py-2.5"
+						>
+							<Calendar className="w-4 h-4 mr-2" />
+							Rezervácie (
+							{reservations?.filter(
+								(r: any) =>
+									r.status !== "picked_up" &&
+									r.status !== "cancelled" &&
+									r.status !== "expired",
+							).length || 0}
+							)
 						</TabsTrigger>
 						<TabsTrigger
 							value="stats"
@@ -887,46 +912,163 @@ const ProfileWrapper: FC = () => {
 						{/* Returned Books Section */}
 						{filteredBooks.filter((book) => book.status === "returned").length >
 							0 && (
-								<div className="mt-12">
-									<h3 className="text-xl font-bold text-slate-200 mb-4 flex items-center gap-2">
-										<CheckCircle className="w-5 h-5 text-emerald-500" />
-										Vrátené knihy
-									</h3>
-									<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-										{filteredBooks
-											.filter((book) => book.status === "returned")
-											.map((book) => (
-												<Card
-													key={book.id}
-													className="bg-slate-900/50 border-slate-800"
+							<div className="mt-12">
+								<h3 className="text-xl font-bold text-slate-200 mb-4 flex items-center gap-2">
+									<CheckCircle className="w-5 h-5 text-emerald-500" />
+									Vrátené knihy
+								</h3>
+								<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+									{filteredBooks
+										.filter((book) => book.status === "returned")
+										.map((book) => (
+											<Card
+												key={book.id}
+												className="bg-slate-900/50 border-slate-800"
+											>
+												<CardContent className="p-4">
+													<div className="flex items-start gap-3">
+														<div className="w-16 h-24 rounded overflow-hidden bg-slate-800 flex-shrink-0">
+															<img
+																src={book.coverImage}
+																alt={book.title}
+																className="w-full h-full object-cover"
+															/>
+														</div>
+														<div>
+															<h4 className="font-semibold text-slate-200 mb-1">
+																{book.title}
+															</h4>
+															<p className="text-sm text-slate-400 mb-2">
+																{book.author}
+															</p>
+															<Badge className="bg-emerald-900/30 text-emerald-400 border-emerald-800">
+																Vrátené {new Date().toLocaleDateString("sk")}
+															</Badge>
+														</div>
+													</div>
+												</CardContent>
+											</Card>
+										))}
+								</div>
+							</div>
+						)}
+					</TabsContent>
+
+					{/* Reservations Tab */}
+					<TabsContent value="reservations" className="space-y-6">
+						<Card className="bg-slate-900 border-slate-800">
+							<CardHeader>
+								<CardTitle className="text-xl text-slate-200">
+									Moje rezervácie
+								</CardTitle>
+							</CardHeader>
+							<CardContent>
+								{reservations === undefined ? (
+									<div className="flex items-center justify-center py-12">
+										<Loader2 className="h-8 w-8 animate-spin text-indigo-500" />
+									</div>
+								) : reservations.length === 0 ? (
+									<div className="text-center py-12 text-slate-500">
+										<Calendar className="w-16 h-16 mx-auto mb-4 opacity-20" />
+										<p className="text-lg">
+											Momentálne nemáte žiadne rezervácie
+										</p>
+										<Button
+											variant="link"
+											className="text-indigo-400 mt-2"
+											onClick={() => navigate({ to: "/books" })}
+										>
+											Prezrieť si katalóg kníh
+										</Button>
+									</div>
+								) : (
+									<div className="grid gap-4">
+										{reservations
+											.filter((r: any) => r.status !== "picked_up")
+											.map((res: any) => (
+												<div
+													key={res._id}
+													className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 bg-slate-800/30 rounded-xl border border-slate-800 hover:border-slate-700 transition-all"
 												>
-													<CardContent className="p-4">
-														<div className="flex items-start gap-3">
-															<div className="w-16 h-24 rounded overflow-hidden bg-slate-800 flex-shrink-0">
+													<div className="flex items-center gap-4 w-full md:w-auto">
+														<div className="h-20 w-14 rounded-lg overflow-hidden bg-slate-700 flex-shrink-0">
+															{res.book?.coverImageUrl ? (
 																<img
-																	src={book.coverImage}
-																	alt={book.title}
+																	src={res.book.coverImageUrl}
+																	alt={res.book.title}
 																	className="w-full h-full object-cover"
 																/>
-															</div>
-															<div>
-																<h4 className="font-semibold text-slate-200 mb-1">
-																	{book.title}
-																</h4>
-																<p className="text-sm text-slate-400 mb-2">
-																	{book.author}
-																</p>
-																<Badge className="bg-emerald-900/30 text-emerald-400 border-emerald-800">
-																	Vrátené {new Date().toLocaleDateString("sk")}
+															) : (
+																<div className="w-full h-full flex items-center justify-center">
+																	<BookOpen className="w-6 h-6 text-slate-500" />
+																</div>
+															)}
+														</div>
+														<div className="flex-1 min-w-0">
+															<h4 className="font-semibold text-slate-100 truncate">
+																{res.book?.title || "Neznáma kniha"}
+															</h4>
+															<p className="text-sm text-slate-400 truncate">
+																{res.book?.author || "Neznámy autor"}
+															</p>
+															<div className="flex items-center gap-2 mt-2">
+																<Badge
+																	className={`
+																${
+																	res.status === "ready_for_pickup"
+																		? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
+																		: res.status === "pending"
+																			? "bg-amber-500/20 text-amber-400 border-amber-500/30"
+																			: "bg-slate-700 text-slate-300 border-slate-600"
+																}
+															`}
+																>
+																	{res.status === "ready_for_pickup"
+																		? "Pripravená"
+																		: res.status === "pending"
+																			? "Čaká v poradí"
+																			: res.status === "confirmed"
+																				? "Potvrdená"
+																				: res.status === "cancelled"
+																					? "Zrušená"
+																					: res.status === "expired"
+																						? "Expirovaná"
+																						: res.status}
 																</Badge>
+																<span className="text-xs text-slate-500">
+																	{new Date(res.requestedAt).toLocaleDateString(
+																		"sk",
+																	)}
+																</span>
 															</div>
 														</div>
-													</CardContent>
-												</Card>
+													</div>
+
+													<div className="mt-4 md:mt-0 flex flex-col items-end gap-2 w-full md:w-auto">
+														{res.status === "ready_for_pickup" && (
+															<div className="text-right">
+																<p className="text-xs text-emerald-400 font-medium mb-1 flex items-center gap-1 justify-end">
+																	<Clock className="w-3 h-3" />
+																	Vyzdvihnúť do:{" "}
+																	{new Date(
+																		res.pickupDeadline,
+																	).toLocaleDateString("sk")}
+																</p>
+															</div>
+														)}
+														{res.status === "pending" &&
+															res.estimatedWaitTime && (
+																<p className="text-xs text-slate-400">
+																	Odhadovaný čas: {res.estimatedWaitTime}
+																</p>
+															)}
+													</div>
+												</div>
 											))}
 									</div>
-								</div>
-							)}
+								)}
+							</CardContent>
+						</Card>
 					</TabsContent>
 
 					{/* Stats Tab */}
@@ -1037,11 +1179,11 @@ const ProfileWrapper: FC = () => {
 
 									{books.filter((book) => book.status === "returned").length ===
 										0 && (
-											<div className="text-center py-8 text-slate-500">
-												<CheckCircle className="w-12 h-12 mx-auto mb-3 text-slate-700" />
-												<p>Zatiaľ žiadne vrátené knihy</p>
-											</div>
-										)}
+										<div className="text-center py-8 text-slate-500">
+											<CheckCircle className="w-12 h-12 mx-auto mb-3 text-slate-700" />
+											<p>Zatiaľ žiadne vrátené knihy</p>
+										</div>
+									)}
 								</div>
 							</CardContent>
 						</Card>

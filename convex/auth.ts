@@ -1,5 +1,6 @@
 import { v, ConvexError } from "convex/values";
 import { mutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 // Simple password hashing using Web Crypto API (available in Convex)
 async function hashPassword(password: string): Promise<string> {
@@ -100,6 +101,14 @@ export const register = mutation({
 			expiresAt,
 			createdAt: now,
 			lastUsedAt: now,
+		});
+
+		// Schedule welcome email
+		await ctx.scheduler.runAfter(0, internal.emails.sendEmail, {
+			to: args.email.toLowerCase(),
+			subject: "Vitajte v SPŠT Knižnici!",
+			text: `Dobrý deň ${args.firstName},\n\nďakujeme za registráciu v našej knižnici. Váš účet bol úspešne vytvorený.\n\nS pozdravom,\nSPŠT Knižnica`,
+			html: `<p>Dobrý deň <strong>${args.firstName}</strong>,</p><p>ďakujeme za registráciu v našej knižnici. Váš účet bol úspešne vytvorený.</p><p>S pozdravom,<br>SPŠT Knižnica</p>`,
 		});
 
 		return {

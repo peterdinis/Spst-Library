@@ -10,40 +10,46 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { BooksSearch } from "./BookSearch";
 import { BooksPagination } from "./BookPagination";
+import { BooksFilters } from "./BookFilters";
 import { api } from "convex/_generated/api";
 
 const AllBooksWrapper: FC = () => {
 	const [searchQuery, setSearchQuery] = useState("");
-	const [status, setStatus] = useState<string>("");
+	const [status, setStatus] = useState<string>("all");
+	const [category, setCategory] = useState<string>("all");
+	const [author, setAuthor] = useState<string>("all");
+	const [sortBy, setSortBy] = useState<string>("newest");
 	const [page, setPage] = useState(1);
 	const [showFilters, setShowFilters] = useState(false);
 	const itemsPerPage = 12;
 
-	// Opravený input pre books query
-	const books = useQuery(
-		api.books.getAll,
-		searchQuery.trim() || status
-			? {
-					search: searchQuery.trim() || undefined,
-					status:
-						(status as "available" | "reserved" | "maintenance" | "lost") ||
-						undefined,
-					limit: itemsPerPage,
-					offset: (page - 1) * itemsPerPage,
-				}
-			: {
-					limit: itemsPerPage,
-					offset: (page - 1) * itemsPerPage,
-				},
-	);
+	// Opravený input pre books query s pagináciou
+	const booksData = useQuery(api.books.getAll, {
+		search: searchQuery.trim() || undefined,
+		status: status !== "all" ? (status as any) : undefined,
+		categoryId: category !== "all" ? (category as any) : undefined,
+		authorId: author !== "all" ? (author as any) : undefined,
+		sortBy: sortBy as any,
+		paginationOpts: {
+			numItems: itemsPerPage,
+			cursor: page > 1 ? ((page - 1) * itemsPerPage).toString() : undefined,
+		},
+	});
+
+	const books = booksData?.page;
+
+	// Fetch filters data - using non-paginated queries for filter dropdowns
+	const categories = useQuery(api.categories.listAllActive);
+	const authors = useQuery(api.authors.listAll);
 
 	// Štatistiky kníh
 	const stats = useQuery(api.books.getStats);
 
-	// Loading states - opravené na správne overovanie
-	const isLoadingBooks = books === undefined;
+	// Loading states
+	const isLoadingBooks = booksData === undefined;
 	const isLoadingStats = stats === undefined;
-	const isLoading = isLoadingBooks || isLoadingStats;
+	const isLoadingFilters = categories === undefined || authors === undefined;
+	const isLoading = isLoadingBooks || isLoadingStats || isLoadingFilters;
 	const isEmpty = !isLoadingBooks && (!books || books.length === 0);
 
 	// Animation variants
@@ -78,16 +84,26 @@ const AllBooksWrapper: FC = () => {
 
 	const handleClearFilters = () => {
 		setSearchQuery("");
-		setStatus("");
+		setStatus("all");
+		setCategory("all");
+		setAuthor("all");
+		setSortBy("newest");
 		setPage(1);
 	};
 
-	const hasActiveFilters = searchQuery || status;
+	const hasActiveFilters =
+		searchQuery ||
+		status !== "all" ||
+		category !== "all" ||
+		author !== "all" ||
+		sortBy !== "newest";
 
-	// Počet strán pre pagináciu - berie do úvahy search
-	const totalPages = searchQuery.trim()
-		? Math.ceil((books?.length || 0) / itemsPerPage)
-		: Math.ceil((stats?.totalBooks || 0) / itemsPerPage);
+	// Počet strán pre pagináciu - vždy prioritne z backendu (ak je k dispozícii)
+	const totalItems = booksData && 'total' in booksData
+		? (booksData.total as number)
+		: (stats?.totalBooks || 0);
+
+	const totalPages = Math.ceil(totalItems / itemsPerPage);
 
 	return (
 		<motion.div
@@ -215,15 +231,17 @@ const AllBooksWrapper: FC = () => {
 								<Filter className="h-4 w-4" />
 								Filtre{" "}
 								{hasActiveFilters &&
-									`(${
-										[searchQuery && "hľadanie", status && "stav"].filter(
-											Boolean,
-										).length
+									`(${[
+										searchQuery,
+										status !== "all" && "stav",
+										category !== "all" && "kategória",
+										author !== "all" && "autor",
+										sortBy !== "newest" && "zoradenie",
+									].filter(Boolean).length
 									})`}
 							</Button>
 						</motion.div>
 
-						{/* Filters Dropdown */}
 						<AnimatePresence>
 							{showFilters && (
 								<motion.div
@@ -233,79 +251,20 @@ const AllBooksWrapper: FC = () => {
 									transition={{ duration: 0.2 }}
 									className="overflow-hidden"
 								>
-									<div className="space-y-4 p-4 border rounded-lg bg-card">
-										<div className="flex items-center justify-between">
-											<div className="flex items-center gap-2">
-												<Filter className="h-4 w-4" />
-												<h3 className="font-semibold">Filtre</h3>
-											</div>
-											{hasActiveFilters && (
-												<Button
-													variant="ghost"
-													size="sm"
-													onClick={handleClearFilters}
-													className="h-7 gap-1 text-xs"
-													disabled={isLoading}
-												>
-													Vymazať
-												</Button>
-											)}
-										</div>
-
-										<Separator />
-
-										{/* Status filter */}
-										<div className="space-y-2">
-											<label className="text-sm font-medium">Stav</label>
-											<div className="flex flex-wrap gap-2">
-												<Button
-													variant={status === "" ? "default" : "outline"}
-													size="sm"
-													onClick={() => setStatus("")}
-													disabled={isLoading}
-												>
-													Všetky
-												</Button>
-												<Button
-													variant={
-														status === "available" ? "default" : "outline"
-													}
-													size="sm"
-													onClick={() => setStatus("available")}
-													disabled={isLoading}
-												>
-													Dostupné
-												</Button>
-												<Button
-													variant={
-														status === "reserved" ? "default" : "outline"
-													}
-													size="sm"
-													onClick={() => setStatus("reserved")}
-													disabled={isLoading}
-												>
-													Rezervované
-												</Button>
-												<Button
-													variant={
-														status === "maintenance" ? "default" : "outline"
-													}
-													size="sm"
-													onClick={() => setStatus("maintenance")}
-													disabled={isLoading}
-												>
-													V údržbe
-												</Button>
-												<Button
-													variant={status === "lost" ? "default" : "outline"}
-													size="sm"
-													onClick={() => setStatus("lost")}
-													disabled={isLoading}
-												>
-													Stratené
-												</Button>
-											</div>
-										</div>
+									<div className="pt-4">
+										<BooksFilters
+											categories={categories || []}
+											authors={authors || []}
+											selectedCategory={category}
+											selectedAuthor={author}
+											selectedStatus={status}
+											sortBy={sortBy}
+											onCategoryChange={setCategory}
+											onAuthorChange={setAuthor}
+											onStatusChange={setStatus}
+											onSortChange={setSortBy}
+											onClear={handleClearFilters}
+										/>
 									</div>
 								</motion.div>
 							)}
@@ -337,8 +296,11 @@ const AllBooksWrapper: FC = () => {
 								</Button>
 							</Badge>
 						)}
-						{status && (
-							<Badge variant="secondary" className="gap-1">
+						{status !== "all" && (
+							<Badge
+								variant="secondary"
+								className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 gap-1 pr-1 py-1"
+							>
 								Stav:{" "}
 								{status === "available"
 									? "Dostupné"
@@ -352,8 +314,70 @@ const AllBooksWrapper: FC = () => {
 								<Button
 									variant="ghost"
 									size="sm"
-									className="h-4 w-4 p-0 ml-1"
-									onClick={() => setStatus("")}
+									className="h-5 w-5 p-0 ml-1 hover:bg-indigo-500/20 rounded-full"
+									onClick={() => setStatus("all")}
+									disabled={isLoading}
+								>
+									✕
+								</Button>
+							</Badge>
+						)}
+						{category !== "all" && (
+							<Badge
+								variant="secondary"
+								className="bg-purple-500/10 text-purple-400 border-purple-500/20 gap-1 pr-1 py-1"
+							>
+								Kategória:{" "}
+								{categories?.find((c: any) => c._id === category)?.name ||
+									category}
+								<Button
+									variant="ghost"
+									size="sm"
+									className="h-5 w-5 p-0 ml-1 hover:bg-purple-500/20 rounded-full"
+									onClick={() => setCategory("all")}
+									disabled={isLoading}
+								>
+									✕
+								</Button>
+							</Badge>
+						)}
+						{author !== "all" && (
+							<Badge
+								variant="secondary"
+								className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 gap-1 pr-1 py-1"
+							>
+								Autor:{" "}
+								{authors?.find((a: any) => a._id === author)?.name ||
+									author}
+								<Button
+									variant="ghost"
+									size="sm"
+									className="h-5 w-5 p-0 ml-1 hover:bg-emerald-500/20 rounded-full"
+									onClick={() => setAuthor("all")}
+									disabled={isLoading}
+								>
+									✕
+								</Button>
+							</Badge>
+						)}
+						{sortBy !== "newest" && (
+							<Badge
+								variant="secondary"
+								className="bg-amber-500/10 text-amber-400 border-amber-500/20 gap-1 pr-1 py-1"
+							>
+								Zoradenie:{" "}
+								{sortBy === "oldest"
+									? "Najstaršie"
+									: sortBy === "title_asc"
+										? "Názov (A-Z)"
+										: sortBy === "title_desc"
+											? "Názov (Z-A)"
+											: sortBy}
+								<Button
+									variant="ghost"
+									size="sm"
+									className="h-5 w-5 p-0 ml-1 hover:bg-amber-500/20 rounded-full"
+									onClick={() => setSortBy("newest")}
 									disabled={isLoading}
 								>
 									✕
@@ -364,7 +388,7 @@ const AllBooksWrapper: FC = () => {
 							variant="ghost"
 							size="sm"
 							onClick={handleClearFilters}
-							className="h-6"
+							className="h-8 text-xs text-slate-500 hover:text-white"
 							disabled={isLoading}
 						>
 							Vymazať všetko

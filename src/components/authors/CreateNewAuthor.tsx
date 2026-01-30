@@ -1,10 +1,12 @@
 import {
 	useState,
-	FormEvent,
-	ChangeEvent,
 	useCallback,
 	SetStateAction,
 } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { authorSchema } from "types/authorTypes";
+import z from "zod";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
@@ -87,17 +89,42 @@ export default function NewAuthorPage() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [uploadProgress, setUploadProgress] = useState(0);
 
-	// Form state
-	const [formData, setFormData] = useState({
-		name: "",
-		biography: "",
-		birthYear: "",
-		deathYear: "",
-		nationality: "",
-		website: "",
+	// Form schema for the UI (handling string inputs for years)
+	const authorFormSchema = authorSchema.extend({
+		birthYear: z.coerce.number().int().min(1000).max(new Date().getFullYear()).optional().or(z.literal(0).transform(() => undefined)),
+		deathYear: z.coerce.number().int().min(1000).max(new Date().getFullYear() + 10).optional().or(z.literal(0).transform(() => undefined)),
+	}).refine(
+		(data) => {
+			if (data.birthYear && data.deathYear) {
+				return data.deathYear >= data.birthYear;
+			}
+			return true;
+		},
+		{
+			message: "Rok úmrtia musí byť po roku narodenia",
+			path: ["deathYear"],
+		}
+	);
+
+	type AuthorFormData = z.infer<typeof authorFormSchema>;
+
+	const {
+		register,
+		handleSubmit,
+		formState: { errors: formErrors },
+		setValue,
+		watch,
+	} = useForm<AuthorFormData>({
+		resolver: zodResolver(authorFormSchema) as any,
+		defaultValues: {
+			name: "",
+			biography: "",
+			nationality: "",
+			website: "",
+		},
 	});
 
-	const [errors, setErrors] = useState<Record<string, string>>({});
+	const formValues = watch();
 
 	// Image upload state
 	const [imageFile, setImageFile] = useState<File | null>(null);
@@ -125,35 +152,24 @@ export default function NewAuthorPage() {
 		},
 	});
 
-	// Handle form input changes
-	const handleInputChange = (
-		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-	) => {
-		const { name, value } = e.target;
-		setFormData((prev) => ({ ...prev, [name]: value }));
-
-		if (errors[name]) {
-			setErrors((prev) => ({ ...prev, [name]: "" }));
-		}
-	};
 
 	// Handle image selection
-	const handleImageSelect = (e: ChangeEvent<HTMLInputElement>) => {
+	const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
 
 		// Validate file type
 		if (!file.type.startsWith("image/")) {
-			toast.error("Invalid file type", {
-				description: "Please select an image file (JPEG, PNG, etc.)",
+			toast.error("Neplatný formát súboru", {
+				description: "Prosím vyberte obrázok (JPEG, PNG, atď.)",
 			});
 			return;
 		}
 
 		// Validate file size (max 5MB)
 		if (file.size > 5 * 1024 * 1024) {
-			toast.error("File too large", {
-				description: "Please select an image smaller than 5MB",
+			toast.error("Súbor je príliš veľký", {
+				description: "Maximálna veľkosť je 5MB",
 			});
 			return;
 		}
@@ -218,86 +234,20 @@ export default function NewAuthorPage() {
 		setImagePreview(null);
 	};
 
-	// Form validation
-	const validateForm = () => {
-		const newErrors: Record<string, string> = {};
-
-		if (!formData.name.trim()) {
-			newErrors.name = "Name is required";
-		} else if (formData.name.length > 200) {
-			newErrors.name = "Name is too long (max 200 characters)";
-		}
-
-		if (formData.biography && formData.biography.length > 5000) {
-			newErrors.biography = "Biography is too long (max 5000 characters)";
-		}
-
-		if (formData.birthYear) {
-			const year = parseInt(formData.birthYear);
-			if (isNaN(year)) {
-				newErrors.birthYear = "Please enter a valid year";
-			} else if (year < 1000 || year > new Date().getFullYear()) {
-				newErrors.birthYear =
-					"Birth year must be between 1000 and current year";
-			}
-		}
-
-		if (formData.deathYear) {
-			const year = parseInt(formData.deathYear);
-			if (isNaN(year)) {
-				newErrors.deathYear = "Please enter a valid year";
-			} else if (year < 1000 || year > new Date().getFullYear() + 10) {
-				newErrors.deathYear = "Invalid death year";
-			}
-		}
-
-		if (formData.birthYear && formData.deathYear) {
-			const birth = parseInt(formData.birthYear);
-			const death = parseInt(formData.deathYear);
-			if (!isNaN(birth) && !isNaN(death) && death < birth) {
-				newErrors.deathYear = "Death year must be after birth year";
-			}
-		}
-
-		if (formData.nationality && formData.nationality.length > 100) {
-			newErrors.nationality = "Nationality is too long (max 100 characters)";
-		}
-
-		if (formData.website && formData.website.trim() !== "") {
-			try {
-				const url = formData.website.includes("://")
-					? formData.website
-					: `https://${formData.website}`;
-				new URL(url);
-			} catch {
-				newErrors.website = "Please enter a valid URL";
-			}
-		}
-
-		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0;
-	};
-
 	// Handle form submission
-	const handleSubmit = async (e: FormEvent) => {
-		e.preventDefault();
-
-		if (!validateForm()) {
-			return;
-		}
-
+	const onSubmit = async (data: AuthorFormData) => {
 		setIsSubmitting(true);
 		setUploadProgress(0);
 		let toastId: string | number | undefined;
 
 		try {
-			toastId = toast.loading("Creating author...");
+			toastId = toast.loading("Vytváram autora...");
 
 			let photoFileId: string | undefined;
 
 			if (imageFile) {
 				setUploadProgress(30);
-				toast.loading("Uploading image...", { id: toastId });
+				toast.loading("Nahrávam obrázok...", { id: toastId });
 
 				try {
 					const uploadResult = await startUpload([imageFile]);
@@ -309,7 +259,7 @@ export default function NewAuthorPage() {
 
 						// Create file record in Convex
 						if (serverData) {
-							toast.loading("Saving file metadata...", { id: toastId });
+							toast.loading("Ukladám metadáta súboru...", { id: toastId });
 							photoFileId = await createFileRecord({
 								storageId: serverData.fileKey,
 								url: serverData.fileUrl,
@@ -323,44 +273,37 @@ export default function NewAuthorPage() {
 						}
 					}
 				} catch (uploadError) {
-					toast.warning("Image upload failed", {
+					toast.warning("Nahrávanie obrázka zlyhalo", {
 						id: toastId,
 						description:
-							"The author will be created without a photo. You can add one later." +
-							uploadError,
+							"Autor bude vytvorený bez fotky. Fotku môžete pridať neskôr.",
 					});
 				}
 			}
 
 			setUploadProgress(90);
-			toast.loading("Saving author information...", { id: toastId });
+			toast.loading("Ukladám informácie o autorovi...", { id: toastId });
 
-			const birthYear = formData.birthYear
-				? parseInt(formData.birthYear)
-				: undefined;
-			const deathYear = formData.deathYear
-				? parseInt(formData.deathYear)
-				: undefined;
 			const website =
-				formData.website?.trim() === "" ? undefined : formData.website;
+				data.website?.trim() === "" ? undefined : data.website;
 
 			const authorId = await createAuthor({
-				name: formData.name,
-				biography: formData.biography || undefined,
-				birthYear,
-				deathYear,
-				nationality: formData.nationality || undefined,
+				name: data.name,
+				biography: data.biography || undefined,
+				birthYear: data.birthYear,
+				deathYear: data.deathYear,
+				nationality: data.nationality || undefined,
 				photoFileId: photoFileId as any,
 				website,
 			});
 
 			setUploadProgress(100);
 
-			toast.success("Author created successfully", {
+			toast.success("Autor úspešne vytvorený", {
 				id: toastId,
-				description: `${formData.name} has been added to the library.`,
+				description: `${data.name} bol pridaný do knižnice.`,
 				action: {
-					label: "View",
+					label: "Zobraziť",
 					onClick: () => navigate({ to: `/authors/${authorId}` }),
 				},
 			});
@@ -369,9 +312,9 @@ export default function NewAuthorPage() {
 				navigate({ to: "/authors" });
 			}, 2000);
 		} catch (error: any) {
-			toast.error("Error creating author", {
+			toast.error("Chyba pri vytváraní autora", {
 				id: toastId,
-				description: error.message || "Please try again",
+				description: error.message || "Skúste to prosím znova",
 			});
 		} finally {
 			setIsSubmitting(false);
@@ -382,9 +325,9 @@ export default function NewAuthorPage() {
 	return (
 		<div className="container max-w-4xl mx-auto py-8">
 			<div className="mb-8">
-				<h1 className="text-3xl font-bold tracking-tight">Add New Author</h1>
+				<h1 className="text-3xl font-bold tracking-tight">Pridať nového autora</h1>
 				<p className="text-muted-foreground mt-2">
-					Add a new author to your library database
+					Pridajte nového autora do databázy knižnice
 				</p>
 			</div>
 
@@ -392,9 +335,9 @@ export default function NewAuthorPage() {
 			<Dialog open={showCropper} onOpenChange={setShowCropper}>
 				<DialogContent className="max-w-3xl">
 					<DialogHeader>
-						<DialogTitle>Crop Author Photo</DialogTitle>
+						<DialogTitle>Orezanie fotky autora</DialogTitle>
 						<DialogDescription>
-							Adjust the image to your preferred crop
+							Upravte výrez fotky podľa potreby
 						</DialogDescription>
 					</DialogHeader>
 
@@ -430,11 +373,11 @@ export default function NewAuthorPage() {
 
 					<DialogFooter>
 						<Button variant="outline" onClick={handleCropCancel}>
-							Cancel
+							Zrušiť
 						</Button>
 						<Button onClick={handleCropConfirm}>
 							<Crop className="mr-2 h-4 w-4" />
-							Apply Crop
+							Použiť výrez
 						</Button>
 					</DialogFooter>
 				</DialogContent>
@@ -444,14 +387,14 @@ export default function NewAuthorPage() {
 				<CardHeader>
 					<CardTitle className="flex items-center gap-2">
 						<UserPlus className="h-5 w-5" />
-						Author Information
+						Informácie o autorovi
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<form onSubmit={handleSubmit} className="space-y-6">
+					<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 						{/* Author Photo Upload */}
 						<div className="space-y-4">
-							<Label htmlFor="photo">Author Photo (Optional)</Label>
+							<Label htmlFor="photo">Fotka autora (voliteľné)</Label>
 							<div className="flex items-start gap-6">
 								{imagePreview ? (
 									<div className="relative">
@@ -489,10 +432,10 @@ export default function NewAuthorPage() {
 										disabled={isSubmitting || isUploading}
 									/>
 									<p className="text-sm text-muted-foreground">
-										Recommended: Square image, max 5MB. JPEG, PNG, or WebP.
+										Odporúčané: Štvorcový obrázok, max 5MB. JPEG, PNG alebo WebP.
 									</p>
 									{isUploading && (
-										<p className="text-sm text-blue-600">Uploading image...</p>
+										<p className="text-sm text-blue-600">Nahrávam obrázok...</p>
 									)}
 								</div>
 							</div>
@@ -501,40 +444,35 @@ export default function NewAuthorPage() {
 						{/* Name Field */}
 						<div className="space-y-2">
 							<Label htmlFor="name">
-								Full Name <span className="text-destructive">*</span>
+								Celé meno <span className="text-destructive">*</span>
 							</Label>
 							<Input
 								id="name"
-								name="name"
-								value={formData.name}
-								onChange={handleInputChange}
-								placeholder="e.g., J.K. Rowling"
+								{...register("name")}
+								placeholder="napr., J.K. Rowling"
 								disabled={isSubmitting || isUploading}
-								required
 							/>
-							{errors.name && (
-								<p className="text-sm text-destructive">{errors.name}</p>
+							{formErrors.name && (
+								<p className="text-sm text-destructive">{formErrors.name.message}</p>
 							)}
 						</div>
 
 						{/* Biography Field */}
 						<div className="space-y-2">
-							<Label htmlFor="biography">Biography</Label>
+							<Label htmlFor="biography">Životopis</Label>
 							<Textarea
 								id="biography"
-								name="biography"
-								value={formData.biography}
-								onChange={handleInputChange}
-								placeholder="Write a brief biography of the author..."
+								{...register("biography")}
+								placeholder="Napíšte stručný životopis autora..."
 								rows={4}
 								disabled={isSubmitting || isUploading}
 							/>
 							<div className="flex justify-between items-center">
 								<p className="text-sm text-muted-foreground">
-									{formData.biography.length}/5000 characters
+									{formValues.biography?.length || 0}/5000 znakov
 								</p>
-								{errors.biography && (
-									<p className="text-sm text-destructive">{errors.biography}</p>
+								{formErrors.biography && (
+									<p className="text-sm text-destructive">{formErrors.biography.message}</p>
 								)}
 							</div>
 						</div>
@@ -542,38 +480,30 @@ export default function NewAuthorPage() {
 						{/* Birth and Death Year Fields */}
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 							<div className="space-y-2">
-								<Label htmlFor="birthYear">Birth Year</Label>
+								<Label htmlFor="birthYear">Rok narodenia</Label>
 								<Input
 									id="birthYear"
-									name="birthYear"
 									type="number"
-									value={formData.birthYear}
-									onChange={handleInputChange}
-									placeholder="e.g., 1965"
+									{...register("birthYear", { valueAsNumber: true })}
+									placeholder="napr., 1965"
 									disabled={isSubmitting || isUploading}
-									min={1000}
-									max={new Date().getFullYear()}
 								/>
-								{errors.birthYear && (
-									<p className="text-sm text-destructive">{errors.birthYear}</p>
+								{formErrors.birthYear && (
+									<p className="text-sm text-destructive">{formErrors.birthYear.message}</p>
 								)}
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="deathYear">Death Year</Label>
+								<Label htmlFor="deathYear">Rok úmrtia</Label>
 								<Input
 									id="deathYear"
-									name="deathYear"
 									type="number"
-									value={formData.deathYear}
-									onChange={handleInputChange}
-									placeholder="e.g., 2023"
+									{...register("deathYear", { valueAsNumber: true })}
+									placeholder="napr., 2023"
 									disabled={isSubmitting || isUploading}
-									min={1000}
-									max={new Date().getFullYear() + 10}
 								/>
-								{errors.deathYear && (
-									<p className="text-sm text-destructive">{errors.deathYear}</p>
+								{formErrors.deathYear && (
+									<p className="text-sm text-destructive">{formErrors.deathYear.message}</p>
 								)}
 							</div>
 						</div>
@@ -581,35 +511,31 @@ export default function NewAuthorPage() {
 						{/* Nationality and Website Fields */}
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 							<div className="space-y-2">
-								<Label htmlFor="nationality">Nationality</Label>
+								<Label htmlFor="nationality">Národnosť</Label>
 								<Input
 									id="nationality"
-									name="nationality"
-									value={formData.nationality}
-									onChange={handleInputChange}
-									placeholder="e.g., British"
+									{...register("nationality")}
+									placeholder="napr., Slovenská"
 									disabled={isSubmitting || isUploading}
 								/>
-								{errors.nationality && (
+								{formErrors.nationality && (
 									<p className="text-sm text-destructive">
-										{errors.nationality}
+										{formErrors.nationality.message}
 									</p>
 								)}
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="website">Website</Label>
+								<Label htmlFor="website">Webstránka</Label>
 								<Input
 									id="website"
-									name="website"
 									type="url"
-									value={formData.website}
-									onChange={handleInputChange}
+									{...register("website")}
 									placeholder="https://example.com"
 									disabled={isSubmitting || isUploading}
 								/>
-								{errors.website && (
-									<p className="text-sm text-destructive">{errors.website}</p>
+								{formErrors.website && (
+									<p className="text-sm text-destructive">{formErrors.website.message}</p>
 								)}
 							</div>
 						</div>
@@ -625,8 +551,8 @@ export default function NewAuthorPage() {
 								</div>
 								<p className="text-sm text-muted-foreground text-center">
 									{uploadProgress < 100
-										? "Creating author..."
-										: "Author created successfully!"}
+										? "Vytváram autora..."
+										: "Autor bol úspešne vytvorený!"}
 								</p>
 							</div>
 						)}
@@ -639,18 +565,18 @@ export default function NewAuthorPage() {
 								onClick={() => navigate({ to: "/authors" })}
 								disabled={isSubmitting || isUploading}
 							>
-								Cancel
+								Zrušiť
 							</Button>
 							<Button type="submit" disabled={isSubmitting || isUploading}>
 								{isSubmitting || isUploading ? (
 									<>
 										<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-										{isUploading ? "Uploading..." : "Creating..."}
+										{isUploading ? "Nahrávanie..." : "Vytváram..."}
 									</>
 								) : (
 									<>
 										<UserPlus className="mr-2 h-4 w-4" />
-										Create Author
+										Vytvoriť autora
 									</>
 								)}
 							</Button>

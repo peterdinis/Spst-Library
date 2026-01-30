@@ -1,6 +1,7 @@
 // convex/reservations.ts
 import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 /**
  * Vytvorenie novej rezervácie
@@ -335,6 +336,17 @@ export const pickupReservation = mutation({
       status: "pending",
       createdAt: Date.now(),
     });
+
+    // Schedule borrowing email
+    const userEmail = user?.email;
+    if (userEmail) {
+      await ctx.scheduler.runAfter(0, internal.emails.sendEmail, {
+        to: userEmail,
+        subject: `Kniha vyzdvihnutá: ${book.title}`,
+        text: `Dobrý deň ${user?.firstName},\n\núspešne ste vyzdvihli knihu "${book.title}". Termín na vrátenie je ${new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString()}.\n\nPríjemné čítanie,\nSPŠT Knižnica`,
+        html: `<p>Dobrý deň <strong>${user?.firstName}</strong>,</p><p>úspešne ste vyzdvihli knihu "<strong>${book.title}</strong>".</p><p>Termín na vrátenie je <strong>${new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString()}</strong>.</p><p>Príjemné čítanie,<br>SPŠT Knižnica</p>`,
+      });
+    }
 
     return borrowingId;
   },
@@ -831,7 +843,6 @@ export const returnBook = mutation({
     }
 
     const now = Date.now();
-    const isOverdue = borrowing.dueDate < now;
 
     // Aktualizácia stavu výpožičky
     await ctx.db.patch(args.borrowingId, {
@@ -870,6 +881,16 @@ export const returnBook = mutation({
       createdAt: now,
     });
 
+    // Schedule return email
+    if (user?.email) {
+      await ctx.scheduler.runAfter(0, internal.emails.sendEmail, {
+        to: user.email,
+        subject: `Kniha vrátená: ${book?.title || "neznáma"}`,
+        text: `Dobrý deň ${user.firstName},\n\nkniha "${book?.title || "neznáma"}" bola úspešne vrátená. Ďakujeme!\n\nS pozdravom,\nSPŠT Knižnica`,
+        html: `<p>Dobrý deň <strong>${user.firstName}</strong>,</p><p>kniha "<strong>${book?.title || "neznáma"}</strong>" bola úspešne vrátená. Ďakujeme!</p><p>S pozdravom,<br>SPŠT Knižnica</p>`,
+      });
+    }
+
     // Aktivita
     await ctx.db.insert("userActivities", {
       userId: borrowing.userId,
@@ -878,7 +899,6 @@ export const returnBook = mutation({
       metadata: {
         borrowingId: args.borrowingId,
         bookId: borrowing.bookId,
-        isOverdue,
       },
       occurredAt: now,
     });

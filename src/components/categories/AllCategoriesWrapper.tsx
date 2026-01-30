@@ -12,61 +12,30 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Grid, BookOpen, Loader2, RefreshCw } from "lucide-react";
-
-interface Category {
-	_id: string;
-	name: string;
-	description?: string;
-	color?: string;
-	icon?: string;
-	bookCount: number;
-	subcategoryCount: number;
-	isActive: boolean;
-}
+import { Grid, BookOpen, Loader2, Search, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { useState, useMemo } from "react";
 
 const AllCategoriesWrapper: FC = () => {
 	const navigate = useNavigate();
+	const [searchQuery, setSearchQuery] = useState("");
+	const [sortBy, setSortBy] = useState<string>("name_asc");
 
-	// Fetch categories using Convex - bez pagination pre jednoduchosť
-	const categoriesData = useQuery(api.categories.getCategories, {
-		paginationOpts: { numItems: 100, cursor: null },
-		isActive: true,
+	// Fetch categories with stats using Convex with pagination
+	const categoriesResult = useQuery(api.categories.getCategoriesWithStats, {
+		paginationOpts: {
+			numItems: 100, // Show many categories initially
+		},
 	});
 
-	// Fetch all books using the correct function
-	const booksData = useQuery(api.books.getAll, {});
-
-	// Helper function to generate random colors
-	const getRandomColor = () => {
-		const colors = [
-			"#3B82F6",
-			"#8B5CF6",
-			"#EF4444",
-			"#10B981",
-			"#F59E0B",
-			"#EC4899",
-			"#14B8A6",
-			"#6B7280",
-		];
-		return colors[Math.floor(Math.random() * colors.length)];
-	};
-
-	const getCategoryBookCount = (categoryId: string) => {
-		if (!booksData) return 0;
-		return booksData.filter((book) => book.categoryId === categoryId).length;
-	};
-
-	const getAvailableBooksInCategory = (categoryId: string) => {
-		if (!booksData) return 0;
-		return booksData.filter(
-			(book) => book.categoryId === categoryId && book.availableCopies > 0,
-		).length;
-	};
-
-	const getCategoryColor = (category: Category) => {
-		return category.color || getRandomColor();
-	};
+	const categoriesData = categoriesResult?.page;
 
 	const containerVariants = {
 		hidden: { opacity: 0 },
@@ -89,13 +58,41 @@ const AllCategoriesWrapper: FC = () => {
 		},
 	};
 
-	// Calculate statistics
-	const totalBooksCount = booksData?.length || 0;
-	const availableBooksCount =
-		booksData?.filter((b) => b.availableCopies > 0).length || 0;
-
 	// Loading state
-	if (categoriesData === undefined || booksData === undefined) {
+	const isLoading = categoriesData === undefined;
+
+	// Filter and sort categories
+	const filteredCategories = useMemo(() => {
+		if (!categoriesData) return [];
+
+		let result = [...categoriesData];
+
+		// Search
+		if (searchQuery.trim()) {
+			result = result.filter(
+				(c) =>
+					c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+					(c.description &&
+						c.description.toLowerCase().includes(searchQuery.toLowerCase())),
+			);
+		}
+
+		// Sort
+		result.sort((a, b) => {
+			if (sortBy === "name_asc") return a.name.localeCompare(b.name);
+			if (sortBy === "name_desc") return b.name.localeCompare(a.name);
+			if (sortBy === "books_desc")
+				return (b.totalBooks || 0) - (a.totalBooks || 0);
+			if (sortBy === "books_asc")
+				return (a.totalBooks || 0) - (b.totalBooks || 0);
+			return 0;
+		});
+
+		return result;
+	}, [categoriesData, searchQuery, sortBy]);
+
+	// Early return for loading state MUST be after all hooks
+	if (isLoading) {
 		return (
 			<section className="py-16 bg-linear-to-b from-background to-muted/30">
 				<div className="container mx-auto px-4">
@@ -111,7 +108,11 @@ const AllCategoriesWrapper: FC = () => {
 		);
 	}
 
-	const categories = categoriesData?.page || [];
+	// Calculate statistics
+	const totalBooksCount =
+		categoriesData?.reduce((acc, c) => acc + (c.totalBooks || 0), 0) || 0;
+	const availableBooksCount =
+		categoriesData?.reduce((acc, c) => acc + (c.availableBooks || 0), 0) || 0;
 
 	return (
 		<section className="py-16 bg-linear-to-b from-background to-muted/30">
@@ -134,26 +135,62 @@ const AllCategoriesWrapper: FC = () => {
 					</div>
 					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						Preskúmajte našu zbierku kníh podľa kategórií. Vyberte si z{" "}
-						{categories.length} kategórií a {totalBooksCount} kníh.
+						{categoriesResult?.page.length || 0} kategórií a {totalBooksCount}{" "}
+						kníh.
 					</p>
 				</motion.div>
 
-				{/* Results Count */}
+				{/* Search and Filters */}
 				<motion.div
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
-					transition={{ duration: 0.5, delay: 0.2 }}
-					className="mb-8"
+					transition={{ duration: 0.5, delay: 0.1 }}
+					className="max-w-4xl mx-auto mb-10"
 				>
-					<div className="text-center text-sm text-muted-foreground mt-4">
-						{categories.length === 0 ? (
+					<div className="flex flex-col md:flex-row gap-4">
+						<div className="relative flex-1">
+							<Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+							<Input
+								placeholder="Hľadať kategórie..."
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+								className="pl-10 h-12 bg-background/50 border-border/50 rounded-xl"
+							/>
+							{searchQuery && (
+								<Button
+									variant="ghost"
+									size="sm"
+									onClick={() => setSearchQuery("")}
+									className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0"
+								>
+									<X className="h-4 w-4" />
+								</Button>
+							)}
+						</div>
+
+						<Select value={sortBy} onValueChange={setSortBy}>
+							<SelectTrigger className="w-full md:w-56 h-12 bg-background/50 border-border/50 rounded-xl">
+								<SelectValue placeholder="Zoradiť podľa" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="name_asc">Názov (A-Z)</SelectItem>
+								<SelectItem value="name_desc">Názov (Z-A)</SelectItem>
+								<SelectItem value="books_desc">Počet kníh (najviac)</SelectItem>
+								<SelectItem value="books_asc">Počet kníh (najmenej)</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
+
+					<div className="mt-4 text-center text-sm text-muted-foreground">
+						{filteredCategories.length === 0 ? (
 							"Nenašli sa žiadne kategórie"
 						) : (
 							<>
-								Nájdených {categories.length}{" "}
-								{categories.length === 1
+								Nájdených {filteredCategories.length}{" "}
+								{filteredCategories.length === 1
 									? "kategória"
-									: categories.length >= 2 && categories.length <= 4
+									: filteredCategories.length >= 2 &&
+										filteredCategories.length <= 4
 										? "kategórie"
 										: "kategórií"}
 							</>
@@ -161,30 +198,37 @@ const AllCategoriesWrapper: FC = () => {
 					</div>
 				</motion.div>
 
-				{/* Categories Grid */}
-				{categories.length === 0 ? (
+				{/* Categories Content */}
+				{filteredCategories.length === 0 ? (
 					<motion.div
 						initial={{ opacity: 0, scale: 0.9 }}
 						animate={{ opacity: 1, scale: 1 }}
-						className="text-center py-12"
+						className="text-center py-16"
 					>
 						<div className="mx-auto max-w-md">
-							<div className="rounded-full bg-muted p-6 w-24 h-24 flex items-center justify-center mx-auto mb-6">
-								<Grid className="h-12 w-12 text-muted-foreground" />
+							<div className="rounded-full bg-muted p-8 w-28 h-28 flex items-center justify-center mx-auto mb-6 shadow-sm border border-border/50">
+								<Search className="h-12 w-12 text-muted-foreground/50" />
 							</div>
-							<h3 className="text-xl font-semibold mb-2">
-								Nenašli sa žiadne kategórie
+							<h3 className="text-2xl font-bold mb-3">
+								{searchQuery
+									? "Nenašli sa žiadne kategórie"
+									: "Žiadne kategórie"}
 							</h3>
-							<p className="text-muted-foreground mb-6">
-								V knižnici sa momentálne nenachádzajú žiadne kategórie.
+							<p className="text-muted-foreground mb-8">
+								{searchQuery
+									? `Pre hľadaný výraz "${searchQuery}" neexistujú žiadne kategórie.`
+									: "V knižnici sa momentálne nenachádzajú žiadne kategórie."}
 							</p>
-							<Button
-								variant="outline"
-								onClick={() => window.location.reload()}
-							>
-								<RefreshCw className="mr-2 h-4 w-4" />
-								Skúsiť znova
-							</Button>
+							{searchQuery && (
+								<Button
+									variant="outline"
+									onClick={() => setSearchQuery("")}
+									className="rounded-xl px-6"
+								>
+									<X className="mr-2 h-4 w-4" />
+									Zmazať hľadanie
+								</Button>
+							)}
 						</div>
 					</motion.div>
 				) : (
@@ -194,10 +238,10 @@ const AllCategoriesWrapper: FC = () => {
 						whileInView="visible"
 						className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
 					>
-						{categories.map((category) => {
-							const bookCount = getCategoryBookCount(category._id);
-							const availableCount = getAvailableBooksInCategory(category._id);
-							const categoryColor = getCategoryColor(category);
+						{filteredCategories.map((category: any) => {
+							const bookCount = category.totalBooks || 0;
+							const availableCount = category.availableBooks || 0;
+							const categoryColor = category.color || "#6366f1";
 
 							return (
 								<motion.div
@@ -294,7 +338,7 @@ const AllCategoriesWrapper: FC = () => {
 					<div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
 						<div className="text-center p-4 rounded-lg border bg-card">
 							<div className="text-2xl font-bold text-primary">
-								{categories.length}
+								{filteredCategories.length}
 							</div>
 							<div className="text-sm text-muted-foreground">Kategórií</div>
 						</div>

@@ -1,8 +1,18 @@
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { paginationOptsValidator } from "convex/server";
 import { Id } from "./_generated/dataModel";
 import { categoryCreateSchema, categoryUpdateSchema } from "types/categoryTypes";
+
+export const listAllActive = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("categories")
+      .withIndex("by_active", (q) => q.eq("isActive", true))
+      .collect();
+  },
+});
 
 // GET all categories with pagination
 export const getCategories = query({
@@ -277,7 +287,7 @@ export const createCategory = mutation({
     // Validate with Zod
     const validationResult = categoryCreateSchema.safeParse(data);
     if (!validationResult.success) {
-      throw new Error(`Validation error: ${validationResult.error.message}`);
+      throw new ConvexError(validationResult.error.issues[0]?.message || "Neplatné údaje kategórie");
     }
     
     const existingCategory = await ctx.db
@@ -286,13 +296,13 @@ export const createCategory = mutation({
       .first();
 
     if (existingCategory) {
-      throw new Error(`Category with slug "${data.slug}" already exists`);
+      throw new ConvexError(`Kategória so slugom "${data.slug}" už existuje.`);
     }
 
     if (parentCategoryId) {
       const parentCategory = await ctx.db.get(parentCategoryId);
       if (!parentCategory) {
-        throw new Error(`Parent category with ID "${parentCategoryId}" not found`);
+        throw new ConvexError(`Nadradená kategória nebola nájdená.`);
       }
     }
 
@@ -478,15 +488,23 @@ export const toggleCategoryActive = mutation({
 
 // GET categories with stats
 export const getCategoriesWithStats = query({
-  args: {},
-  handler: async (ctx) => {
-    const categories = await ctx.db
+  args: {
+    paginationOpts: v.object({
+      numItems: v.number(),
+      cursor: v.optional(v.string()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const result = await ctx.db
       .query("categories")
       .withIndex("by_active", (q) => q.eq("isActive", true))
-      .collect();
+      .order("desc")
+      .paginate(args.paginationOpts as any);
 
     const categoriesWithStats = await Promise.all(
-      categories.map(async (category) => {
+      result.page.map(async (category) => {
+        // Use the pre-calculated bookCount if available, otherwise fetch
+        // For stats like available/reserved, we still need to fetch or have more fields
         const books = await ctx.db
           .query("books")
           .withIndex("by_category", (q) => q.eq("categoryId", category._id))
@@ -505,7 +523,12 @@ export const getCategoriesWithStats = query({
       })
     );
 
-    return categoriesWithStats.sort((a, b) => b.totalBooks - a.totalBooks);
+    const totalResults = await ctx.db
+      .query("categories")
+      .withIndex("by_active", (q) => q.eq("isActive", true))
+      .collect();
+
+    return { ...result, page: categoriesWithStats, total: totalResults.length };
   },
 });
 

@@ -4,8 +4,6 @@ import { Doc, Id } from "./_generated/dataModel";
 import { 
   CreateBookInput, 
   CreateBookSchema, 
-  GetBooksQuery, 
-  GetBooksQuerySchema, 
   UpdateBookInput, 
   UpdateBookSchema,
 } from "types/bookTypes";
@@ -15,13 +13,6 @@ interface BookWithRelations extends Doc<"books"> {
   author: Doc<"authors">;
   category: Doc<"categories">;
   coverFile: Doc<"files"> | null; // Pridané
-}
-
-// Pridané nové rozhranie pre getAll query
-interface BookWithAllRelations extends Doc<"books"> {
-  author: Doc<"authors">;
-  category: Doc<"categories">;
-  coverFile: Doc<"files"> | null;
 }
 
 export const create = mutation({
@@ -385,102 +376,164 @@ export const getAll = query({
       )
     ),
     search: v.optional(v.string()),
-    limit: v.optional(v.number()),
-    offset: v.optional(v.number()),
+    paginationOpts: v.object({
+      numItems: v.number(),
+      cursor: v.optional(v.string()),
+    }),
+    sortBy: v.optional(
+      v.union(
+        v.literal("newest"),
+        v.literal("oldest"),
+        v.literal("title_asc"),
+        v.literal("title_desc")
+      )
+    ),
   },
-  handler: async (ctx, args): Promise<BookWithAllRelations[]> => { // Zmenený return type
-    // Pripraviť query parametre pre validáciu
-    const validationData: Record<string, unknown> = {};
-    if (args.categoryId) validationData.categoryId = args.categoryId as string;
-    if (args.authorId) validationData.authorId = args.authorId as string;
-    if (args.status) validationData.status = args.status;
-    if (args.search) validationData.search = args.search;
-    if (args.limit) validationData.limit = args.limit;
-    if (args.offset) validationData.offset = args.offset;
+  handler: async (ctx, args) => {
+    const { 
+      categoryId, 
+      authorId, 
+      status, 
+      search, 
+      paginationOpts, 
+      sortBy = "newest" 
+    } = args;
 
-    const queryParams: GetBooksQuery = validateWithZod(GetBooksQuerySchema, validationData);
-    
-    let books: Doc<"books">[] = [];
-    
-    // Aplikovať filtre
-    if (queryParams.categoryId) {
-      books = await ctx.db
-        .query("books")
-        .withIndex("by_category", (q) => 
-          q.eq("categoryId", queryParams.categoryId as Id<"categories">)
-        )
-        .order("desc")
-        .collect();
-    } else if (queryParams.authorId) {
-      books = await ctx.db
-        .query("books")
-        .withIndex("by_author", (q) => 
-          q.eq("authorId", queryParams.authorId as Id<"authors">)
-        )
-        .order("desc")
-        .collect();
-    } else if (queryParams.status) {
-      books = await ctx.db
-        .query("books")
-        .withIndex("by_status", (q) => 
-          q.eq("status", queryParams.status!)
-        )
-        .order("desc")
-        .collect();
-    } else if (queryParams.search) {
-      books = await ctx.db
+    // Handle Search separately as it uses a different index
+    if (search) {
+      const searchResults = await ctx.db
         .query("books")
         .withSearchIndex("search_books", (q) =>
-          q.search("searchableText", queryParams.search!.toLowerCase())
+          q.search("searchableText", search.toLowerCase())
         )
         .collect();
-    } else {
-      books = await ctx.db
-        .query("books")
-        .order("desc")
-        .collect();
-    }
-    
-    // Paginácia
-    const start = queryParams.offset || 0;
-    const end = start + (queryParams.limit || 20);
-    const paginatedBooks = books.slice(start, end);
-    
-    // Získať autorov a kategórie (a cover files)
-    const booksWithRelations: BookWithAllRelations[] = await Promise.all(
-      paginatedBooks.map(async (book) => {
+
+      // Manual filtering for search results
+      let filtered = searchResults;
+      if (categoryId) filtered = filtered.filter(b => b.categoryId === categoryId);
+      if (authorId) filtered = filtered.filter(b => b.authorId === authorId);
+      if (status) filtered = filtered.filter(b => b.status === status);
+
+      // Manual sorting
+      switch (sortBy) {
+        case "newest": filtered.sort((a, b) => b.addedAt - a.addedAt); break;
+        case "oldest": filtered.sort((a, b) => a.addedAt - b.addedAt); break;
+        case "title_asc": filtered.sort((a, b) => a.title.localeCompare(b.title)); break;
+        case "title_desc": filtered.sort((a, b) => b.title.localeCompare(a.title)); break;
+      }
+
+      // Manual pagination for search
+      const offset = (paginationOpts.cursor as unknown as number) || 0;
+      const paginated = filtered.slice(offset, offset + paginationOpts.numItems);
+      
+      const results = await Promise.all(paginated.map(async book => {
         const [author, category, coverFile] = await Promise.all([
           ctx.db.get(book.authorId),
           ctx.db.get(book.categoryId),
-          book.coverFileId ? ctx.db.get(book.coverFileId) : Promise.resolve(null),
+          book.coverFileId ? ctx.db.get(book.coverFileId) : null
         ]);
-        
-        return {
-          ...book,
-          author: author || {
-            _id: book.authorId,
-            name: "Neznámy autor",
-            bookCount: 0,
-            createdAt: 0,
-            updatedAt: 0,
-            searchableText: "",
-          } as Doc<"authors">,
-          category: category || {
-            _id: book.categoryId,
-            name: "Neznáma kategória",
-            slug: "",
-            bookCount: 0,
-            isActive: true,
-            createdAt: 0,
-            updatedAt: 0,
-            searchableText: "",
-          } as Doc<"categories">,
-          coverFile,
+        return { 
+          ...book, 
+          author: author!, 
+          category: category!, 
+          coverFile 
         };
-      })
-    );
+      }));
+
+      return {
+        page: results,
+        isDone: offset + paginationOpts.numItems >= filtered.length,
+        continueCursor: offset + paginationOpts.numItems < filtered.length 
+          ? (offset + paginationOpts.numItems).toString() 
+          : null,
+        total: filtered.length,
+      };
+    }
+
+    // Default query
+    let baseQuery = ctx.db.query("books");
+
+    // Apply filters one by one (Intersection)
+    // Note: Since Convex doesn't support multiple filters on different indexes easily,
+    // and we want native pagination, we'll collect and manually filter IF multiple filters are present
+    // or if we have a special case.
     
-    return booksWithRelations;
+    const hasMultipleFilters = [categoryId, authorId, status].filter(Boolean).length > 1;
+
+    if (hasMultipleFilters) {
+      let filtered = await baseQuery.collect();
+      if (categoryId) filtered = filtered.filter(b => b.categoryId === categoryId);
+      if (authorId) filtered = filtered.filter(b => b.authorId === authorId);
+      if (status) filtered = filtered.filter(b => b.status === status);
+
+      // Sorting
+      switch (sortBy) {
+        case "newest": filtered.sort((a, b) => b.addedAt - a.addedAt); break;
+        case "oldest": filtered.sort((a, b) => a.addedAt - b.addedAt); break;
+        case "title_asc": filtered.sort((a, b) => a.title.localeCompare(b.title)); break;
+        case "title_desc": filtered.sort((a, b) => b.title.localeCompare(a.title)); break;
+      }
+
+      const offset = (paginationOpts.cursor as unknown as number) || 0;
+      const paginated = filtered.slice(offset, offset + paginationOpts.numItems);
+      
+      const results = await Promise.all(paginated.map(async book => {
+        const [author, category, coverFile] = await Promise.all([
+          ctx.db.get(book.authorId),
+          ctx.db.get(book.categoryId),
+          book.coverFileId ? ctx.db.get(book.coverFileId) : null
+        ]);
+        return { 
+          ...book, 
+          author: author!, 
+          category: category!, 
+          coverFile 
+        };
+      }));
+
+      return {
+        page: results,
+        isDone: offset + paginationOpts.numItems >= filtered.length,
+        continueCursor: offset + paginationOpts.numItems < filtered.length 
+          ? (offset + paginationOpts.numItems).toString() 
+          : null,
+        total: filtered.length,
+      };
+    }
+
+    // Single filter or no filters -> use native pagination
+    let finalQuery;
+    if (categoryId) {
+      finalQuery = ctx.db.query("books").withIndex("by_category", (q) => q.eq("categoryId", categoryId));
+    } else if (authorId) {
+      finalQuery = ctx.db.query("books").withIndex("by_author", (q) => q.eq("authorId", authorId));
+    } else if (status) {
+      finalQuery = ctx.db.query("books").withIndex("by_status", (q) => q.eq("status", status));
+    } else {
+      finalQuery = baseQuery;
+    }
+
+    const totalResults = await finalQuery.collect();
+
+    const result = await finalQuery
+      .order(sortBy === "oldest" ? "asc" : "desc")
+      .paginate(paginationOpts as any);
+
+    const page = await Promise.all(result.page.map(async book => {
+      const [author, category, coverFile] = await Promise.all([
+        ctx.db.get(book.authorId),
+        ctx.db.get(book.categoryId),
+        book.coverFileId ? ctx.db.get(book.coverFileId) : null
+      ]);
+      return { 
+        ...book, 
+        author: author!, 
+        category: category!, 
+        coverFile 
+      };
+    }));
+
+    return { ...result, page, total: totalResults.length };
   },
 });
 

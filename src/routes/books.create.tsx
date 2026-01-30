@@ -1,10 +1,12 @@
 import {
 	useState,
-	FormEvent,
-	ChangeEvent,
 	useCallback,
 	SetStateAction,
 } from "react";
+import { useForm, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { CreateBookSchema, CreateBookInput } from "types/bookTypes";
+import z from "zod";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
@@ -35,6 +37,7 @@ import { useUploadThing } from "@/lib/uploadthing";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { createFileRoute } from "@tanstack/react-router";
+import { authGuard } from "@/lib/auth-guard";
 
 interface CropArea {
 	x: number;
@@ -97,24 +100,29 @@ function CreateBookPage() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [uploadProgress, setUploadProgress] = useState(0);
 
-	// Form state
-	const [formData, setFormData] = useState({
-		title: "",
-		authorId: "",
-		categoryId: "",
-		isbn: "",
-		description: "",
-		publishedYear: "",
-		publisher: "",
-		pages: "",
-		language: "",
-		totalCopies: "1",
-		location: "",
-		tags: "",
-		status: "available" as "available" | "reserved" | "maintenance" | "lost",
+	const {
+		register,
+		handleSubmit,
+		formState: { errors: formErrors },
+		setValue,
+		control,
+		watch,
+	} = useForm<CreateBookInput>({
+		resolver: zodResolver(CreateBookSchema) as any,
+		defaultValues: {
+			title: "",
+			isbn: "",
+			description: "",
+			publisher: "",
+			language: "",
+			totalCopies: 1,
+			location: "",
+			tags: [],
+			status: "available",
+		},
 	});
 
-	const [errors, setErrors] = useState<Record<string, string>>({});
+	const formValues = watch();
 
 	// Image upload state
 	const [imageFile, setImageFile] = useState<File | null>(null);
@@ -158,29 +166,8 @@ function CreateBookPage() {
 	const authors = authorsResult?.page || [];
 	const categories = categoriesResult?.page || [];
 
-	// Handle form input changes
-	const handleInputChange = (
-		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-	) => {
-		const { name, value } = e.target;
-		setFormData((prev) => ({ ...prev, [name]: value }));
-
-		if (errors[name]) {
-			setErrors((prev) => ({ ...prev, [name]: "" }));
-		}
-	};
-
-	// Handle select changes
-	const handleSelectChange = (name: string, value: string) => {
-		setFormData((prev) => ({ ...prev, [name]: value }));
-
-		if (errors[name]) {
-			setErrors((prev) => ({ ...prev, [name]: "" }));
-		}
-	};
-
 	// Handle image selection
-	const handleImageSelect = (e: ChangeEvent<HTMLInputElement>) => {
+	const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
 
@@ -260,50 +247,8 @@ function CreateBookPage() {
 		setImagePreview(null);
 	};
 
-	// Form validation
-	const validateForm = () => {
-		const newErrors: Record<string, string> = {};
-
-		if (!formData.title.trim()) {
-			newErrors.title = "Názov je povinný";
-		}
-
-		if (!formData.authorId) {
-			newErrors.authorId = "Autor je povinný";
-		}
-
-		if (!formData.categoryId) {
-			newErrors.categoryId = "Kategória je povinná";
-		}
-
-		if (!formData.totalCopies || parseInt(formData.totalCopies) < 1) {
-			newErrors.totalCopies = "Minimálny počet kópií je 1";
-		}
-
-		if (
-			formData.publishedYear &&
-			(parseInt(formData.publishedYear) < 1000 ||
-				parseInt(formData.publishedYear) > new Date().getFullYear() + 1)
-		) {
-			newErrors.publishedYear = "Neplatný rok vydania";
-		}
-
-		if (formData.pages && parseInt(formData.pages) <= 0) {
-			newErrors.pages = "Počet strán musí byť kladné číslo";
-		}
-
-		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0;
-	};
-
 	// Handle form submission
-	const handleSubmit = async (e: FormEvent) => {
-		e.preventDefault();
-
-		if (!validateForm()) {
-			return;
-		}
-
+	const onSubmit = async (data: CreateBookInput) => {
 		setIsSubmitting(true);
 		setUploadProgress(0);
 		let toastId: string | number | undefined;
@@ -357,40 +302,16 @@ function CreateBookPage() {
 			setUploadProgress(90);
 			toast.loading("Ukladanie informácií o knihe...", { id: toastId });
 
-			// Parse tags
-			const tags = formData.tags
-				.split(",")
-				.map((tag) => tag.trim())
-				.filter((tag) => tag.length > 0);
-
-			// Get the author ID as Id<"authors"> and category ID as Id<"categories">
-			const authorId = formData.authorId as Id<"authors">;
-			const categoryId = formData.categoryId as Id<"categories">;
-
 			const bookId = await createBook({
-				title: formData.title,
-				authorId: authorId,
-				categoryId: categoryId,
-				isbn: formData.isbn || undefined,
-				description: formData.description || undefined,
-				coverFileId: coverFileId,
-				publishedYear: formData.publishedYear
-					? parseInt(formData.publishedYear)
-					: undefined,
-				publisher: formData.publisher || undefined,
-				pages: formData.pages ? parseInt(formData.pages) : undefined,
-				language: formData.language || undefined,
-				totalCopies: parseInt(formData.totalCopies),
-				location: formData.location || undefined,
-				tags: tags.length > 0 ? tags : undefined,
-				status: formData.status,
+				...data,
+				coverFileId,
 			});
 
 			setUploadProgress(100);
 
 			toast.success("Kniha bola úspešne vytvorená", {
 				id: toastId,
-				description: `${formData.title} bola pridaná do knižnice.`,
+				description: `${data.title} bola pridaná do knižnice.`,
 				action: {
 					label: "Zobraziť",
 					onClick: () => navigate({ to: `/books/${bookId}` }),
@@ -480,7 +401,7 @@ function CreateBookPage() {
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<form onSubmit={handleSubmit} className="space-y-6">
+					<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 						{/* Book Cover Upload */}
 						<div className="space-y-4">
 							<Label htmlFor="cover">Obálka knihy (voliteľné)</Label>
@@ -539,15 +460,12 @@ function CreateBookPage() {
 							</Label>
 							<Input
 								id="title"
-								name="title"
-								value={formData.title}
-								onChange={handleInputChange}
+								{...register("title")}
 								placeholder="e.g., Harry Potter a Kameň mudrcov"
 								disabled={isSubmitting || isUploading}
-								required
 							/>
-							{errors.title && (
-								<p className="text-sm text-destructive">{errors.title}</p>
+							{formErrors.title && (
+								<p className="text-sm text-destructive">{formErrors.title.message}</p>
 							)}
 						</div>
 
@@ -558,9 +476,9 @@ function CreateBookPage() {
 									Autor <span className="text-destructive">*</span>
 								</Label>
 								<Select
-									value={formData.authorId || undefined}
+									value={formValues.authorId}
 									onValueChange={(value) => {
-										handleSelectChange("authorId", value);
+										setValue("authorId", value as Id<"authors">, { shouldValidate: true });
 									}}
 									disabled={isSubmitting || isUploading}
 								>
@@ -575,8 +493,8 @@ function CreateBookPage() {
 										))}
 									</SelectContent>
 								</Select>
-								{errors.authorId && (
-									<p className="text-sm text-destructive">{errors.authorId}</p>
+								{formErrors.authorId && (
+									<p className="text-sm text-destructive">{formErrors.authorId.message}</p>
 								)}
 							</div>
 
@@ -585,9 +503,9 @@ function CreateBookPage() {
 									Kategória <span className="text-destructive">*</span>
 								</Label>
 								<Select
-									value={formData.categoryId || undefined}
+									value={formValues.categoryId}
 									onValueChange={(value) => {
-										handleSelectChange("categoryId", value);
+										setValue("categoryId", value as Id<"categories">, { shouldValidate: true });
 									}}
 									disabled={isSubmitting || isUploading}
 								>
@@ -602,9 +520,9 @@ function CreateBookPage() {
 										))}
 									</SelectContent>
 								</Select>
-								{errors.categoryId && (
+								{formErrors.categoryId && (
 									<p className="text-sm text-destructive">
-										{errors.categoryId}
+										{formErrors.categoryId.message}
 									</p>
 								)}
 							</div>
@@ -616,9 +534,7 @@ function CreateBookPage() {
 								<Label htmlFor="isbn">ISBN</Label>
 								<Input
 									id="isbn"
-									name="isbn"
-									value={formData.isbn}
-									onChange={handleInputChange}
+									{...register("isbn")}
 									placeholder="e.g., 978-80-123-4567-8"
 									disabled={isSubmitting || isUploading}
 								/>
@@ -628,18 +544,14 @@ function CreateBookPage() {
 								<Label htmlFor="publishedYear">Rok vydania</Label>
 								<Input
 									id="publishedYear"
-									name="publishedYear"
 									type="number"
-									value={formData.publishedYear}
-									onChange={handleInputChange}
+									{...register("publishedYear", { valueAsNumber: true })}
 									placeholder="e.g., 1997"
 									disabled={isSubmitting || isUploading}
-									min={1000}
-									max={new Date().getFullYear() + 1}
 								/>
-								{errors.publishedYear && (
+								{formErrors.publishedYear && (
 									<p className="text-sm text-destructive">
-										{errors.publishedYear}
+										{formErrors.publishedYear.message}
 									</p>
 								)}
 							</div>
@@ -651,9 +563,7 @@ function CreateBookPage() {
 								<Label htmlFor="publisher">Vydavateľ</Label>
 								<Input
 									id="publisher"
-									name="publisher"
-									value={formData.publisher}
-									onChange={handleInputChange}
+									{...register("publisher")}
 									placeholder="e.g., Albatros"
 									disabled={isSubmitting || isUploading}
 								/>
@@ -663,9 +573,7 @@ function CreateBookPage() {
 								<Label htmlFor="language">Jazyk</Label>
 								<Input
 									id="language"
-									name="language"
-									value={formData.language}
-									onChange={handleInputChange}
+									{...register("language")}
 									placeholder="e.g., Slovenčina"
 									disabled={isSubmitting || isUploading}
 								/>
@@ -678,16 +586,13 @@ function CreateBookPage() {
 								<Label htmlFor="pages">Počet strán</Label>
 								<Input
 									id="pages"
-									name="pages"
 									type="number"
-									value={formData.pages}
-									onChange={handleInputChange}
+									{...register("pages", { valueAsNumber: true })}
 									placeholder="e.g., 320"
 									disabled={isSubmitting || isUploading}
-									min={1}
 								/>
-								{errors.pages && (
-									<p className="text-sm text-destructive">{errors.pages}</p>
+								{formErrors.pages && (
+									<p className="text-sm text-destructive">{formErrors.pages.message}</p>
 								)}
 							</div>
 
@@ -697,18 +602,14 @@ function CreateBookPage() {
 								</Label>
 								<Input
 									id="totalCopies"
-									name="totalCopies"
 									type="number"
-									value={formData.totalCopies}
-									onChange={handleInputChange}
+									{...register("totalCopies", { valueAsNumber: true })}
 									placeholder="e.g., 5"
 									disabled={isSubmitting || isUploading}
-									min={1}
-									required
 								/>
-								{errors.totalCopies && (
+								{formErrors.totalCopies && (
 									<p className="text-sm text-destructive">
-										{errors.totalCopies}
+										{formErrors.totalCopies.message}
 									</p>
 								)}
 							</div>
@@ -720,9 +621,7 @@ function CreateBookPage() {
 								<Label htmlFor="location">Lokácia</Label>
 								<Input
 									id="location"
-									name="location"
-									value={formData.location}
-									onChange={handleInputChange}
+									{...register("location")}
 									placeholder="e.g., Regál A, Polička 3"
 									disabled={isSubmitting || isUploading}
 								/>
@@ -731,8 +630,8 @@ function CreateBookPage() {
 							<div className="space-y-2">
 								<Label htmlFor="status">Stav</Label>
 								<Select
-									value={formData.status}
-									onValueChange={(value) => handleSelectChange("status", value)}
+									value={formValues.status}
+									onValueChange={(value) => setValue("status", value as any, { shouldValidate: true })}
 									disabled={isSubmitting || isUploading}
 								>
 									<SelectTrigger id="status">
@@ -753,16 +652,14 @@ function CreateBookPage() {
 							<Label htmlFor="description">Popis</Label>
 							<Textarea
 								id="description"
-								name="description"
-								value={formData.description}
-								onChange={handleInputChange}
+								{...register("description")}
 								placeholder="Napíšte krátky popis knihy..."
 								rows={4}
 								disabled={isSubmitting || isUploading}
 							/>
 							<div className="flex justify-between items-center">
 								<p className="text-sm text-muted-foreground">
-									{formData.description.length}/5000 znakov
+									{(formValues.description?.length || 0)}/5000 znakov
 								</p>
 							</div>
 						</div>
@@ -772,11 +669,12 @@ function CreateBookPage() {
 							<Label htmlFor="tags">Tagy</Label>
 							<Input
 								id="tags"
-								name="tags"
-								value={formData.tags}
-								onChange={handleInputChange}
 								placeholder="e.g., fantasy, dobrodružstvo, mládež (oddelené čiarkou)"
 								disabled={isSubmitting || isUploading}
+								onChange={(e) => {
+									const tags = e.target.value.split(",").map(t => t.trim()).filter(Boolean);
+									setValue("tags", tags);
+								}}
 							/>
 							<p className="text-sm text-muted-foreground">
 								Oddelite tagy čiarkami
@@ -832,6 +730,7 @@ function CreateBookPage() {
 }
 
 export const Route = createFileRoute("/books/create")({
+	beforeLoad: authGuard,
 	component: RouteComponent,
 });
 

@@ -21,7 +21,7 @@ export const uploadRouter = {
 				uploadedBy: metadata.userId,
 				fileKey: file.key,
 				fileName: file.name,
-				fileUrl: file.url,
+				fileUrl: file.ufsUrl,
 				fileSize: file.size,
 				fileType: file.type,
 			};

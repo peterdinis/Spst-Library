@@ -35,10 +35,17 @@ export function AllAuthorsWrapper() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [itemsPerPage, setItemsPerPage] = useState(6);
 	const [nationalityFilter, setNationalityFilter] = useState<string>("all");
+	const [sortBy, setSortBy] = useState<string>("name_asc");
 
 	// Convex queries
 	const authorsResult = useQuery(api.authors.list, {
-		paginationOpts: { numItems: 100 }, // Load more for client-side filtering
+		search: searchQuery.trim() || undefined,
+		nationality: nationalityFilter !== "all" ? nationalityFilter : undefined,
+		sortBy: sortBy as any,
+		paginationOpts: {
+			numItems: itemsPerPage,
+			cursor: currentPage > 1 ? ((currentPage - 1) * itemsPerPage).toString() : undefined,
+		},
 	});
 	const nationalities = useQuery(api.authors.getNationalities);
 	const stats = useQuery(api.authors.getStats);
@@ -49,7 +56,7 @@ export function AllAuthorsWrapper() {
 	const authors = useMemo(() => {
 		if (!authorsResult?.page) return [];
 
-		return authorsResult.page.map((author) => ({
+		return authorsResult.page.map((author: any) => ({
 			...author,
 			id: author._id,
 			fullName: author.name,
@@ -60,32 +67,21 @@ export function AllAuthorsWrapper() {
 		}));
 	}, [authorsResult]);
 
-	// Filter and search authors
-	const filteredAuthors = useMemo(() => {
-		return authors.filter((author) => {
-			const matchesSearch =
-				searchQuery === "" ||
-				author.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				(author.biography &&
-					author.biography.toLowerCase().includes(searchQuery.toLowerCase()));
+	// Use authors directly
+	const filteredAuthors = authors;
 
-			const matchesNationality =
-				nationalityFilter === "all" || author.nationality === nationalityFilter;
+	// Calculate pagination - priority to backend total
+	const totalItems = authorsResult && 'total' in authorsResult
+		? (authorsResult.total as number)
+		: (stats?.totalAuthors || 0);
 
-			return matchesSearch && matchesNationality;
-		});
-	}, [authors, searchQuery, nationalityFilter]);
-
-	// Calculate pagination
-	const totalPages = Math.ceil(filteredAuthors.length / itemsPerPage);
-	const startIndex = (currentPage - 1) * itemsPerPage;
-	const endIndex = startIndex + itemsPerPage;
-	const paginatedAuthors = filteredAuthors.slice(startIndex, endIndex);
+	const totalPages = Math.ceil(totalItems / itemsPerPage);
+	const paginatedAuthors = filteredAuthors;
 
 	// Reset to first page when filters change
 	useEffect(() => {
 		setCurrentPage(1);
-	}, [searchQuery, nationalityFilter, itemsPerPage]);
+	}, [searchQuery, nationalityFilter, sortBy, itemsPerPage]);
 
 	const containerVariants = {
 		hidden: { opacity: 0 },
@@ -155,7 +151,9 @@ export function AllAuthorsWrapper() {
 						<div className="flex-1 flex justify-end" />
 					</div>
 					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-						Spoznajte autorov kníh v našej knižnici
+						Spoznajte autorov kníh v našej knižnici. Máme celkovo{" "}
+						{stats?.totalAuthors || 0} autorov z{" "}
+						{stats?.topNationalities.length || 0} krajín.
 					</p>
 				</motion.div>
 
@@ -166,36 +164,37 @@ export function AllAuthorsWrapper() {
 					transition={{ duration: 0.5, delay: 0.2 }}
 					className="mb-8"
 				>
-					<div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+					<div className="flex flex-col lg:flex-row gap-4">
 						{/* Search Input */}
-						<div className="relative w-full md:w-96">
+						<div className="relative flex-1">
 							<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
 							<Input
 								type="text"
-								placeholder="Hľadať autorov podľa mena alebo životopisu..."
+								placeholder="Hľadať autorov..."
 								value={searchQuery}
 								onChange={(e) => setSearchQuery(e.target.value)}
-								className="pl-10 pr-10"
+								className="pl-10 pr-10 h-12 bg-background/50 border-border/50 rounded-xl"
 							/>
 							{searchQuery && (
-								<button
+								<Button
+									variant="ghost"
+									size="sm"
 									onClick={handleSearchClear}
-									className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+									className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
 								>
 									<X className="h-4 w-4" />
-								</button>
+								</Button>
 							)}
 						</div>
 
-						{/* Filter and Items Per Page */}
-						<div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-							{/* Nationality Filter */}
+						{/* Filters Grid */}
+						<div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full lg:w-auto">
 							<Select
 								value={nationalityFilter}
 								onValueChange={setNationalityFilter}
 							>
-								<SelectTrigger className="w-full sm:w-48">
-									<SelectValue placeholder="Všetky národnosti" />
+								<SelectTrigger className="w-full h-12 bg-background/50 border-border/50 rounded-xl sm:w-48">
+									<SelectValue placeholder="Národnosť" />
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="all">Všetky národnosti</SelectItem>
@@ -207,18 +206,29 @@ export function AllAuthorsWrapper() {
 								</SelectContent>
 							</Select>
 
-							{/* Items Per Page */}
+							<Select value={sortBy} onValueChange={setSortBy}>
+								<SelectTrigger className="w-full h-12 bg-background/50 border-border/50 rounded-xl sm:w-48">
+									<SelectValue placeholder="Zoradiť podľa" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="name_asc">Meno (A-Z)</SelectItem>
+									<SelectItem value="name_desc">Meno (Z-A)</SelectItem>
+									<SelectItem value="books_desc">Počet kníh (max)</SelectItem>
+									<SelectItem value="books_asc">Počet kníh (min)</SelectItem>
+								</SelectContent>
+							</Select>
+
 							<Select
 								value={itemsPerPage.toString()}
 								onValueChange={(value) => setItemsPerPage(parseInt(value))}
 							>
-								<SelectTrigger className="w-full sm:w-32">
-									<SelectValue placeholder="Počet na stranu" />
+								<SelectTrigger className="w-full h-12 bg-background/50 border-border/50 rounded-xl sm:w-32">
+									<SelectValue placeholder="Na stranu" />
 								</SelectTrigger>
 								<SelectContent>
 									{ITEMS_PER_PAGE_OPTIONS.map((option) => (
 										<SelectItem key={option} value={option.toString()}>
-											{option} / strana
+											{option} za stranu
 										</SelectItem>
 									))}
 								</SelectContent>
@@ -306,7 +316,7 @@ export function AllAuthorsWrapper() {
 															{(author.bookCount || 0) === 1
 																? "kniha"
 																: (author.bookCount || 0) >= 2 &&
-																		(author.bookCount || 0) <= 4
+																	(author.bookCount || 0) <= 4
 																	? "knihy"
 																	: "kníh"}
 														</span>
@@ -397,8 +407,9 @@ export function AllAuthorsWrapper() {
 								{/* Page Info */}
 								<div className="text-center text-sm text-muted-foreground mt-4">
 									Strana {currentPage} z {totalPages} • Zobrazené{" "}
-									{startIndex + 1}-{Math.min(endIndex, filteredAuthors.length)}{" "}
-									z {filteredAuthors.length} autorov
+									{(currentPage - 1) * itemsPerPage + 1}-
+									{Math.min(currentPage * itemsPerPage, totalItems)} z{" "}
+									{totalItems} autorov
 								</div>
 							</motion.div>
 						)}
