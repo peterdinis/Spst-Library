@@ -67,7 +67,7 @@ function BookDetailPage() {
 	const navigate = useNavigate();
 	const { user } = useAuth();
 	const createReservation = useMutation(api.orders.createReservation);
-	const [isReservationOpen, setIsReservationOpen] = useState(false);
+	const [, setIsReservationOpen] = useState(false);
 	const [customPeriodEnabled, setCustomPeriodEnabled] = useState(false);
 	const [reservationData, setReservationData] = useState({
 		name: "",
