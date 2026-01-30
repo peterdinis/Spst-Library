@@ -847,7 +847,7 @@ const CreateCategoryForm: FC = () => {
 												type="button"
 												variant="ghost"
 												size="sm"
-												onClick={() => updateField("icon", "")}
+												onClick={() => setValue("icon", "", { shouldValidate: true })}
 												disabled={isLoading}
 												className="h-7 text-xs"
 											>
@@ -860,13 +860,13 @@ const CreateCategoryForm: FC = () => {
 										</div>
 									)}
 
-									{errors.icon && (
+									{formErrors.icon && (
 										<motion.p
 											initial={{ opacity: 0, y: -10 }}
 											animate={{ opacity: 1, y: 0 }}
 											className="text-sm text-red-500 mt-1"
 										>
-											{errors.icon}
+											{formErrors.icon.message}
 										</motion.p>
 									)}
 								</motion.div>
@@ -882,16 +882,6 @@ const CreateCategoryForm: FC = () => {
 									Náhľad kategórie
 								</h4>
 								<div className="flex items-center gap-3 p-3 rounded-lg border shadow-sm">
-									<div
-										className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-semibold shadow-sm"
-										style={{ backgroundColor: formData.color }}
-									>
-										{SelectedIcon ? (
-											<SelectedIcon className="h-5 w-5" />
-										) : (
-											formData.name.charAt(0).toUpperCase() || "K"
-										)}
-									</div>
 									<div className="flex-1 min-w-0">
 										<div className="font-semibold text-foreground">
 											{formData.name || "Názov kategórie"}
