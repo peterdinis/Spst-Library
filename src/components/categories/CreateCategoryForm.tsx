@@ -341,10 +341,16 @@ const CreateCategoryForm: FC = () => {
 				setIsSubmitted(true);
 			}
 		} catch (error: any) {
-			if (error.message?.includes("already exists") || error.message?.includes("už existuje")) {
+			if (
+				error.message?.includes("already exists") ||
+				error.message?.includes("už existuje")
+			) {
 				setFormError(`Kategória so slugom "${data.slug}" už existuje.`);
 			} else {
-				setFormError(error.message || "Nastala chyba pri vytváraní kategórie. Skúste to znova.");
+				setFormError(
+					error.message ||
+						"Nastala chyba pri vytváraní kategórie. Skúste to znova.",
+				);
 			}
 		}
 	};
@@ -707,7 +713,11 @@ const CreateCategoryForm: FC = () => {
 										<input
 											type="color"
 											value={formData.color}
-											onChange={(e) => setValue("color", e.target.value, { shouldValidate: true })}
+											onChange={(e) =>
+												setValue("color", e.target.value, {
+													shouldValidate: true,
+												})
+											}
 											className="w-12 h-11 rounded border cursor-pointer"
 											disabled={isLoading}
 										/>
@@ -846,7 +856,9 @@ const CreateCategoryForm: FC = () => {
 												type="button"
 												variant="ghost"
 												size="sm"
-												onClick={() => setValue("icon", "", { shouldValidate: true })}
+												onClick={() =>
+													setValue("icon", "", { shouldValidate: true })
+												}
 												disabled={isLoading}
 												className="h-7 text-xs"
 											>

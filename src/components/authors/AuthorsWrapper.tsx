@@ -44,7 +44,10 @@ export function AllAuthorsWrapper() {
 		sortBy: sortBy as any,
 		paginationOpts: {
 			numItems: itemsPerPage,
-			cursor: currentPage > 1 ? ((currentPage - 1) * itemsPerPage).toString() : undefined,
+			cursor:
+				currentPage > 1
+					? ((currentPage - 1) * itemsPerPage).toString()
+					: undefined,
 		},
 	});
 	const nationalities = useQuery(api.authors.getNationalities);
@@ -71,9 +74,10 @@ export function AllAuthorsWrapper() {
 	const filteredAuthors = authors;
 
 	// Calculate pagination - priority to backend total
-	const totalItems = authorsResult && 'total' in authorsResult
-		? (authorsResult.total as number)
-		: (stats?.totalAuthors || 0);
+	const totalItems =
+		authorsResult && "total" in authorsResult
+			? (authorsResult.total as number)
+			: stats?.totalAuthors || 0;
 
 	const totalPages = Math.ceil(totalItems / itemsPerPage);
 	const paginatedAuthors = filteredAuthors;
@@ -316,7 +320,7 @@ export function AllAuthorsWrapper() {
 															{(author.bookCount || 0) === 1
 																? "kniha"
 																: (author.bookCount || 0) >= 2 &&
-																	(author.bookCount || 0) <= 4
+																		(author.bookCount || 0) <= 4
 																	? "knihy"
 																	: "kníh"}
 														</span>

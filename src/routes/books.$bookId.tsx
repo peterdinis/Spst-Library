@@ -338,8 +338,9 @@ function BookDetailPage() {
 								)}
 								<div className="absolute top-4 right-4">
 									<Badge
-										className={`${statusColors[book.status]
-											} font-semibold px-3 py-1`}
+										className={`${
+											statusColors[book.status]
+										} font-semibold px-3 py-1`}
 									>
 										{statusLabels[book.status]}
 									</Badge>

@@ -99,9 +99,10 @@ const AllBooksWrapper: FC = () => {
 		sortBy !== "newest";
 
 	// Počet strán pre pagináciu - vždy prioritne z backendu (ak je k dispozícii)
-	const totalItems = booksData && 'total' in booksData
-		? (booksData.total as number)
-		: (stats?.totalBooks || 0);
+	const totalItems =
+		booksData && "total" in booksData
+			? (booksData.total as number)
+			: stats?.totalBooks || 0;
 
 	const totalPages = Math.ceil(totalItems / itemsPerPage);
 
@@ -231,13 +232,14 @@ const AllBooksWrapper: FC = () => {
 								<Filter className="h-4 w-4" />
 								Filtre{" "}
 								{hasActiveFilters &&
-									`(${[
-										searchQuery,
-										status !== "all" && "stav",
-										category !== "all" && "kategória",
-										author !== "all" && "autor",
-										sortBy !== "newest" && "zoradenie",
-									].filter(Boolean).length
+									`(${
+										[
+											searchQuery,
+											status !== "all" && "stav",
+											category !== "all" && "kategória",
+											author !== "all" && "autor",
+											sortBy !== "newest" && "zoradenie",
+										].filter(Boolean).length
 									})`}
 							</Button>
 						</motion.div>
@@ -347,8 +349,7 @@ const AllBooksWrapper: FC = () => {
 								className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 gap-1 pr-1 py-1"
 							>
 								Autor:{" "}
-								{authors?.find((a: any) => a._id === author)?.name ||
-									author}
+								{authors?.find((a: any) => a._id === author)?.name || author}
 								<Button
 									variant="ghost"
 									size="sm"

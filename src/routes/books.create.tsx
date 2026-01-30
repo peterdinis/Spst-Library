@@ -1,8 +1,4 @@
-import {
-	useState,
-	useCallback,
-	SetStateAction,
-} from "react";
+import { useState, useCallback, SetStateAction } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreateBookSchema, CreateBookInput } from "types/bookTypes";
@@ -465,7 +461,9 @@ function CreateBookPage() {
 								disabled={isSubmitting || isUploading}
 							/>
 							{formErrors.title && (
-								<p className="text-sm text-destructive">{formErrors.title.message}</p>
+								<p className="text-sm text-destructive">
+									{formErrors.title.message}
+								</p>
 							)}
 						</div>
 
@@ -478,7 +476,9 @@ function CreateBookPage() {
 								<Select
 									value={formValues.authorId}
 									onValueChange={(value) => {
-										setValue("authorId", value as Id<"authors">, { shouldValidate: true });
+										setValue("authorId", value as Id<"authors">, {
+											shouldValidate: true,
+										});
 									}}
 									disabled={isSubmitting || isUploading}
 								>
@@ -494,7 +494,9 @@ function CreateBookPage() {
 									</SelectContent>
 								</Select>
 								{formErrors.authorId && (
-									<p className="text-sm text-destructive">{formErrors.authorId.message}</p>
+									<p className="text-sm text-destructive">
+										{formErrors.authorId.message}
+									</p>
 								)}
 							</div>
 
@@ -505,7 +507,9 @@ function CreateBookPage() {
 								<Select
 									value={formValues.categoryId}
 									onValueChange={(value) => {
-										setValue("categoryId", value as Id<"categories">, { shouldValidate: true });
+										setValue("categoryId", value as Id<"categories">, {
+											shouldValidate: true,
+										});
 									}}
 									disabled={isSubmitting || isUploading}
 								>
@@ -592,7 +596,9 @@ function CreateBookPage() {
 									disabled={isSubmitting || isUploading}
 								/>
 								{formErrors.pages && (
-									<p className="text-sm text-destructive">{formErrors.pages.message}</p>
+									<p className="text-sm text-destructive">
+										{formErrors.pages.message}
+									</p>
 								)}
 							</div>
 
@@ -631,7 +637,9 @@ function CreateBookPage() {
 								<Label htmlFor="status">Stav</Label>
 								<Select
 									value={formValues.status}
-									onValueChange={(value) => setValue("status", value as any, { shouldValidate: true })}
+									onValueChange={(value) =>
+										setValue("status", value as any, { shouldValidate: true })
+									}
 									disabled={isSubmitting || isUploading}
 								>
 									<SelectTrigger id="status">
@@ -659,7 +667,7 @@ function CreateBookPage() {
 							/>
 							<div className="flex justify-between items-center">
 								<p className="text-sm text-muted-foreground">
-									{(formValues.description?.length || 0)}/5000 znakov
+									{formValues.description?.length || 0}/5000 znakov
 								</p>
 							</div>
 						</div>
@@ -672,7 +680,10 @@ function CreateBookPage() {
 								placeholder="e.g., fantasy, dobrodružstvo, mládež (oddelené čiarkou)"
 								disabled={isSubmitting || isUploading}
 								onChange={(e) => {
-									const tags = e.target.value.split(",").map(t => t.trim()).filter(Boolean);
+									const tags = e.target.value
+										.split(",")
+										.map((t) => t.trim())
+										.filter(Boolean);
 									setValue("tags", tags);
 								}}
 							/>
