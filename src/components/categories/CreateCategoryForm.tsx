@@ -310,7 +310,6 @@ const CreateCategoryForm: FC = () => {
 		formState: { errors: formErrors, isSubmitting: isLoading },
 		setValue,
 		control,
-		trigger,
 	} = useForm<CategoryFormDataInput>({
 		resolver: zodResolver(categoryCreateSchema) as any,
 		defaultValues: {
@@ -457,7 +456,7 @@ const CreateCategoryForm: FC = () => {
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: 0.4 }}
-						className="text-3xl font-bold mb-3 bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent"
+						className="text-3xl font-bold mb-3 bg-linear-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent"
 					>
 						Kategória vytvorená!
 					</motion.h2>
@@ -515,7 +514,7 @@ const CreateCategoryForm: FC = () => {
 					>
 						<Button
 							onClick={resetForm}
-							className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
+							className="bg-linear-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
 						>
 							Vytvoriť ďalšiu kategóriu
 						</Button>
@@ -535,18 +534,18 @@ const CreateCategoryForm: FC = () => {
 			>
 				<Card className="border-0 shadow-2xl shadow-violet-500/10 backdrop-blur overflow-hidden">
 					{/* Decorative header gradient */}
-					<div className="h-2 bg-gradient-to-r from-violet-500 via-purple-500 to-pink-500" />
+					<div className="h-2 bg-linear-to-r from-violet-500 via-purple-500 to-pink-500" />
 
 					<CardHeader className="space-y-4 pb-6">
 						<motion.div
 							variants={itemVariants}
 							className="flex items-center gap-3"
 						>
-							<div className="p-2.5 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl shadow-lg">
+							<div className="p-2.5 bg-linear-to-br from-violet-500 to-purple-600 rounded-xl shadow-lg">
 								<Sparkles className="h-6 w-6 text-white" />
 							</div>
 							<div>
-								<CardTitle className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
+								<CardTitle className="text-3xl font-bold bg-linear-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
 									Nová kategória
 								</CardTitle>
 								<CardDescription className="text-base mt-1">
@@ -763,7 +762,7 @@ const CreateCategoryForm: FC = () => {
 												</div>
 											</Button>
 										</PopoverTrigger>
-										<PopoverContent className="w-[400px] p-0" align="start">
+										<PopoverContent className="w-100 p-0" align="start">
 											<div className="p-4 border-b">
 												<div className="flex items-center gap-2 mb-3">
 													<Search className="h-4 w-4 text-muted-foreground" />
@@ -922,7 +921,7 @@ const CreateCategoryForm: FC = () => {
 								<Button
 									type="submit"
 									disabled={isLoading}
-									className="flex-1 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 shadow-lg shadow-violet-500/30"
+									className="flex-1 bg-linear-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 shadow-lg shadow-violet-500/30"
 								>
 									{isLoading ? (
 										<>

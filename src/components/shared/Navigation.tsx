@@ -1,15 +1,13 @@
 import { useState } from "react";
-import { Link, useRouter } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { BookOpen, Menu, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Button } from "../ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import { LoginButton, RegisterButton, UserProfile } from "../auth";
 import { useAuth } from "@/lib/auth-context";
 
 export function Navigation() {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
-	const router = useRouter();
 	const { user } = useAuth();
 
 	const toggleMenu = () => setIsMenuOpen(!isMenuOpen);

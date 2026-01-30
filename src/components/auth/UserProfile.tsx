@@ -23,7 +23,7 @@ export function UserProfile() {
 	const displayName = user.fullName || `${user.firstName} ${user.lastName}`;
 	const initials = displayName
 		.split(" ")
-		.map((n) => n[0])
+		.map((n: number[]) => n[0])
 		.join("")
 		.toUpperCase()
 		.slice(0, 2);

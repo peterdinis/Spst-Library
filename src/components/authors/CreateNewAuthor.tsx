@@ -112,7 +112,6 @@ export default function NewAuthorPage() {
 		register,
 		handleSubmit,
 		formState: { errors: formErrors },
-		setValue,
 		watch,
 	} = useForm<AuthorFormData>({
 		resolver: zodResolver(authorFormSchema) as any,
