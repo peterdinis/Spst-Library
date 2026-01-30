@@ -108,7 +108,7 @@ function CreateBookPage() {
 		control,
 		watch,
 	} = useForm<CreateBookInput>({
-		resolver: zodResolver(CreateBookSchema),
+		resolver: zodResolver(CreateBookSchema) as any,
 		defaultValues: {
 			title: "",
 			isbn: "",

@@ -115,7 +115,7 @@ export default function NewAuthorPage() {
 		setValue,
 		watch,
 	} = useForm<AuthorFormData>({
-		resolver: zodResolver(authorFormSchema),
+		resolver: zodResolver(authorFormSchema) as any,
 		defaultValues: {
 			name: "",
 			biography: "",
@@ -152,17 +152,6 @@ export default function NewAuthorPage() {
 		},
 	});
 
-	// Handle form input changes
-	const handleInputChange = (
-		e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-	) => {
-		const { name, value } = e.target;
-		setFormData((prev) => ({ ...prev, [name]: value }));
-
-		if (errors[name]) {
-			setErrors((prev) => ({ ...prev, [name]: "" }));
-		}
-	};
 
 	// Handle image selection
 	const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -312,7 +312,7 @@ const CreateCategoryForm: FC = () => {
 		control,
 		trigger,
 	} = useForm<CategoryFormDataInput>({
-		resolver: zodResolver(categoryCreateSchema),
+		resolver: zodResolver(categoryCreateSchema) as any,
 		defaultValues: {
 			name: "",
 			slug: "",
