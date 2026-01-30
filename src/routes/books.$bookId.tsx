@@ -152,6 +152,12 @@ function BookDetailPage() {
 			toast.error("Musíte byť prihlásený", {
 				description: "Pre rezerváciu knihy sa prosím najskôr prihláste.",
 			});
+			navigate({
+				to: "/login",
+				search: {
+					redirect: `/books/${bookId}`,
+				},
+			});
 			return;
 		}
 
@@ -332,9 +338,8 @@ function BookDetailPage() {
 								)}
 								<div className="absolute top-4 right-4">
 									<Badge
-										className={`${
-											statusColors[book.status]
-										} font-semibold px-3 py-1`}
+										className={`${statusColors[book.status]
+											} font-semibold px-3 py-1`}
 									>
 										{statusLabels[book.status]}
 									</Badge>

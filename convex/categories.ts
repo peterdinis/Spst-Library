@@ -478,15 +478,23 @@ export const toggleCategoryActive = mutation({
 
 // GET categories with stats
 export const getCategoriesWithStats = query({
-  args: {},
-  handler: async (ctx) => {
-    const categories = await ctx.db
+  args: {
+    paginationOpts: v.object({
+      numItems: v.number(),
+      cursor: v.optional(v.string()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    const result = await ctx.db
       .query("categories")
       .withIndex("by_active", (q) => q.eq("isActive", true))
-      .collect();
+      .order("desc")
+      .paginate(args.paginationOpts as any);
 
     const categoriesWithStats = await Promise.all(
-      categories.map(async (category) => {
+      result.page.map(async (category) => {
+        // Use the pre-calculated bookCount if available, otherwise fetch
+        // For stats like available/reserved, we still need to fetch or have more fields
         const books = await ctx.db
           .query("books")
           .withIndex("by_category", (q) => q.eq("categoryId", category._id))
@@ -505,7 +513,7 @@ export const getCategoriesWithStats = query({
       })
     );
 
-    return categoriesWithStats.sort((a, b) => b.totalBooks - a.totalBooks);
+    return { ...result, page: categoriesWithStats };
   },
 });
 

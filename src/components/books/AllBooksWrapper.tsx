@@ -23,16 +23,20 @@ const AllBooksWrapper: FC = () => {
 	const [showFilters, setShowFilters] = useState(false);
 	const itemsPerPage = 12;
 
-	// Opravený input pre books query
-	const books = useQuery(api.books.getAll, {
+	// Opravený input pre books query s pagináciou
+	const booksData = useQuery(api.books.getAll, {
 		search: searchQuery.trim() || undefined,
 		status: status !== "all" ? (status as any) : undefined,
 		categoryId: category !== "all" ? (category as any) : undefined,
 		authorId: author !== "all" ? (author as any) : undefined,
 		sortBy: sortBy as any,
-		limit: itemsPerPage,
-		offset: (page - 1) * itemsPerPage,
+		paginationOpts: {
+			numItems: itemsPerPage,
+			cursor: page > 1 ? ((page - 1) * itemsPerPage).toString() : undefined,
+		},
 	});
+
+	const books = booksData?.page;
 
 	// Fetch filters data
 	const categories = useQuery(api.categories.getCategoriesWithStats);
@@ -43,8 +47,8 @@ const AllBooksWrapper: FC = () => {
 	// Štatistiky kníh
 	const stats = useQuery(api.books.getStats);
 
-	// Loading states - opravené na správne overovanie
-	const isLoadingBooks = books === undefined;
+	// Loading states
+	const isLoadingBooks = booksData === undefined;
 	const isLoadingStats = stats === undefined;
 	const isLoadingFilters = categories === undefined || authors === undefined;
 	const isLoading = isLoadingBooks || isLoadingStats || isLoadingFilters;
@@ -96,10 +100,12 @@ const AllBooksWrapper: FC = () => {
 		author !== "all" ||
 		sortBy !== "newest";
 
-	// Počet strán pre pagináciu - berie do úvahy search
-	const totalPages = searchQuery.trim()
-		? Math.ceil((books?.length || 0) / itemsPerPage)
-		: Math.ceil((stats?.totalBooks || 0) / itemsPerPage);
+	// Počet strán pre pagináciu
+	const totalItems = searchQuery.trim() && booksData && 'total' in booksData
+		? (booksData.total as number)
+		: (stats?.totalBooks || 0);
+
+	const totalPages = Math.ceil(totalItems / itemsPerPage);
 
 	return (
 		<motion.div
@@ -227,14 +233,13 @@ const AllBooksWrapper: FC = () => {
 								<Filter className="h-4 w-4" />
 								Filtre{" "}
 								{hasActiveFilters &&
-									`(${
-										[
-											searchQuery,
-											status !== "all" && "stav",
-											category !== "all" && "kategória",
-											author !== "all" && "autor",
-											sortBy !== "newest" && "zoradenie",
-										].filter(Boolean).length
+									`(${[
+										searchQuery,
+										status !== "all" && "stav",
+										category !== "all" && "kategória",
+										author !== "all" && "autor",
+										sortBy !== "newest" && "zoradenie",
+									].filter(Boolean).length
 									})`}
 							</Button>
 						</motion.div>

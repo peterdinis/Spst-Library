@@ -1,4 +1,5 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { authGuard } from "@/lib/auth-guard";
 import { useAuth } from "@/lib/auth-context";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "convex/_generated/api";
@@ -21,24 +22,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/profile")({
-	beforeLoad: ({ location }) => {
-		// Check if user is authenticated (only on client side)
-		if (typeof window === "undefined") {
-			// Skip auth check on server
-			return;
-		}
-
-		const token = localStorage.getItem("auth_token");
-		if (!token) {
-			// Redirect to login with return path
-			throw redirect({
-				to: "/login",
-				search: {
-					redirect: location.pathname,
-				},
-			});
-		}
-	},
+	beforeLoad: authGuard,
 	component: ProfilePage,
 });
 

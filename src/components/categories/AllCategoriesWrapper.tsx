@@ -28,8 +28,14 @@ const AllCategoriesWrapper: FC = () => {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [sortBy, setSortBy] = useState<string>("name_asc");
 
-	// Fetch categories with stats using Convex
-	const categoriesData = useQuery(api.categories.getCategoriesWithStats);
+	// Fetch categories with stats using Convex with pagination
+	const categoriesResult = useQuery(api.categories.getCategoriesWithStats, {
+		paginationOpts: {
+			numItems: 100, // Show many categories initially
+		},
+	});
+
+	const categoriesData = categoriesResult?.page;
 
 	const containerVariants = {
 		hidden: { opacity: 0 },
@@ -129,7 +135,8 @@ const AllCategoriesWrapper: FC = () => {
 					</div>
 					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						Preskúmajte našu zbierku kníh podľa kategórií. Vyberte si z{" "}
-						{categoriesData?.length || 0} kategórií a {totalBooksCount} kníh.
+						{categoriesResult?.page.length || 0} kategórií a {totalBooksCount}{" "}
+						kníh.
 					</p>
 				</motion.div>
 

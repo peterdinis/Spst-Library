@@ -39,7 +39,13 @@ export function AllAuthorsWrapper() {
 
 	// Convex queries
 	const authorsResult = useQuery(api.authors.list, {
-		paginationOpts: { numItems: 100 }, // Load more for client-side filtering
+		search: searchQuery.trim() || undefined,
+		nationality: nationalityFilter !== "all" ? nationalityFilter : undefined,
+		sortBy: sortBy as any,
+		paginationOpts: {
+			numItems: itemsPerPage,
+			cursor: currentPage > 1 ? ((currentPage - 1) * itemsPerPage).toString() : undefined,
+		},
 	});
 	const nationalities = useQuery(api.authors.getNationalities);
 	const stats = useQuery(api.authors.getStats);
@@ -50,7 +56,7 @@ export function AllAuthorsWrapper() {
 	const authors = useMemo(() => {
 		if (!authorsResult?.page) return [];
 
-		return authorsResult.page.map((author) => ({
+		return authorsResult.page.map((author: any) => ({
 			...author,
 			id: author._id,
 			fullName: author.name,
@@ -61,40 +67,16 @@ export function AllAuthorsWrapper() {
 		}));
 	}, [authorsResult]);
 
-	// Filter and search authors
-	const filteredAuthors = useMemo(() => {
-		let result = authors.filter((author) => {
-			const matchesSearch =
-				searchQuery === "" ||
-				author.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				(author.biography &&
-					author.biography.toLowerCase().includes(searchQuery.toLowerCase()));
-
-			const matchesNationality =
-				nationalityFilter === "all" || author.nationality === nationalityFilter;
-
-			return matchesSearch && matchesNationality;
-		});
-
-		// Apply sorting
-		result.sort((a, b) => {
-			if (sortBy === "name_asc") return a.name.localeCompare(b.name);
-			if (sortBy === "name_desc") return b.name.localeCompare(a.name);
-			if (sortBy === "books_desc")
-				return (b.bookCount || 0) - (a.bookCount || 0);
-			if (sortBy === "books_asc")
-				return (a.bookCount || 0) - (b.bookCount || 0);
-			return 0;
-		});
-
-		return result;
-	}, [authors, searchQuery, nationalityFilter, sortBy]);
+	// Use authors directly
+	const filteredAuthors = authors;
 
 	// Calculate pagination
-	const totalPages = Math.ceil(filteredAuthors.length / itemsPerPage);
-	const startIndex = (currentPage - 1) * itemsPerPage;
-	const endIndex = startIndex + itemsPerPage;
-	const paginatedAuthors = filteredAuthors.slice(startIndex, endIndex);
+	const totalItems = searchQuery.trim() && authorsResult && 'total' in authorsResult
+		? (authorsResult.total as number)
+		: (stats?.totalAuthors || 0);
+
+	const totalPages = Math.ceil(totalItems / itemsPerPage);
+	const paginatedAuthors = filteredAuthors;
 
 	// Reset to first page when filters change
 	useEffect(() => {
@@ -334,7 +316,7 @@ export function AllAuthorsWrapper() {
 															{(author.bookCount || 0) === 1
 																? "kniha"
 																: (author.bookCount || 0) >= 2 &&
-																		(author.bookCount || 0) <= 4
+																	(author.bookCount || 0) <= 4
 																	? "knihy"
 																	: "kníh"}
 														</span>
@@ -425,8 +407,9 @@ export function AllAuthorsWrapper() {
 								{/* Page Info */}
 								<div className="text-center text-sm text-muted-foreground mt-4">
 									Strana {currentPage} z {totalPages} • Zobrazené{" "}
-									{startIndex + 1}-{Math.min(endIndex, filteredAuthors.length)}{" "}
-									z {filteredAuthors.length} autorov
+									{(currentPage - 1) * itemsPerPage + 1}-
+									{Math.min(currentPage * itemsPerPage, totalItems)} z{" "}
+									{totalItems} autorov
 								</div>
 							</motion.div>
 						)}

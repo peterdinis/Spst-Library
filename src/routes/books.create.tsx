@@ -35,6 +35,7 @@ import { useUploadThing } from "@/lib/uploadthing";
 import { api } from "convex/_generated/api";
 import { Id } from "convex/_generated/dataModel";
 import { createFileRoute } from "@tanstack/react-router";
+import { authGuard } from "@/lib/auth-guard";
 
 interface CropArea {
 	x: number;
@@ -832,6 +833,7 @@ function CreateBookPage() {
 }
 
 export const Route = createFileRoute("/books/create")({
+	beforeLoad: authGuard,
 	component: RouteComponent,
 });
 
