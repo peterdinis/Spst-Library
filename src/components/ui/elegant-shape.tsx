@@ -31,19 +31,19 @@ export function ElegantShape({
 				rotate: rotate,
 			}}
 			transition={{
-				duration: 2.4,
+				duration: 1.8,
 				delay,
 				ease: [0.23, 0.86, 0.39, 0.96],
-				opacity: { duration: 1.2 },
+				opacity: { duration: 0.8 },
 			}}
-			className={cn("absolute", className)}
+			className={cn("absolute will-change-transform", className)}
 		>
 			<motion.div
 				animate={{
 					y: [0, 15, 0],
 				}}
 				transition={{
-					duration: 12,
+					duration: 10,
 					repeat: Number.POSITIVE_INFINITY,
 					ease: "easeInOut",
 				}}
@@ -51,7 +51,7 @@ export function ElegantShape({
 					width,
 					height,
 				}}
-				className="relative"
+				className="relative will-change-transform"
 			>
 				<div
 					style={{ borderRadius }}

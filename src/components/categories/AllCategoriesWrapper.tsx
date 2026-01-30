@@ -23,61 +23,13 @@ import {
 } from "@/components/ui/select";
 import { useState, useMemo } from "react";
 
-interface Category {
-	_id: string;
-	name: string;
-	description?: string;
-	color?: string;
-	icon?: string;
-	bookCount: number;
-	subcategoryCount: number;
-	isActive: boolean;
-}
-
 const AllCategoriesWrapper: FC = () => {
 	const navigate = useNavigate();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [sortBy, setSortBy] = useState<string>("name_asc");
 
-	// Fetch categories using Convex - bez pagination pre jednoduchosť
-	const categoriesData = useQuery(api.categories.getCategories, {
-		paginationOpts: { numItems: 100, cursor: null },
-		isActive: true,
-	});
-
-	// Fetch all books using the correct function
-	const booksData = useQuery(api.books.getAll, {});
-
-	// Helper function to generate random colors
-	const getRandomColor = () => {
-		const colors = [
-			"#3B82F6",
-			"#8B5CF6",
-			"#EF4444",
-			"#10B981",
-			"#F59E0B",
-			"#EC4899",
-			"#14B8A6",
-			"#6B7280",
-		];
-		return colors[Math.floor(Math.random() * colors.length)];
-	};
-
-	const getCategoryBookCount = (categoryId: string) => {
-		if (!booksData) return 0;
-		return booksData.filter((book) => book.categoryId === categoryId).length;
-	};
-
-	const getAvailableBooksInCategory = (categoryId: string) => {
-		if (!booksData) return 0;
-		return booksData.filter(
-			(book) => book.categoryId === categoryId && book.availableCopies > 0,
-		).length;
-	};
-
-	const getCategoryColor = (category: Category) => {
-		return category.color || getRandomColor();
-	};
+	// Fetch categories with stats using Convex
+	const categoriesData = useQuery(api.categories.getCategoriesWithStats);
 
 	const containerVariants = {
 		hidden: { opacity: 0 },
@@ -100,33 +52,14 @@ const AllCategoriesWrapper: FC = () => {
 		},
 	};
 
-	// Calculate statistics
-	const totalBooksCount = booksData?.length || 0;
-	const availableBooksCount =
-		booksData?.filter((b) => b.availableCopies > 0).length || 0;
-
 	// Loading state
-	if (categoriesData === undefined || booksData === undefined) {
-		return (
-			<section className="py-16 bg-linear-to-b from-background to-muted/30">
-				<div className="container mx-auto px-4">
-					<div className="flex flex-col items-center justify-center py-20">
-						<Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-						<h3 className="text-xl font-semibold mb-2">
-							Načítavanie kategórií...
-						</h3>
-						<p className="text-muted-foreground">Prosím čakajte</p>
-					</div>
-				</div>
-			</section>
-		);
-	}
+	const isLoading = categoriesData === undefined;
 
 	// Filter and sort categories
 	const filteredCategories = useMemo(() => {
-		if (!categoriesData?.page) return [];
+		if (!categoriesData) return [];
 
-		let result = [...categoriesData.page];
+		let result = [...categoriesData];
 
 		// Search
 		if (searchQuery.trim()) {
@@ -143,16 +76,37 @@ const AllCategoriesWrapper: FC = () => {
 			if (sortBy === "name_asc") return a.name.localeCompare(b.name);
 			if (sortBy === "name_desc") return b.name.localeCompare(a.name);
 			if (sortBy === "books_desc")
-				return getCategoryBookCount(b._id) - getCategoryBookCount(a._id);
+				return (b.totalBooks || 0) - (a.totalBooks || 0);
 			if (sortBy === "books_asc")
-				return getCategoryBookCount(a._id) - getCategoryBookCount(b._id);
+				return (a.totalBooks || 0) - (b.totalBooks || 0);
 			return 0;
 		});
 
 		return result;
-	}, [categoriesData, searchQuery, sortBy, booksData]);
+	}, [categoriesData, searchQuery, sortBy]);
 
-	const categories = filteredCategories;
+	// Early return for loading state MUST be after all hooks
+	if (isLoading) {
+		return (
+			<section className="py-16 bg-linear-to-b from-background to-muted/30">
+				<div className="container mx-auto px-4">
+					<div className="flex flex-col items-center justify-center py-20">
+						<Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+						<h3 className="text-xl font-semibold mb-2">
+							Načítavanie kategórií...
+						</h3>
+						<p className="text-muted-foreground">Prosím čakajte</p>
+					</div>
+				</div>
+			</section>
+		);
+	}
+
+	// Calculate statistics
+	const totalBooksCount =
+		categoriesData?.reduce((acc, c) => acc + (c.totalBooks || 0), 0) || 0;
+	const availableBooksCount =
+		categoriesData?.reduce((acc, c) => acc + (c.availableBooks || 0), 0) || 0;
 
 	return (
 		<section className="py-16 bg-linear-to-b from-background to-muted/30">
@@ -175,8 +129,7 @@ const AllCategoriesWrapper: FC = () => {
 					</div>
 					<p className="text-lg text-muted-foreground max-w-2xl mx-auto">
 						Preskúmajte našu zbierku kníh podľa kategórií. Vyberte si z{" "}
-						{categoriesData?.page.length || 0} kategórií a {totalBooksCount}{" "}
-						kníh.
+						{categoriesData?.length || 0} kategórií a {totalBooksCount} kníh.
 					</p>
 				</motion.div>
 
@@ -222,14 +175,15 @@ const AllCategoriesWrapper: FC = () => {
 					</div>
 
 					<div className="mt-4 text-center text-sm text-muted-foreground">
-						{categories.length === 0 ? (
+						{filteredCategories.length === 0 ? (
 							"Nenašli sa žiadne kategórie"
 						) : (
 							<>
-								Nájdených {categories.length}{" "}
-								{categories.length === 1
+								Nájdených {filteredCategories.length}{" "}
+								{filteredCategories.length === 1
 									? "kategória"
-									: categories.length >= 2 && categories.length <= 4
+									: filteredCategories.length >= 2 &&
+										filteredCategories.length <= 4
 										? "kategórie"
 										: "kategórií"}
 							</>
@@ -238,7 +192,7 @@ const AllCategoriesWrapper: FC = () => {
 				</motion.div>
 
 				{/* Categories Content */}
-				{categories.length === 0 ? (
+				{filteredCategories.length === 0 ? (
 					<motion.div
 						initial={{ opacity: 0, scale: 0.9 }}
 						animate={{ opacity: 1, scale: 1 }}
@@ -277,10 +231,10 @@ const AllCategoriesWrapper: FC = () => {
 						whileInView="visible"
 						className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
 					>
-						{categories.map((category) => {
-							const bookCount = getCategoryBookCount(category._id);
-							const availableCount = getAvailableBooksInCategory(category._id);
-							const categoryColor = getCategoryColor(category);
+						{filteredCategories.map((category: any) => {
+							const bookCount = category.totalBooks || 0;
+							const availableCount = category.availableBooks || 0;
+							const categoryColor = category.color || "#6366f1";
 
 							return (
 								<motion.div
@@ -377,7 +331,7 @@ const AllCategoriesWrapper: FC = () => {
 					<div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-2xl mx-auto">
 						<div className="text-center p-4 rounded-lg border bg-card">
 							<div className="text-2xl font-bold text-primary">
-								{categories.length}
+								{filteredCategories.length}
 							</div>
 							<div className="text-sm text-muted-foreground">Kategórií</div>
 						</div>
