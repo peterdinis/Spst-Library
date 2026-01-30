@@ -451,21 +451,71 @@ export const getAll = query({
     }
 
     // Default query
-    let query;
+    let baseQuery = ctx.db.query("books");
 
-    // Apply primary indexes
-    if (categoryId) {
-      query = ctx.db.query("books").withIndex("by_category", (q) => q.eq("categoryId", categoryId));
-    } else if (authorId) {
-      query = ctx.db.query("books").withIndex("by_author", (q) => q.eq("authorId", authorId));
-    } else if (status) {
-      query = ctx.db.query("books").withIndex("by_status", (q) => q.eq("status", status));
-    } else {
-      query = ctx.db.query("books");
+    // Apply filters one by one (Intersection)
+    // Note: Since Convex doesn't support multiple filters on different indexes easily,
+    // and we want native pagination, we'll collect and manually filter IF multiple filters are present
+    // or if we have a special case.
+    
+    const hasMultipleFilters = [categoryId, authorId, status].filter(Boolean).length > 1;
+
+    if (hasMultipleFilters) {
+      let filtered = await baseQuery.collect();
+      if (categoryId) filtered = filtered.filter(b => b.categoryId === categoryId);
+      if (authorId) filtered = filtered.filter(b => b.authorId === authorId);
+      if (status) filtered = filtered.filter(b => b.status === status);
+
+      // Sorting
+      switch (sortBy) {
+        case "newest": filtered.sort((a, b) => b.addedAt - a.addedAt); break;
+        case "oldest": filtered.sort((a, b) => a.addedAt - b.addedAt); break;
+        case "title_asc": filtered.sort((a, b) => a.title.localeCompare(b.title)); break;
+        case "title_desc": filtered.sort((a, b) => b.title.localeCompare(a.title)); break;
+      }
+
+      const offset = (paginationOpts.cursor as unknown as number) || 0;
+      const paginated = filtered.slice(offset, offset + paginationOpts.numItems);
+      
+      const results = await Promise.all(paginated.map(async book => {
+        const [author, category, coverFile] = await Promise.all([
+          ctx.db.get(book.authorId),
+          ctx.db.get(book.categoryId),
+          book.coverFileId ? ctx.db.get(book.coverFileId) : null
+        ]);
+        return { 
+          ...book, 
+          author: author!, 
+          category: category!, 
+          coverFile 
+        };
+      }));
+
+      return {
+        page: results,
+        isDone: offset + paginationOpts.numItems >= filtered.length,
+        continueCursor: offset + paginationOpts.numItems < filtered.length 
+          ? (offset + paginationOpts.numItems).toString() 
+          : null,
+        total: filtered.length,
+      };
     }
 
-    // Native pagination for non-search
-    const result = await query
+    // Single filter or no filters -> use native pagination
+    let finalQuery;
+    if (categoryId) {
+      finalQuery = ctx.db.query("books").withIndex("by_category", (q) => q.eq("categoryId", categoryId));
+    } else if (authorId) {
+      finalQuery = ctx.db.query("books").withIndex("by_author", (q) => q.eq("authorId", authorId));
+    } else if (status) {
+      finalQuery = ctx.db.query("books").withIndex("by_status", (q) => q.eq("status", status));
+    } else {
+      finalQuery = baseQuery;
+    }
+
+    const totalResults = await finalQuery.collect();
+
+    const result = await finalQuery
       .order(sortBy === "oldest" ? "asc" : "desc")
       .paginate(paginationOpts as any);
 
@@ -483,7 +533,7 @@ export const getAll = query({
       };
     }));
 
-    return { ...result, page };
+    return { ...result, page, total: totalResults.length };
   },
 });
 

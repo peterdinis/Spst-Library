@@ -27,6 +27,13 @@ function buildSearchableText(author: {
     .toLowerCase();
 }
 
+export const listAll = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("authors").collect();
+  },
+});
+
 // ==================== QUERIES ====================
 
 /**
@@ -94,17 +101,11 @@ export const list = query({
       query = ctx.db.query("authors");
     }
 
+    const totalResults = await query.collect();
+
     const result = await query.order(sortBy === "name_desc" ? "desc" : "asc").paginate(paginationOpts as any);
 
-    // If sorting by books, we might need manual sort for now if no index exists
-    if (sortBy === "books_desc" || sortBy === "books_asc") {
-       // Note: Native pagination with bookCount index would be better, 
-       // but if we don't have it, we collect and slice (not ideal for "huge" but okay for medium)
-       // Let's assume we have or can add by_bookCount if needed.
-       // For now, let's keep it simple.
-    }
-
-    return result;
+    return { ...result, total: totalResults.length };
   },
 });
 

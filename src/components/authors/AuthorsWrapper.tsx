@@ -70,8 +70,8 @@ export function AllAuthorsWrapper() {
 	// Use authors directly
 	const filteredAuthors = authors;
 
-	// Calculate pagination
-	const totalItems = searchQuery.trim() && authorsResult && 'total' in authorsResult
+	// Calculate pagination - priority to backend total
+	const totalItems = authorsResult && 'total' in authorsResult
 		? (authorsResult.total as number)
 		: (stats?.totalAuthors || 0);
 

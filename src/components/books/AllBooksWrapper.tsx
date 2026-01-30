@@ -38,11 +38,9 @@ const AllBooksWrapper: FC = () => {
 
 	const books = booksData?.page;
 
-	// Fetch filters data
-	const categories = useQuery(api.categories.getCategoriesWithStats);
-	const authors = useQuery(api.authors.list, {
-		paginationOpts: { numItems: 100 },
-	});
+	// Fetch filters data - using non-paginated queries for filter dropdowns
+	const categories = useQuery(api.categories.listAllActive);
+	const authors = useQuery(api.authors.listAll);
 
 	// Štatistiky kníh
 	const stats = useQuery(api.books.getStats);
@@ -100,8 +98,8 @@ const AllBooksWrapper: FC = () => {
 		author !== "all" ||
 		sortBy !== "newest";
 
-	// Počet strán pre pagináciu
-	const totalItems = searchQuery.trim() && booksData && 'total' in booksData
+	// Počet strán pre pagináciu - vždy prioritne z backendu (ak je k dispozícii)
+	const totalItems = booksData && 'total' in booksData
 		? (booksData.total as number)
 		: (stats?.totalBooks || 0);
 
@@ -255,8 +253,8 @@ const AllBooksWrapper: FC = () => {
 								>
 									<div className="pt-4">
 										<BooksFilters
-											categories={(categories as any) || []}
-											authors={(authors?.page as any) || []}
+											categories={categories || []}
+											authors={authors || []}
 											selectedCategory={category}
 											selectedAuthor={author}
 											selectedStatus={status}
@@ -349,7 +347,7 @@ const AllBooksWrapper: FC = () => {
 								className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 gap-1 pr-1 py-1"
 							>
 								Autor:{" "}
-								{authors?.page.find((a: any) => a._id === author)?.name ||
+								{authors?.find((a: any) => a._id === author)?.name ||
 									author}
 								<Button
 									variant="ghost"

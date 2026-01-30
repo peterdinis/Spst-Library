@@ -4,6 +4,16 @@ import { paginationOptsValidator } from "convex/server";
 import { Id } from "./_generated/dataModel";
 import { categoryCreateSchema, categoryUpdateSchema } from "types/categoryTypes";
 
+export const listAllActive = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("categories")
+      .withIndex("by_active", (q) => q.eq("isActive", true))
+      .collect();
+  },
+});
+
 // GET all categories with pagination
 export const getCategories = query({
   args: {
@@ -513,7 +523,12 @@ export const getCategoriesWithStats = query({
       })
     );
 
-    return { ...result, page: categoriesWithStats };
+    const totalResults = await ctx.db
+      .query("categories")
+      .withIndex("by_active", (q) => q.eq("isActive", true))
+      .collect();
+
+    return { ...result, page: categoriesWithStats, total: totalResults.length };
   },
 });
 
