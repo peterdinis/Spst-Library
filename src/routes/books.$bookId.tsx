@@ -76,7 +76,7 @@ function BookDetailPage() {
 		phone: "",
 		note: "",
 		period: "7",
-		customPeriod: "14", // Predvolená hodnota pre vlastnú dobu
+		customPeriod: "14",
 	});
 
 	const book = useQuery(api.books.getById, { id: bookId as Id<"books"> });
@@ -176,7 +176,6 @@ function BookDetailPage() {
 				description: `Kniha "${book?.title}" bola rezervovaná. Potvrdenie sme vám poslali emailom.`,
 			});
 
-			// Reset formulára po 3 sekundách
 			setTimeout(() => {
 				setIsReservationOpen(false);
 				setReservationStep("form");
@@ -208,7 +207,6 @@ function BookDetailPage() {
 	};
 
 	const handleCustomPeriodChange = (value: string) => {
-		// Validácia: len čísla od 1 do 365
 		const numValue = parseInt(value);
 		if (isNaN(numValue)) {
 			setReservationData({ ...reservationData, customPeriod: "" });
@@ -239,21 +237,21 @@ function BookDetailPage() {
 
 	if (book === undefined) {
 		return (
-			<div className="container mx-auto px-4 py-8">
+			<div className="container mx-auto px-4 py-6 sm:py-8">
 				<div className="max-w-4xl mx-auto">
 					<Skeleton className="h-8 w-48 mb-6" />
-					<div className="grid md:grid-cols-3 gap-8">
+					<div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
 						<div className="md:col-span-1">
-							<Skeleton className="h-100 w-full rounded-lg" />
+							<Skeleton className="h-[280px] sm:h-[320px] w-full rounded-lg" />
 						</div>
 						<div className="md:col-span-2 space-y-4">
-							<Skeleton className="h-10 w-3/4" />
-							<Skeleton className="h-6 w-1/2" />
+							<Skeleton className="h-8 sm:h-10 w-3/4" />
+							<Skeleton className="h-5 sm:h-6 w-1/2" />
 							<Skeleton className="h-4 w-full" />
 							<Skeleton className="h-4 w-5/6" />
 							<Skeleton className="h-4 w-4/6" />
 							<div className="space-y-2 pt-4">
-								<Skeleton className="h-6 w-32" />
+								<Skeleton className="h-5 sm:h-6 w-32" />
 								<Skeleton className="h-8 w-24" />
 							</div>
 						</div>
@@ -265,15 +263,15 @@ function BookDetailPage() {
 
 	if (!book) {
 		return (
-			<div className="container mx-auto px-4 py-8">
+			<div className="container mx-auto px-4 py-8 sm:py-12">
 				<motion.div
 					initial={{ opacity: 0, scale: 0.95 }}
 					animate={{ opacity: 1, scale: 1 }}
 					className="max-w-md mx-auto text-center"
 				>
-					<AlertCircle className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-					<h2 className="text-2xl font-bold mb-2">Kniha nebola nájdená</h2>
-					<p className="text-muted-foreground mb-6">
+					<AlertCircle className="h-12 sm:h-16 w-12 sm:w-16 text-muted-foreground mx-auto mb-4" />
+					<h2 className="text-xl sm:text-2xl font-bold mb-2">Kniha nebola nájdená</h2>
+					<p className="text-sm sm:text-base text-muted-foreground mb-6">
 						Požadovaná kniha neexistuje alebo bola odstránená.
 					</p>
 					<Button onClick={() => navigate({ to: "/books" })}>
@@ -299,7 +297,7 @@ function BookDetailPage() {
 	};
 
 	return (
-		<div className="container mx-auto px-4 py-8">
+		<div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 md:py-8">
 			<motion.div
 				variants={containerVariants}
 				initial="hidden"
@@ -309,19 +307,20 @@ function BookDetailPage() {
 				{/* Header s navigáciou späť */}
 				<motion.div
 					variants={itemVariants as unknown as Variants}
-					className="mb-6"
+					className="mb-4 sm:mb-6"
 				>
 					<Button
 						variant="ghost"
 						onClick={() => navigate({ to: "/books" })}
-						className="mb-4"
+						className="mb-4 px-2 sm:px-4"
+						size="sm"
 					>
-						<ArrowLeft className="mr-2 h-4 w-4" />
+						<ArrowLeft className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
 						Späť na zoznam kníh
 					</Button>
 				</motion.div>
 
-				<div className="grid lg:grid-cols-3 gap-8">
+				<div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
 					{/* Ľavý stĺpec - Obrázok a základné info */}
 					<motion.div
 						variants={itemVariants as unknown as Variants}
@@ -330,42 +329,43 @@ function BookDetailPage() {
 						<Card className="overflow-hidden">
 							<div className="aspect-3/4 relative bg-linear-to-br from-muted/50 to-muted">
 								{book.coverFileId ? (
-									<div className="w-full h-full flex items-center justify-center">
+									<div className="w-full h-full flex items-center justify-center p-4 sm:p-6">
 										<img
 											loading="lazy"
 											src={book.coverFile?.url!}
 											alt={book.title}
+											className="max-h-full max-w-full object-contain"
 										/>
 									</div>
 								) : (
 									<div className="w-full h-full flex items-center justify-center">
-										<BookOpen className="h-24 w-24 text-muted-foreground/50" />
+										<BookOpen className="h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 text-muted-foreground/50" />
 									</div>
 								)}
-								<div className="absolute top-4 right-4">
+								<div className="absolute top-2 right-2 sm:top-4 sm:right-4">
 									<Badge
 										className={`${statusColors[book.status]
-											} font-semibold px-3 py-1`}
+											} font-semibold px-2 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm`}
 									>
 										{statusLabels[book.status]}
 									</Badge>
 								</div>
 							</div>
 
-							<CardContent className="p-6">
-								<div className="space-y-4">
+							<CardContent className="p-4 sm:p-6">
+								<div className="space-y-3 sm:space-y-4">
 									{/* Informácie o dostupnosti */}
-									<div className="grid grid-cols-2 gap-4">
+									<div className="grid grid-cols-2 gap-3 sm:gap-4">
 										<div className="text-center p-3 bg-muted rounded-lg">
-											<p className="text-sm text-muted-foreground">Celkovo</p>
-											<p className="text-2xl font-bold">{book.totalCopies}</p>
+											<p className="text-xs sm:text-sm text-muted-foreground">Celkovo</p>
+											<p className="text-xl sm:text-2xl font-bold">{book.totalCopies}</p>
 											<p className="text-xs text-muted-foreground">výtlačkov</p>
 										</div>
 										<div className="text-center p-3 bg-green-50 rounded-lg">
-											<p className="text-sm text-muted-foreground">
+											<p className="text-xs sm:text-sm text-muted-foreground">
 												Dostupných
 											</p>
-											<p className="text-2xl font-bold text-green-600">
+											<p className="text-xl sm:text-2xl font-bold text-green-600">
 												{book.availableCopies}
 											</p>
 											<p className="text-xs text-muted-foreground">výtlačkov</p>
@@ -381,11 +381,11 @@ function BookDetailPage() {
 										>
 											<Dialog>
 												<DialogTrigger asChild>
-													<Button size="lg" className="w-full">
+													<Button size="lg" className="w-full text-sm sm:text-base">
 														Rezervovať knihu
 													</Button>
 												</DialogTrigger>
-												<DialogContent className="sm:max-w-md p-0 overflow-hidden border-0 bg-transparent">
+												<DialogContent className="sm:max-w-md p-0 overflow-hidden border-0 bg-transparent max-w-[95vw]">
 													<motion.div
 														variants={dialogVariants as unknown as Variants}
 														initial="hidden"
@@ -395,12 +395,12 @@ function BookDetailPage() {
 													>
 														{reservationStep === "form" ? (
 															<>
-																<DialogHeader className="p-6 pb-0">
-																	<DialogTitle className="text-2xl font-bold flex items-center gap-2">
-																		<Calendar className="h-6 w-6" />
+																<DialogHeader className="p-4 sm:p-6 pb-0">
+																	<DialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2">
+																		<Calendar className="h-5 w-5 sm:h-6 sm:w-6" />
 																		Rezervácia knihy
 																	</DialogTitle>
-																	<DialogDescription className="pt-2">
+																	<DialogDescription className="pt-2 text-sm sm:text-base">
 																		Vyplňte formulár pre rezerváciu knihy "
 																		<span className="font-semibold">
 																			{book.title}
@@ -409,13 +409,13 @@ function BookDetailPage() {
 																	</DialogDescription>
 																</DialogHeader>
 
-																<div className="p-6">
-																	<div className="space-y-4">
+																<div className="p-4 sm:p-6">
+																	<div className="space-y-3 sm:space-y-4">
 																		{/* Osobný údaje */}
-																		<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-																			<div className="space-y-2">
-																				<Label htmlFor="name">
-																					<UserIcon className="h-4 w-4 inline mr-2" />
+																		<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+																			<div className="space-y-1 sm:space-y-2">
+																				<Label htmlFor="name" className="text-xs sm:text-sm">
+																					<UserIcon className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
 																					Meno a priezvisko *
 																				</Label>
 																				<Input
@@ -428,12 +428,13 @@ function BookDetailPage() {
 																							name: e.target.value,
 																						})
 																					}
+																					className="text-sm sm:text-base"
 																				/>
 																			</div>
 
-																			<div className="space-y-2">
-																				<Label htmlFor="email">
-																					<Mail className="h-4 w-4 inline mr-2" />
+																			<div className="space-y-1 sm:space-y-2">
+																				<Label htmlFor="email" className="text-xs sm:text-sm">
+																					<Mail className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
 																					Email *
 																				</Label>
 																				<Input
@@ -447,12 +448,13 @@ function BookDetailPage() {
 																							email: e.target.value,
 																						})
 																					}
+																					className="text-sm sm:text-base"
 																				/>
 																			</div>
 																		</div>
 
-																		<div className="space-y-2">
-																			<Label htmlFor="phone">
+																		<div className="space-y-1 sm:space-y-2">
+																			<Label htmlFor="phone" className="text-xs sm:text-sm">
 																				Telefónne číslo
 																			</Label>
 																			<Input
@@ -465,25 +467,27 @@ function BookDetailPage() {
 																						phone: e.target.value,
 																					})
 																				}
+																				className="text-sm sm:text-base"
 																			/>
 																		</div>
 
 																		{/* Doba výpožičky */}
-																		<div className="space-y-4">
+																		<div className="space-y-3 sm:space-y-4">
 																			<div className="flex items-center justify-between">
-																				<Label className="flex items-center gap-2">
-																					<Clock className="h-4 w-4" />
+																				<Label className="flex items-center gap-2 text-xs sm:text-sm">
+																					<Clock className="h-3 w-3 sm:h-4 sm:w-4" />
 																					Doba výpožičky
 																				</Label>
 																				<div className="flex items-center gap-2">
-																					<CalendarRange className="h-4 w-4 text-muted-foreground" />
+																					<CalendarRange className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
 																					<Switch
 																						checked={customPeriodEnabled}
 																						onCheckedChange={
 																							setCustomPeriodEnabled
 																						}
+																						className="h-4 w-7 sm:h-5 sm:w-9"
 																					/>
-																					<span className="text-sm text-muted-foreground">
+																					<span className="text-xs sm:text-sm text-muted-foreground">
 																						Vlastná doba
 																					</span>
 																				</div>
@@ -499,32 +503,32 @@ function BookDetailPage() {
 																						})
 																					}
 																				>
-																					<SelectTrigger>
+																					<SelectTrigger className="text-sm sm:text-base">
 																						<SelectValue placeholder="Vyberte dobu výpožičky" />
 																					</SelectTrigger>
 																					<SelectContent>
-																						<SelectItem value="1">
+																						<SelectItem value="1" className="text-sm sm:text-base">
 																							1 deň
 																						</SelectItem>
-																						<SelectItem value="3">
+																						<SelectItem value="3" className="text-sm sm:text-base">
 																							3 dni
 																						</SelectItem>
-																						<SelectItem value="7">
+																						<SelectItem value="7" className="text-sm sm:text-base">
 																							7 dní (štandard)
 																						</SelectItem>
-																						<SelectItem value="14">
+																						<SelectItem value="14" className="text-sm sm:text-base">
 																							14 dní
 																						</SelectItem>
-																						<SelectItem value="21">
+																						<SelectItem value="21" className="text-sm sm:text-base">
 																							21 dní
 																						</SelectItem>
-																						<SelectItem value="30">
+																						<SelectItem value="30" className="text-sm sm:text-base">
 																							30 dní
 																						</SelectItem>
 																					</SelectContent>
 																				</Select>
 																			) : (
-																				<div className="space-y-2">
+																				<div className="space-y-1 sm:space-y-2">
 																					<div className="flex items-center gap-2">
 																						<Input
 																							type="number"
@@ -538,9 +542,9 @@ function BookDetailPage() {
 																									e.target.value,
 																								)
 																							}
-																							className="flex-1"
+																							className="flex-1 text-sm sm:text-base"
 																						/>
-																						<span className="text-sm whitespace-nowrap">
+																						<span className="text-xs sm:text-sm whitespace-nowrap">
 																							dní
 																						</span>
 																					</div>
@@ -552,8 +556,8 @@ function BookDetailPage() {
 																		</div>
 
 																		{/* Poznámka */}
-																		<div className="space-y-2">
-																			<Label htmlFor="note">Poznámka</Label>
+																		<div className="space-y-1 sm:space-y-2">
+																			<Label htmlFor="note" className="text-xs sm:text-sm">Poznámka</Label>
 																			<Textarea
 																				id="note"
 																				placeholder="Váš komentár k rezervácii..."
@@ -565,30 +569,31 @@ function BookDetailPage() {
 																						note: e.target.value,
 																					})
 																				}
+																				className="text-sm sm:text-base"
 																			/>
 																		</div>
 
 																		{/* Informácie o rezervácii */}
-																		<div className="bg-muted/50 p-4 rounded-lg space-y-2">
+																		<div className="bg-muted/50 p-3 sm:p-4 rounded-lg space-y-2">
 																			<div className="flex justify-between">
-																				<span className="text-sm text-muted-foreground">
+																				<span className="text-xs sm:text-sm text-muted-foreground">
 																					Dostupných výtlačkov:
 																				</span>
-																				<span className="font-semibold">
+																				<span className="font-semibold text-xs sm:text-sm">
 																					{book.availableCopies}
 																				</span>
 																			</div>
 																			<div className="flex justify-between">
-																				<span className="text-sm text-muted-foreground">
+																				<span className="text-xs sm:text-sm text-muted-foreground">
 																					Autor:
 																				</span>
-																				<span>{book.author.name}</span>
+																				<span className="text-xs sm:text-sm">{book.author.name}</span>
 																			</div>
 																			<div className="flex justify-between">
-																				<span className="text-sm text-muted-foreground">
+																				<span className="text-xs sm:text-sm text-muted-foreground">
 																					Doba rezervácie:
 																				</span>
-																				<span className="font-semibold">
+																				<span className="font-semibold text-xs sm:text-sm">
 																					{getReservationPeriodLabel()}
 																					{customPeriodEnabled && (
 																						<span className="ml-1 text-xs text-primary">
@@ -600,10 +605,10 @@ function BookDetailPage() {
 																		</div>
 
 																		{/* Tlačidlá */}
-																		<div className="flex gap-3 pt-4">
+																		<div className="flex gap-2 sm:gap-3 pt-3 sm:pt-4">
 																			<Button
 																				variant="outline"
-																				className="flex-1"
+																				className="flex-1 text-xs sm:text-sm"
 																				onClick={() =>
 																					setIsReservationOpen(false)
 																				}
@@ -611,7 +616,7 @@ function BookDetailPage() {
 																				Zrušiť
 																			</Button>
 																			<Button
-																				className="flex-1"
+																				className="flex-1 text-xs sm:text-sm"
 																				onClick={handleReservationSubmit}
 																				disabled={
 																					isLoading ||
@@ -626,7 +631,7 @@ function BookDetailPage() {
 																			>
 																				{isLoading ? (
 																					<>
-																						<div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent mr-2" />
+																						<div className="h-3 w-3 sm:h-4 sm:w-4 animate-spin rounded-full border-2 border-current border-t-transparent mr-1 sm:mr-2" />
 																						Spracúvam...
 																					</>
 																				) : (
@@ -645,7 +650,7 @@ function BookDetailPage() {
 																}
 																initial="hidden"
 																animate="visible"
-																className="p-8 text-center"
+																className="p-4 sm:p-8 text-center"
 															>
 																<motion.div
 																	animate={{
@@ -658,14 +663,14 @@ function BookDetailPage() {
 																	}}
 																	className="mb-4"
 																>
-																	<CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
+																	<CheckCircle className="h-12 w-12 sm:h-16 sm:w-16 text-green-500 mx-auto" />
 																</motion.div>
 
-																<DialogTitle className="text-2xl font-bold mb-2">
+																<DialogTitle className="text-xl sm:text-2xl font-bold mb-2">
 																	Rezervácia bola úspešná!
 																</DialogTitle>
 
-																<DialogDescription className="mb-6">
+																<DialogDescription className="mb-4 sm:mb-6 text-sm sm:text-base">
 																	Kniha "
 																	<span className="font-semibold">
 																		{book.title}
@@ -673,23 +678,23 @@ function BookDetailPage() {
 																	" bola rezervovaná na vaše meno.
 																</DialogDescription>
 
-																<div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+																<div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
 																	<div className="text-left space-y-2">
-																		<p className="text-sm text-green-800">
+																		<p className="text-xs sm:text-sm text-green-800">
 																			<strong>Doba výpožičky:</strong>{" "}
 																			{getReservationPeriodLabel()}
 																			{customPeriodEnabled && " (vlastná)"}
 																		</p>
-																		<p className="text-sm text-green-800">
+																		<p className="text-xs sm:text-sm text-green-800">
 																			<strong>Email:</strong>{" "}
 																			{reservationData.email}
 																		</p>
-																		<p className="text-sm text-green-800">
+																		<p className="text-xs sm:text-sm text-green-800">
 																			<strong>Meno:</strong>{" "}
 																			{reservationData.name}
 																		</p>
 																	</div>
-																	<p className="text-xs text-green-600 mt-3">
+																	<p className="text-xs text-green-600 mt-2 sm:mt-3">
 																		Potvrdenie o rezervácii bolo odoslané na
 																		email. Rezerváciu si môžete vyzdvihnúť v
 																		priebehu 24 hodín.
@@ -699,7 +704,7 @@ function BookDetailPage() {
 																<Button
 																	variant="outline"
 																	onClick={() => setIsReservationOpen(false)}
-																	className="w-full"
+																	className="w-full text-xs sm:text-sm"
 																>
 																	Pokračovať
 																</Button>
@@ -711,21 +716,21 @@ function BookDetailPage() {
 										</motion.div>
 									)}
 
-									<Separator />
+									<Separator className="my-3 sm:my-4" />
 
 									{/* Tagy */}
 									{book.tags && book.tags.length > 0 && (
 										<div>
-											<h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-												<Tag className="h-4 w-4" />
+											<h4 className="text-xs sm:text-sm font-medium mb-1 sm:mb-2 flex items-center gap-1 sm:gap-2">
+												<Tag className="h-3 w-3 sm:h-4 sm:w-4" />
 												Štítky
 											</h4>
-											<div className="flex flex-wrap gap-2">
+											<div className="flex flex-wrap gap-1 sm:gap-2">
 												{book.tags.map((tag, index) => (
 													<Badge
 														key={index}
 														variant="secondary"
-														className="font-normal"
+														className="font-normal text-xs"
 													>
 														{tag}
 													</Badge>
@@ -737,11 +742,11 @@ function BookDetailPage() {
 									{/* Lokácia */}
 									{book.location && (
 										<div>
-											<h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-												<MapPin className="h-4 w-4" />
+											<h4 className="text-xs sm:text-sm font-medium mb-1 sm:mb-2 flex items-center gap-1 sm:gap-2">
+												<MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
 												Umiestnenie
 											</h4>
-											<p className="text-sm">{book.location}</p>
+											<p className="text-xs sm:text-sm">{book.location}</p>
 										</div>
 									)}
 								</div>
@@ -752,22 +757,22 @@ function BookDetailPage() {
 					{/* Pravý stĺpec - Podrobnosti */}
 					<motion.div
 						variants={itemVariants as unknown as Variants}
-						className="lg:col-span-2 space-y-6"
+						className="lg:col-span-2 space-y-4 sm:space-y-6"
 					>
 						{/* Hlavný nadpis a autor */}
 						<Card>
-							<CardHeader>
+							<CardHeader className="p-4 sm:p-6">
 								<motion.div
 									initial={{ opacity: 0, y: -10 }}
 									animate={{ opacity: 1, y: 0 }}
 									transition={{ delay: 0.2 }}
 								>
-									<CardTitle className="text-3xl md:text-4xl font-bold tracking-tight">
+									<CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">
 										{book.title}
 									</CardTitle>
-									<CardDescription className="text-lg pt-2">
-										<div className="flex items-center gap-2">
-											<User className="h-4 w-4" />
+									<CardDescription className="text-sm sm:text-base md:text-lg pt-1 sm:pt-2">
+										<div className="flex items-center gap-1 sm:gap-2">
+											<User className="h-3 w-3 sm:h-4 sm:w-4" />
 											<span className="hover:text-primary cursor-pointer transition-colors">
 												{book.author.name}
 											</span>
@@ -780,50 +785,56 @@ function BookDetailPage() {
 						{/* Taby */}
 						<Tabs defaultValue="details" className="w-full">
 							<TabsList className="grid w-full grid-cols-3">
-								<TabsTrigger value="details">Detaily</TabsTrigger>
-								<TabsTrigger value="description">Popis</TabsTrigger>
-								<TabsTrigger value="additional">Ďalšie informácie</TabsTrigger>
+								<TabsTrigger value="details" className="text-xs sm:text-sm">
+									Detaily
+								</TabsTrigger>
+								<TabsTrigger value="description" className="text-xs sm:text-sm">
+									Popis
+								</TabsTrigger>
+								<TabsTrigger value="additional" className="text-xs sm:text-sm">
+									Ďalšie
+								</TabsTrigger>
 							</TabsList>
 
-							<TabsContent value="details" className="space-y-4 pt-4">
+							<TabsContent value="details" className="space-y-3 sm:space-y-4 pt-3 sm:pt-4">
 								<Card>
-									<CardContent className="pt-6">
-										<div className="grid md:grid-cols-2 gap-6">
-											<div className="space-y-4">
+									<CardContent className="pt-4 sm:pt-6">
+										<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+											<div className="space-y-3 sm:space-y-4">
 												<InfoItem
-													icon={<CalendarDays />}
+													icon={<CalendarDays className="h-4 w-4 sm:h-5 sm:w-5" />}
 													label="Rok vydania"
 													value={book.publishedYear?.toString() || "Neznámy"}
 												/>
 												<InfoItem
-													icon={<Building />}
+													icon={<Building className="h-4 w-4 sm:h-5 sm:w-5" />}
 													label="Vydavateľ"
 													value={book.publisher || "Neznámy"}
 												/>
 												<InfoItem
-													icon={<BookOpen />}
+													icon={<BookOpen className="h-4 w-4 sm:h-5 sm:w-5" />}
 													label="Počet strán"
 													value={book.pages?.toString() || "Neznámy"}
 												/>
 											</div>
-											<div className="space-y-4">
+											<div className="space-y-3 sm:space-y-4">
 												<InfoItem
-													icon={<Globe />}
+													icon={<Globe className="h-4 w-4 sm:h-5 sm:w-5" />}
 													label="Jazyk"
 													value={book.language || "Neznámy"}
 												/>
 												<InfoItem
-													icon={<Copy />}
+													icon={<Copy className="h-4 w-4 sm:h-5 sm:w-5" />}
 													label="ISBN"
 													value={book.isbn || "Neznáme"}
 												/>
 												<InfoItem
-													icon={<Folder />}
+													icon={<Folder className="h-4 w-4 sm:h-5 sm:w-5" />}
 													label="Kategória"
 													value={
 														<Badge
 															variant="outline"
-															className="font-normal cursor-pointer hover:bg-muted"
+															className="font-normal cursor-pointer hover:bg-muted text-xs"
 														>
 															{book.category.name}
 														</Badge>
@@ -835,9 +846,9 @@ function BookDetailPage() {
 								</Card>
 							</TabsContent>
 
-							<TabsContent value="description" className="pt-4">
+							<TabsContent value="description" className="pt-3 sm:pt-4">
 								<Card>
-									<CardContent className="pt-6">
+									<CardContent className="pt-4 sm:pt-6">
 										<motion.div
 											initial={{ opacity: 0 }}
 											animate={{ opacity: 1 }}
@@ -845,11 +856,11 @@ function BookDetailPage() {
 											className="prose prose-sm max-w-none dark:prose-invert"
 										>
 											{book.description ? (
-												<p className="whitespace-pre-line">
+												<p className="whitespace-pre-line text-sm sm:text-base">
 													{book.description}
 												</p>
 											) : (
-												<p className="text-muted-foreground italic">
+												<p className="text-muted-foreground italic text-sm sm:text-base">
 													Táto kniha nemá popis.
 												</p>
 											)}
@@ -858,13 +869,13 @@ function BookDetailPage() {
 								</Card>
 							</TabsContent>
 
-							<TabsContent value="additional" className="pt-4">
+							<TabsContent value="additional" className="pt-3 sm:pt-4">
 								<Card>
-									<CardContent className="pt-6">
-										<div className="space-y-4">
+									<CardContent className="pt-4 sm:pt-6">
+										<div className="space-y-3 sm:space-y-4">
 											<div>
-												<h4 className="font-medium mb-2">Dátum pridania</h4>
-												<p className="text-sm">
+												<h4 className="font-medium mb-1 sm:mb-2 text-sm sm:text-base">Dátum pridania</h4>
+												<p className="text-xs sm:text-sm">
 													{new Date(book.addedAt).toLocaleDateString("sk-SK", {
 														day: "2-digit",
 														month: "2-digit",
@@ -875,16 +886,16 @@ function BookDetailPage() {
 												</p>
 											</div>
 											<div>
-												<h4 className="font-medium mb-2">
+												<h4 className="font-medium mb-1 sm:mb-2 text-sm sm:text-base">
 													Počet kníh od autora
 												</h4>
-												<p className="text-sm">{book.author.bookCount}</p>
+												<p className="text-xs sm:text-sm">{book.author.bookCount}</p>
 											</div>
 											<div>
-												<h4 className="font-medium mb-2">
+												<h4 className="font-medium mb-1 sm:mb-2 text-sm sm:text-base">
 													Počet kníh v kategórii
 												</h4>
-												<p className="text-sm">{book.category.bookCount}</p>
+												<p className="text-xs sm:text-sm">{book.category.bookCount}</p>
 											</div>
 										</div>
 									</CardContent>
@@ -900,11 +911,11 @@ function BookDetailPage() {
 							transition={{ delay: 0.4 }}
 						>
 							<Card>
-								<CardHeader>
-									<CardTitle className="text-lg">Štatistiky</CardTitle>
+								<CardHeader className="p-4 sm:p-6">
+									<CardTitle className="text-base sm:text-lg">Štatistiky</CardTitle>
 								</CardHeader>
-								<CardContent>
-									<div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+								<CardContent className="p-4 sm:p-6 pt-0">
+									<div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
 										<StatItem
 											label="Celkový počet"
 											value={book.totalCopies}
@@ -946,11 +957,11 @@ interface InfoItemProps {
 
 function InfoItem({ icon, label, value }: InfoItemProps) {
 	return (
-		<div className="flex items-start gap-3">
+		<div className="flex items-start gap-2 sm:gap-3">
 			<div className="text-muted-foreground mt-0.5">{icon}</div>
 			<div>
-				<p className="text-sm font-medium">{label}</p>
-				<p className="text-sm">{value}</p>
+				<p className="text-xs sm:text-sm font-medium">{label}</p>
+				<p className="text-xs sm:text-sm">{value}</p>
 			</div>
 		</div>
 	);
@@ -965,8 +976,8 @@ interface StatItemProps {
 function StatItem({ label, value, color }: StatItemProps) {
 	return (
 		<div className="text-center">
-			<p className={`text-2xl font-bold ${color}`}>{value}</p>
-			<p className="text-sm text-muted-foreground">{label}</p>
+			<p className={`text-lg sm:text-xl md:text-2xl font-bold ${color}`}>{value}</p>
+			<p className="text-xs sm:text-sm text-muted-foreground">{label}</p>
 		</div>
 	);
 }
