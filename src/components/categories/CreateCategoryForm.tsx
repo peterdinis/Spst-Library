@@ -350,7 +350,7 @@ const CreateCategoryForm: FC = () => {
 			} else {
 				setFormError(
 					error.message ||
-					"Nastala chyba pri vytváraní kategórie. Skúste to znova.",
+						"Nastala chyba pri vytváraní kategórie. Skúste to znova.",
 				);
 			}
 		}
