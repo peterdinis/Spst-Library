@@ -171,8 +171,12 @@ export const getUnreadNotifications = query({
   handler: async (ctx, args) => {
     const notifications = await ctx.db
       .query("notifications")
-      .withIndex("by_user_and_status", (q) =>
-        q.eq("userId", args.userId).eq("status", "delivered")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .filter((q) => 
+        q.or(
+          q.eq(q.field("status"), "delivered"),
+          q.eq(q.field("status"), "pending")
+        )
       )
       .filter((q) => q.eq(q.field("readAt"), undefined))
       .order("desc")
