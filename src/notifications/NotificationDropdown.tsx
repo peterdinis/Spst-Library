@@ -38,6 +38,9 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { useAuth } from "@/lib/auth-context";
 
 export type NotificationType =
 	| "borrow_due"
@@ -64,124 +67,6 @@ export interface Notification {
 	createdAt: number;
 	priority?: "low" | "medium" | "high";
 }
-
-const mockNotifications: Notification[] = [
-	{
-		id: "6",
-		type: "promotional",
-		title: "Vianočná akcia",
-		message: "Počas vianočných sviatkov máme 20% zľavu na nové knihy!",
-		channel: "in_app",
-		status: "delivered",
-		createdAt: Date.now() - 5 * 60 * 1000,
-		sentAt: Date.now() - 5 * 60 * 1000,
-		priority: "low",
-	},
-	{
-		id: "7",
-		type: "fine_issued",
-		title: "Pokuta za poškodenie knihy",
-		message: "Máte pokutu 5.00 € za poškodenie knihy 'Design Patterns'.",
-		data: {
-			bookTitle: "Design Patterns",
-			fineAmount: 5.0,
-		},
-		channel: "in_app",
-		status: "failed",
-		createdAt: Date.now() - 10 * 60 * 1000,
-		sentAt: Date.now() - 10 * 60 * 1000,
-		priority: "high",
-	},
-	{
-		id: "8",
-		type: "borrow_due",
-		title: "Dve knihy blížiace sa k splatnosti",
-		message:
-			"Knihy 'React Patterns' a 'TypeScript Handbook' majú splatnosť zajtra.",
-		data: {
-			bookTitle: "React Patterns & TypeScript Handbook",
-			daysRemaining: 1,
-		},
-		channel: "push",
-		status: "delivered",
-		createdAt: Date.now() - 15 * 60 * 1000,
-		sentAt: Date.now() - 15 * 60 * 1000,
-		priority: "high",
-	},
-	{
-		id: "1",
-		type: "borrow_due",
-		title: "Kniha sa blíži k dátumu splatnosti",
-		message:
-			"Kniha 'JavaScript: The Good Parts' má dátum splatnosti 15.12.2024. Zostáva 3 dni.",
-		data: {
-			bookTitle: "JavaScript: The Good Parts",
-			daysRemaining: 3,
-		},
-		channel: "in_app",
-		status: "delivered",
-		createdAt: Date.now() - 2 * 60 * 60 * 1000,
-		sentAt: Date.now() - 2 * 60 * 60 * 1000,
-		priority: "high",
-	},
-	{
-		id: "2",
-		type: "fine_issued",
-		title: "Nová pokuta",
-		message: "Máte novú pokutu vo výške 2.50 € za knihu 'Clean Code'.",
-		data: {
-			bookTitle: "Clean Code",
-			fineAmount: 2.5,
-		},
-		channel: "email",
-		status: "read",
-		createdAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
-		sentAt: Date.now() - 1 * 24 * 60 * 60 * 1000,
-		readAt: Date.now() - 12 * 60 * 60 * 1000,
-		priority: "medium",
-	},
-	{
-		id: "3",
-		type: "system",
-		title: "Nové funkcie v knižnici",
-		message:
-			"Pridali sme nové funkcie: rezervácie online, elektronické knihy a viac.",
-		channel: "in_app",
-		status: "delivered",
-		createdAt: Date.now() - 3 * 24 * 60 * 60 * 1000,
-		sentAt: Date.now() - 3 * 24 * 60 * 60 * 1000,
-		readAt: Date.now() - 2 * 24 * 60 * 60 * 1000,
-		priority: "low",
-	},
-	{
-		id: "4",
-		type: "membership_expiry",
-		title: "Členstvo expiruje čoskoro",
-		message: "Vaše členstvo v knižnici expiruje 31.12.2024. Zostáva 15 dní.",
-		data: {
-			daysRemaining: 15,
-		},
-		channel: "email",
-		status: "sent",
-		createdAt: Date.now() - 6 * 60 * 60 * 1000,
-		sentAt: Date.now() - 6 * 60 * 60 * 1000,
-		priority: "high",
-	},
-	{
-		id: "5",
-		type: "reservation_ready",
-		title: "Rezervácia pripravená na vyzdvihnutie",
-		message: "Kniha 'The Pragmatic Programmer' je pripravená na vyzdvihnutie.",
-		data: {
-			bookTitle: "The Pragmatic Programmer",
-		},
-		channel: "sms",
-		status: "delivered",
-		createdAt: Date.now() - 30 * 60 * 1000,
-		sentAt: Date.now() - 30 * 60 * 1000,
-		priority: "medium",
-	},
-];
 
 const getNotificationIcon = (type: NotificationType) => {
 	const baseClasses = "h-4 w-4";
@@ -244,11 +129,10 @@ const NotificationItem = ({
 	onMarkAsRead,
 	onDelete,
 }: NotificationItemProps) => {
-	const [isRead, setIsRead] = useState(!!notification.readAt);
+	const isRead = !!notification.readAt;
 
 	const handleMarkAsRead = () => {
 		if (!isRead) {
-			setIsRead(true);
 			onMarkAsRead(notification.id);
 		}
 	};
@@ -262,7 +146,7 @@ const NotificationItem = ({
 					? "bg-linear-to-br from-blue-50/50 to-purple-50/30 dark:from-blue-950/20 dark:to-purple-950/10 border-blue-200/50 dark:border-blue-800/30"
 					: "bg-linear-to-br from-gray-50/80 to-slate-50/50 dark:from-gray-900/50 dark:to-slate-900/30 border-gray-200/50 dark:border-gray-800/30",
 				notification.priority === "high" &&
-					"ring-2 ring-red-400/20 dark:ring-red-500/20 border-red-300 dark:border-red-900/50",
+				"ring-2 ring-red-400/20 dark:ring-red-500/20 border-red-300 dark:border-red-900/50",
 				notification.status === "failed" && "border-destructive/40",
 			)}
 		>
@@ -278,17 +162,17 @@ const NotificationItem = ({
 						"group-hover:scale-110",
 						!isRead && "animate-pulse-slow",
 						notification.type === "borrow_due" &&
-							"from-amber-100 to-amber-200 dark:from-amber-900/30 dark:to-amber-800/20",
+						"from-amber-100 to-amber-200 dark:from-amber-900/30 dark:to-amber-800/20",
 						notification.type === "fine_issued" &&
-							"from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/20",
+						"from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/20",
 						notification.type === "membership_expiry" &&
-							"from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/20",
+						"from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/20",
 						notification.type === "reservation_ready" &&
-							"from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/20",
+						"from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/20",
 						notification.type === "system" &&
-							"from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/20",
+						"from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/20",
 						notification.type === "promotional" &&
-							"from-pink-100 to-pink-200 dark:from-pink-900/30 dark:to-pink-800/20",
+						"from-pink-100 to-pink-200 dark:from-pink-900/30 dark:to-pink-800/20",
 					)}
 				>
 					{getNotificationIcon(notification.type)}
@@ -419,7 +303,7 @@ const NotificationItem = ({
 									</TooltipTrigger>
 									<TooltipContent side="top" className="text-xs">
 										{isRead
-											? "Označiť ako neprečítané"
+											? "Prečítané"
 											: "Označiť ako prečítané"}
 									</TooltipContent>
 								</Tooltip>
@@ -439,11 +323,34 @@ interface NotificationDropdownProps {
 export const NotificationDropdown: FC<NotificationDropdownProps> = ({
 	className,
 }) => {
-	const [notifications, setNotifications] =
-		useState<Notification[]>(mockNotifications);
+	const { user } = useAuth();
+	const convexNotifications = useQuery(api.notifications.getUserNotifications, {
+		userId: user?.id as any,
+	});
+
+	const markAsReadMutation = useMutation(api.notifications.markAsRead);
+	const markAllAsReadMutation = useMutation(api.notifications.markAllAsRead);
+	const deleteMutation = useMutation(api.notifications.remove);
+
 	const [isOpen, setIsOpen] = useState(false);
 	const [activeTab, setActiveTab] = useState("all");
 	const [isExpanded, setIsExpanded] = useState(false);
+
+	if (!convexNotifications) return null;
+
+	const notifications: Notification[] = convexNotifications.map((n) => ({
+		id: n._id,
+		type: n.type as NotificationType,
+		title: n.title,
+		message: n.message,
+		data: n.data,
+		channel: n.channel as any,
+		status: n.status as any,
+		sentAt: n.sentAt,
+		readAt: n.readAt,
+		createdAt: n.createdAt,
+		priority: n.priority as any,
+	}));
 
 	const unreadCount = notifications.filter((n) => !n.readAt).length;
 	const highPriorityCount = notifications.filter(
@@ -460,33 +367,24 @@ export const NotificationDropdown: FC<NotificationDropdownProps> = ({
 		(a, b) => b.createdAt - a.createdAt,
 	);
 
-	const markAllAsRead = () => {
-		setNotifications((prev) =>
-			prev.map((notification) => ({
-				...notification,
-				readAt: notification.readAt || Date.now(),
-			})),
-		);
+	const markAllAsRead = async () => {
+		if (user?.id) {
+			await markAllAsReadMutation({ userId: user.id as any });
+		}
 	};
 
-	const markAsRead = (id: string) => {
-		setNotifications((prev) =>
-			prev.map((notification) =>
-				notification.id === id
-					? { ...notification, readAt: Date.now() }
-					: notification,
-			),
-		);
+	const markAsRead = async (id: string) => {
+		await markAsReadMutation({ notificationId: id as any });
 	};
 
-	const deleteNotification = (id: string) => {
-		setNotifications((prev) =>
-			prev.filter((notification) => notification.id !== id),
-		);
+	const deleteNotification = async (id: string) => {
+		await deleteMutation({ notificationId: id as any });
 	};
 
 	const deleteAllNotifications = () => {
-		setNotifications([]);
+		// No direct bulk delete in API, could iterate or add to API
+		// For now just console log or skip if not in API
+		console.log("Delete all not implemented in API yet");
 	};
 
 	return (

@@ -24,6 +24,7 @@ export const create = internalMutation({
       v.literal("push"),
       v.literal("in_app")
     ),
+    priority: v.optional(v.union(v.literal("low"), v.literal("medium"), v.literal("high"))),
   },
   handler: async (ctx, args) => {
     const notificationId = await ctx.db.insert("notifications", {
@@ -33,6 +34,7 @@ export const create = internalMutation({
       message: args.message,
       data: args.data,
       channel: args.channel,
+      priority: args.priority || "medium",
       status: "pending",
       createdAt: Date.now(),
     });
@@ -66,6 +68,7 @@ export const bulkCreate = internalMutation({
           v.literal("push"),
           v.literal("in_app")
         ),
+        priority: v.optional(v.union(v.literal("low"), v.literal("medium"), v.literal("high"))),
       })
     ),
   },
@@ -76,6 +79,7 @@ export const bulkCreate = internalMutation({
     for (const notification of args.notifications) {
       const id = await ctx.db.insert("notifications", {
         ...notification,
+        priority: notification.priority || "medium",
         status: "pending",
         createdAt: timestamp,
       });

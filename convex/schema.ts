@@ -396,6 +396,7 @@ export default defineSchema({
     ),
     sentAt: v.optional(v.number()),
     readAt: v.optional(v.number()),
+    priority: v.optional(v.union(v.literal("low"), v.literal("medium"), v.literal("high"))),
     createdAt: v.number(),
   })
     .index("by_user", ["userId"])
