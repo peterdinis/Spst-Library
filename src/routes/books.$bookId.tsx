@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation } from "convex/react";
+import { ConvexError } from "convex/values";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import {
@@ -191,10 +192,15 @@ function BookDetailPage() {
 			}, 3000);
 		} catch (error: any) {
 			console.error("Reservation error:", error);
+			const errorMessage =
+				error instanceof ConvexError || error.data?.message
+					? error.data?.message || error.message
+					: typeof error === "string"
+						? error
+						: "Nepodarilo sa vytvoriť rezerváciu. Skúste to znova.";
+
 			toast.error("Chyba pri rezervácii", {
-				description:
-					error.message ||
-					"Nepodarilo sa vytvoriť rezerváciu. Skúste to znova.",
+				description: errorMessage,
 			});
 		} finally {
 			setIsLoading(false);
@@ -338,9 +344,8 @@ function BookDetailPage() {
 								)}
 								<div className="absolute top-4 right-4">
 									<Badge
-										className={`${
-											statusColors[book.status]
-										} font-semibold px-3 py-1`}
+										className={`${statusColors[book.status]
+											} font-semibold px-3 py-1`}
 									>
 										{statusLabels[book.status]}
 									</Badge>

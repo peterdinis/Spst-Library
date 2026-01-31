@@ -3,6 +3,7 @@ import { mutation, query, internalMutation } from "./_generated/server";
 import { paginationOptsValidator } from "convex/server";
 import { Id } from "./_generated/dataModel";
 import { categoryCreateSchema, categoryUpdateSchema } from "types/categoryTypes";
+import { checkRateLimit } from "./rateLimit";
 
 export const listAllActive = query({
   args: {},
@@ -283,6 +284,10 @@ export const createCategory = mutation({
   },
   handler: async (ctx, args) => {
     const { parentCategoryId, ...data } = args;
+    
+    // Rate limiting: 5 categories per minute per "anonymous/session" (simplified key)
+    // Ideálne by sme tu mali userId, ak je užívateľ prihlásený
+    await checkRateLimit(ctx, `create_category_global`, 5, 60000);
     
     // Validate with Zod
     const validationResult = categoryCreateSchema.safeParse(data);

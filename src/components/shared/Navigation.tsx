@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ThemeToggle } from "./ThemeToggle";
 import { LoginButton, RegisterButton, UserProfile } from "../auth";
 import { useAuth } from "@/lib/auth-context";
+import { NotificationDropdown } from "../../notifications/NotificationDropdown";
 
 export function Navigation() {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -77,7 +78,10 @@ export function Navigation() {
 
 					<div className="hidden md:flex items-center space-x-4">
 						{user ? (
-							<UserProfile />
+							<div className="flex items-center space-x-2">
+								<NotificationDropdown />
+								<UserProfile />
+							</div>
 						) : (
 							<>
 								<LoginButton />
@@ -151,10 +155,9 @@ export function Navigation() {
 													className={`
 														text-sm font-medium transition-colors py-2 text-left cursor-pointer block pl-4 border-l-2
 														${link.to.startsWith("/admin") ? "border-red-600 text-red-600 dark:text-red-400" : "border-transparent"}
-														${
-															isActive
-																? "text-primary underline decoration-2 underline-offset-4 border-primary"
-																: "text-foreground/80 hover:text-primary hover:border-primary/30"
+														${isActive
+															? "text-primary underline decoration-2 underline-offset-4 border-primary"
+															: "text-foreground/80 hover:text-primary hover:border-primary/30"
 														}
 													`}
 												>
@@ -181,7 +184,11 @@ export function Navigation() {
 										className="pt-2 space-y-2"
 									>
 										{user ? (
-											<div className="flex justify-center px-4">
+											<div className="flex flex-col items-center gap-3 px-4">
+												<div className="flex items-center gap-2">
+													<NotificationDropdown />
+													<span className="text-sm text-foreground/80">Notifikácie</span>
+												</div>
 												<UserProfile />
 											</div>
 										) : (

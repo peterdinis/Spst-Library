@@ -1,7 +1,7 @@
-// convex/reservations.ts
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { checkRateLimit } from "./rateLimit";
 
 /**
  * Vytvorenie novej rezervácie
@@ -14,14 +14,17 @@ export const createReservation = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Rate limit: Max 5 reservation attempts per minute per user
+    await checkRateLimit(ctx, `reservation:${args.userId}`, 5, 60000);
+
     const user = await ctx.db.get(args.userId);
     if (!user) {
-      throw new Error("User not found");
+      throw new ConvexError("User not found");
     }
 
     const book = await ctx.db.get(args.bookId);
     if (!book) {
-      throw new Error("Book not found");
+      throw new ConvexError("Book not found");
     }
 
     // Overenie dostupnosti knihy
@@ -37,7 +40,7 @@ export const createReservation = mutation({
 
       if (activeReservations.length >= book.totalCopies * 2) {
         // Maximum 2 rezervácie na kópiu
-        throw new Error("Maximum reservations reached for this book");
+        throw new ConvexError("Maximum reservations reached for this book");
       }
     }
 
@@ -51,7 +54,7 @@ export const createReservation = mutation({
       .first();
 
     if (existingReservation) {
-      throw new Error("You already have a pending reservation for this book");
+      throw new ConvexError("You already have a pending reservation for this book");
     }
 
     // Výpočet priority (poradie vo fronte)
@@ -202,12 +205,12 @@ export const cancelReservation = mutation({
   handler: async (ctx, args) => {
     const reservation = await ctx.db.get(args.reservationId);
     if (!reservation) {
-      throw new Error("Reservation not found");
+      throw new ConvexError("Reservation not found");
     }
 
     const book = await ctx.db.get(reservation.bookId);
     if (!book) {
-      throw new Error("Book not found");
+      throw new ConvexError("Book not found");
     }
 
     // Môže sa zrušiť iba pending alebo confirmed rezervácia
@@ -276,16 +279,19 @@ export const pickupReservation = mutation({
   handler: async (ctx, args) => {
     const reservation = await ctx.db.get(args.reservationId);
     if (!reservation) {
-      throw new Error("Reservation not found");
+      throw new ConvexError("Reservation not found");
     }
 
     if (reservation.status !== "ready_for_pickup") {
-      throw new Error("Reservation is not ready for pickup");
+      throw new ConvexError("Reservation is not ready for pickup");
     }
+
+    // Rate limit: Max 10 pickup attempts per minute per user
+    await checkRateLimit(ctx, `pickup:${reservation.userId}`, 10, 60000);
 
     const book = await ctx.db.get(reservation.bookId);
     if (!book) {
-      throw new Error("Book not found");
+      throw new ConvexError("Book not found");
     }
 
     // Vytvorenie výpožičky
