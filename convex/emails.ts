@@ -3,6 +3,7 @@
 import { v } from "convex/values";
 import { internalAction } from "./_generated/server";
 import nodemailer from "nodemailer";
+import { env } from "./env";
 
 /**
  * Send an email using Nodemailer
@@ -15,16 +16,8 @@ export const sendEmail = internalAction({
 		html: v.optional(v.string()),
 	},
 	handler: async (_ctx, args) => {
-		const host = process.env.SMTP_HOST;
-		const port = process.env.SMTP_PORT;
-		const user = process.env.SMTP_USER;
-		const pass = process.env.SMTP_PASS;
-		const from = process.env.SMTP_FROM || user;
-
-		if (!host || !port || !user || !pass) {
-			console.error("Missing SMTP configuration environment variables");
-			return { success: false, error: "Missing SMTP configuration" };
-		}
+		const { SMTP_HOST: host, SMTP_PORT: port, SMTP_USER: user, SMTP_PASS: pass, SMTP_FROM: from_env } = env;
+		const from = from_env || user;
 
 		const transporter = nodemailer.createTransport({
 			host,
@@ -62,27 +55,22 @@ export const testConnection = internalAction({
 		to: v.string(),
 	},
 	handler: async (_ctx, args) => {
-		const host = process.env.SMTP_HOST;
-		const user = process.env.SMTP_USER;
-
-		if (!host || !user) {
-			return { success: false, error: "SMTP configuration missing" };
-		}
+		const { SMTP_HOST: host, SMTP_USER: user, SMTP_PASS: pass, SMTP_PORT: port, SMTP_FROM: from_env } = env;
 
 		const transporter = nodemailer.createTransport({
 			host,
-			port: Number(process.env.SMTP_PORT),
-			secure: Number(process.env.SMTP_PORT) === 465,
+			port: Number(port),
+			secure: Number(port) === 465,
 			auth: {
 				user,
-				pass: process.env.SMTP_PASS,
+				pass,
 			},
 		});
 
 		try {
 			await transporter.verify();
 			const info = await transporter.sendMail({
-				from: `"SPŠT Knižnica Test" <${process.env.SMTP_FROM || user}>`,
+				from: `"SPŠT Knižnica Test" <${from_env || user}>`,
 				to: args.to,
 				subject: "Test pripojenia SMTP",
 				text: "Toto je testovací email z SPŠT Knižnice. Vaše nastavenia SMTP sú správne.",

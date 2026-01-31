@@ -69,21 +69,21 @@ const Hero: FC = memo(() => {
 								visible: {
 									opacity: 1,
 									transition: {
-										staggerChildren: 0.05,
+										staggerChildren: 0.1,
 									},
 								},
 							}}
 						>
 							<motion.h1
 								variants={{
-									hidden: { opacity: 0, y: 10 },
+									hidden: { opacity: 0, y: 30 },
 									visible: {
 										opacity: 1,
 										y: 0,
-										transition: { duration: 0.4, ease: "easeOut" },
+										transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] },
 									},
 								}}
-								className="text-4xl sm:text-6xl md:text-7xl font-bold mb-4 md:mb-6 tracking-tight leading-tight"
+								className="text-5xl sm:text-7xl md:text-8xl font-black mb-6 tracking-tight leading-[1.1]"
 							>
 								<span className="bg-clip-text text-transparent bg-linear-to-b from-black to-black/70 dark:from-white dark:to-white/60">
 									SPŠT Knižnica
@@ -91,97 +91,67 @@ const Hero: FC = memo(() => {
 								<br />
 								<motion.span
 									variants={{
-										hidden: { opacity: 0, y: 10 },
+										hidden: { opacity: 0, scale: 0.9, y: 20 },
 										visible: {
 											opacity: 1,
+											scale: 1,
 											y: 0,
 											transition: {
-												duration: 0.4,
-												delay: 0.02,
-												ease: "easeOut",
+												duration: 1,
+												ease: [0.22, 1, 0.36, 1],
 											},
 										},
 									}}
-									className="bg-clip-text text-transparent bg-linear-to-r from-indigo-400 via-rose-400 to-amber-400 dark:from-indigo-300 dark:via-rose-300 dark:to-amber-300"
+									className="bg-clip-text text-transparent bg-linear-to-r from-indigo-500 via-rose-500 to-amber-500 dark:from-indigo-400 dark:via-rose-400 dark:to-amber-400"
 								>
-									Moderné vzdelávanie, elegantný dizajn
+									Kde príbehy ožívajú.
 								</motion.span>
 							</motion.h1>
 						</motion.div>
 
 						{/* Subtitle */}
 						<motion.div
-							initial={{ opacity: 0, y: 10 }}
+							initial={{ opacity: 0, y: 20 }}
 							animate={{ opacity: 1, y: 0 }}
-							transition={{ duration: 0.3, delay: 0.1, ease: "easeOut" }}
+							transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
 						>
-							<p className="text-base sm:text-lg md:text-xl text-black/50 dark:text-white/40 mb-10 max-w-2xl mx-auto leading-relaxed font-light">
-								Digitálna knižnica SPŠT – rýchla, moderná a prehľadná.
+							<p className="text-lg sm:text-xl text-black/60 dark:text-white/40 mb-12 max-w-xl mx-auto leading-relaxed font-medium">
+								Objavte svet vedomostí v našej modernej digitálnej knižnici.
 							</p>
 						</motion.div>
 
 						{/* CTA Buttons */}
 						<motion.div
-							initial="hidden"
-							animate="visible"
-							variants={{
-								hidden: { opacity: 0 },
-								visible: {
-									opacity: 1,
-									transition: {
-										staggerChildren: 0.05,
-									},
-								},
-							}}
-							className="flex justify-center gap-4 mt-4"
+							initial={{ opacity: 0, y: 20 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+							className="flex flex-wrap justify-center gap-6"
 						>
-							<motion.div
-								variants={{
-									hidden: { opacity: 0, y: 8 },
-									visible: {
-										opacity: 1,
-										y: 0,
-										transition: { duration: 0.3, ease: "easeOut" },
-									},
-								}}
-							>
-								<Link to="/books">
-									<motion.button
-										whileHover={{
-											scale: 1.05,
-											transition: { duration: 0.15 },
-										}}
-										whileTap={{ scale: 0.97 }}
-										className="px-6 py-3 rounded-xl bg-indigo-500 text-white font-medium shadow-lg shadow-indigo-500/30 dark:shadow-indigo-400/20 hover:bg-indigo-600 transition-colors duration-200"
-									>
-										Všetky knihy
-									</motion.button>
-								</Link>
-							</motion.div>
+							<Link to="/books">
+								<motion.button
+									whileHover={{
+										scale: 1.05,
+										boxShadow: "0 10px 40px -10px rgba(79, 70, 229, 0.5)",
+									}}
+									whileTap={{ scale: 0.95 }}
+									className="px-8 py-4 rounded-2xl bg-primary text-primary-foreground font-bold shadow-2xl shadow-primary/20 transition-all duration-300"
+								>
+									Preskúmať knihy
+								</motion.button>
+							</Link>
 
-							<motion.div
-								variants={{
-									hidden: { opacity: 0, y: 8 },
-									visible: {
-										opacity: 1,
-										y: 0,
-										transition: { duration: 0.3, delay: 0.03, ease: "easeOut" },
-									},
-								}}
-							>
-								<Link to="/">
-									<motion.button
-										whileHover={{
-											scale: 1.05,
-											transition: { duration: 0.15 },
-										}}
-										whileTap={{ scale: 0.97 }}
-										className="px-6 py-3 rounded-xl border border-black/10 dark:border-white/20 font-medium text-black dark:text-white backdrop-blur-sm hover:bg-black/5 dark:hover:bg-white/10 transition-colors duration-200"
-									>
-										Hlavná stránka
-									</motion.button>
-								</Link>
-							</motion.div>
+							<Link to="/categories">
+								<motion.button
+									whileHover={{
+										scale: 1.05,
+										backgroundColor: "rgba(0,0,0,0.05)",
+									}}
+									whileTap={{ scale: 0.95 }}
+									className="px-8 py-4 rounded-2xl border border-border/50 font-bold backdrop-blur-md transition-all duration-300 dark:hover:bg-white/5"
+								>
+									Kategórie
+								</motion.button>
+							</Link>
 						</motion.div>
 					</div>
 				</div>

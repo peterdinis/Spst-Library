@@ -11,6 +11,7 @@ import appCss from "../styles.css?url";
 
 import type { QueryClient } from "@tanstack/react-query";
 import Navigation from "@/components/shared/Navigation";
+import { LoadingBar } from "@/components/shared/LoadingBar";
 import { ThemeProvider } from "@/integrations/next-themes/ThemeProvider";
 import { ScrollToTop } from "@/components/shared/ScrollToTop";
 import { AuthProvider } from "@/lib/auth-context";
@@ -59,6 +60,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				>
 					<ConvexProvider>
 						<AuthProvider>
+							<LoadingBar />
 							<Navigation />
 							{children}
 							<ScrollToTop />
