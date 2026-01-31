@@ -332,6 +332,7 @@ const CreateCategoryForm: FC = () => {
 	}, [formError]);
 
 	const onSubmit = async (data: CategoryFormDataInput) => {
+		if (isLoading) return; // Client-side rate limiting / double submission lock
 		setFormError("");
 
 		try {

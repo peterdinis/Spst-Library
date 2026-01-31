@@ -396,6 +396,7 @@ export default defineSchema({
     ),
     sentAt: v.optional(v.number()),
     readAt: v.optional(v.number()),
+    priority: v.optional(v.union(v.literal("low"), v.literal("medium"), v.literal("high"))),
     createdAt: v.number(),
   })
     .index("by_user", ["userId"])
@@ -429,4 +430,14 @@ export default defineSchema({
     .index("by_type", ["type"])
     .index("by_date", ["occurredAt"])
     .index("by_user_and_type", ["userId", "type"]),
+  
+  // Ochrana voči spamu (Rate Limiting)
+  rateLimits: defineTable({
+    key: v.string(), // Napr. IP adresa alebo userId:akcia
+    count: v.number(),
+    lastRequest: v.number(),
+    resetAt: v.number(),
+  })
+    .index("by_key", ["key"])
+    .index("by_reset_at", ["resetAt"]),
 });
