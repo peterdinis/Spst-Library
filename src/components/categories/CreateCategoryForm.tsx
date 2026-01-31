@@ -332,6 +332,7 @@ const CreateCategoryForm: FC = () => {
 	}, [formError]);
 
 	const onSubmit = async (data: CategoryFormDataInput) => {
+		if (isLoading) return; // Client-side rate limiting / double submission lock
 		setFormError("");
 
 		try {
@@ -349,7 +350,7 @@ const CreateCategoryForm: FC = () => {
 			} else {
 				setFormError(
 					error.message ||
-						"Nastala chyba pri vytváraní kategórie. Skúste to znova.",
+					"Nastala chyba pri vytváraní kategórie. Skúste to znova.",
 				);
 			}
 		}
