@@ -1,7 +1,7 @@
-// convex/reservations.ts
-import { v } from "convex/values";
 import { mutation, query, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { checkRateLimit } from "./rateLimit";
+import { ConvexError } from "convex/values";
 
 /**
  * Vytvorenie novej rezervácie
@@ -14,6 +14,9 @@ export const createReservation = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Rate limit: Max 5 reservation attempts per minute per user
+    await checkRateLimit(ctx, `reservation:${args.userId}`, 5, 60000);
+
     const user = await ctx.db.get(args.userId);
     if (!user) {
       throw new Error("User not found");
