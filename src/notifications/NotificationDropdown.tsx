@@ -146,7 +146,7 @@ const NotificationItem = ({
 					? "bg-linear-to-br from-blue-50/50 to-purple-50/30 dark:from-blue-950/20 dark:to-purple-950/10 border-blue-200/50 dark:border-blue-800/30"
 					: "bg-linear-to-br from-gray-50/80 to-slate-50/50 dark:from-gray-900/50 dark:to-slate-900/30 border-gray-200/50 dark:border-gray-800/30",
 				notification.priority === "high" &&
-				"ring-2 ring-red-400/20 dark:ring-red-500/20 border-red-300 dark:border-red-900/50",
+					"ring-2 ring-red-400/20 dark:ring-red-500/20 border-red-300 dark:border-red-900/50",
 				notification.status === "failed" && "border-destructive/40",
 			)}
 		>
@@ -162,17 +162,17 @@ const NotificationItem = ({
 						"group-hover:scale-110",
 						!isRead && "animate-pulse-slow",
 						notification.type === "borrow_due" &&
-						"from-amber-100 to-amber-200 dark:from-amber-900/30 dark:to-amber-800/20",
+							"from-amber-100 to-amber-200 dark:from-amber-900/30 dark:to-amber-800/20",
 						notification.type === "fine_issued" &&
-						"from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/20",
+							"from-red-100 to-red-200 dark:from-red-900/30 dark:to-red-800/20",
 						notification.type === "membership_expiry" &&
-						"from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/20",
+							"from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/20",
 						notification.type === "reservation_ready" &&
-						"from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/20",
+							"from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/20",
 						notification.type === "system" &&
-						"from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/20",
+							"from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/20",
 						notification.type === "promotional" &&
-						"from-pink-100 to-pink-200 dark:from-pink-900/30 dark:to-pink-800/20",
+							"from-pink-100 to-pink-200 dark:from-pink-900/30 dark:to-pink-800/20",
 					)}
 				>
 					{getNotificationIcon(notification.type)}
@@ -302,9 +302,7 @@ const NotificationItem = ({
 										</Button>
 									</TooltipTrigger>
 									<TooltipContent side="top" className="text-xs">
-										{isRead
-											? "Prečítané"
-											: "Označiť ako prečítané"}
+										{isRead ? "Prečítané" : "Označiť ako prečítané"}
 									</TooltipContent>
 								</Tooltip>
 							</TooltipProvider>

@@ -79,7 +79,9 @@ function RouteComponent() {
 		try {
 			const result = await toggleActive({ id: categoryId as Id<"categories"> });
 			toast.success(
-				result.isActive ? "Kategória bola aktivovaná" : "Kategória bola deaktivovaná",
+				result.isActive
+					? "Kategória bola aktivovaná"
+					: "Kategória bola deaktivovaná",
 			);
 		} catch (error: any) {
 			toast.error("Nepodarilo sa aktualizovať stav", {
@@ -109,12 +111,14 @@ function RouteComponent() {
 						<div className="text-center space-y-4">
 							<AlertCircle className="h-10 w-10 sm:h-12 sm:w-12 mx-auto text-destructive" />
 							<div>
-								<h2 className="text-xl sm:text-2xl font-bold">Kategória nebola nájdená</h2>
+								<h2 className="text-xl sm:text-2xl font-bold">
+									Kategória nebola nájdená
+								</h2>
 								<p className="text-sm sm:text-base text-muted-foreground mt-2">
 									Kategória, ktorú hľadáte, neexistuje.
 								</p>
 							</div>
-							<Button 
+							<Button
 								onClick={() => navigate({ to: "/categories" })}
 								className="w-full sm:w-auto"
 							>
@@ -197,7 +201,9 @@ function RouteComponent() {
 										}}
 									>
 										{category.icon ? (
-											<span className="text-3xl sm:text-4xl md:text-6xl">{category.icon}</span>
+											<span className="text-3xl sm:text-4xl md:text-6xl">
+												{category.icon}
+											</span>
 										) : (
 											<Tag className="h-8 w-8 sm:h-10 sm:w-10 md:h-16 md:w-16 text-white" />
 										)}
@@ -262,7 +268,9 @@ function RouteComponent() {
 					{category.description && (
 						<Card className="hover:shadow-lg transition-shadow">
 							<CardHeader className="p-4 sm:p-6">
-								<CardTitle className="text-base sm:text-lg md:text-xl">Popis</CardTitle>
+								<CardTitle className="text-base sm:text-lg md:text-xl">
+									Popis
+								</CardTitle>
 							</CardHeader>
 							<CardContent className="pt-0 px-4 sm:px-6 pb-4 sm:pb-6">
 								<p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
@@ -300,13 +308,17 @@ function RouteComponent() {
 												style={{ backgroundColor: sub.color || "#6366f1" }}
 											>
 												{sub.icon ? (
-													<span className="text-lg sm:text-xl md:text-2xl">{sub.icon}</span>
+													<span className="text-lg sm:text-xl md:text-2xl">
+														{sub.icon}
+													</span>
 												) : (
 													<Tag className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-white" />
 												)}
 											</div>
 											<div className="flex-1 min-w-0">
-												<p className="font-medium truncate text-sm sm:text-base">{sub.name}</p>
+												<p className="font-medium truncate text-sm sm:text-base">
+													{sub.name}
+												</p>
 												<p className="text-xs text-muted-foreground">
 													{sub.bookCount} kníh
 												</p>
@@ -340,7 +352,9 @@ function RouteComponent() {
 										>
 											<div className="w-8 h-10 sm:w-10 sm:h-14 md:w-12 md:h-16 bg-muted rounded shrink-0" />
 											<div className="flex-1 min-w-0">
-												<h4 className="font-medium truncate text-sm sm:text-base">{book.title}</h4>
+												<h4 className="font-medium truncate text-sm sm:text-base">
+													{book.title}
+												</h4>
 												<p className="text-xs text-muted-foreground">
 													{book.isbn}
 												</p>
@@ -352,7 +366,9 @@ function RouteComponent() {
 													}
 													className="mt-1 text-xs"
 												>
-													{book.status === "available" ? "Dostupná" : "Vypožičaná"}
+													{book.status === "available"
+														? "Dostupná"
+														: "Vypožičaná"}
 												</Badge>
 											</div>
 										</div>
@@ -376,7 +392,9 @@ function RouteComponent() {
 							) : (
 								<div className="text-center py-6 sm:py-12 text-muted-foreground">
 									<BookOpen className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 mx-auto mb-3 sm:mb-4 opacity-20" />
-									<p className="text-sm sm:text-base">V tejto kategórii zatiaľ nie sú žiadne knihy</p>
+									<p className="text-sm sm:text-base">
+										V tejto kategórii zatiaľ nie sú žiadne knihy
+									</p>
 									<Button variant="link" className="mt-2 text-xs sm:text-sm">
 										Pridať knihu
 									</Button>
@@ -388,7 +406,9 @@ function RouteComponent() {
 					{/* Details Card */}
 					<Card className="hover:shadow-lg transition-shadow">
 						<CardHeader className="p-4 sm:p-6">
-							<CardTitle className="text-base sm:text-lg md:text-xl">Detaily kategórie</CardTitle>
+							<CardTitle className="text-base sm:text-lg md:text-xl">
+								Detaily kategórie
+							</CardTitle>
 						</CardHeader>
 						<CardContent className="pt-0 px-4 sm:px-6 pb-4 sm:pb-6 space-y-3 sm:space-y-4">
 							<div className="flex items-center justify-between py-2 hover:bg-muted/50 px-2 rounded-md transition-colors">
@@ -423,7 +443,9 @@ function RouteComponent() {
 							<Separator />
 
 							<div className="flex items-center justify-between py-2 hover:bg-muted/50 px-2 rounded-md transition-colors">
-								<span className="text-xs sm:text-sm font-medium">Vytvorená</span>
+								<span className="text-xs sm:text-sm font-medium">
+									Vytvorená
+								</span>
 								<span className="text-xs sm:text-sm text-muted-foreground">
 									{new Date(category.createdAt).toLocaleDateString("sk-SK", {
 										year: "numeric",
@@ -434,7 +456,9 @@ function RouteComponent() {
 							</div>
 
 							<div className="flex items-center justify-between py-2 hover:bg-muted/50 px-2 rounded-md transition-colors">
-								<span className="text-xs sm:text-sm font-medium">Posledná úprava</span>
+								<span className="text-xs sm:text-sm font-medium">
+									Posledná úprava
+								</span>
 								<span className="text-xs sm:text-sm text-muted-foreground">
 									{new Date(category.updatedAt).toLocaleDateString("sk-SK", {
 										year: "numeric",
@@ -459,7 +483,8 @@ function RouteComponent() {
 							{category.bookCount > 0 && (
 								<span className="block mt-2 sm:mt-3 text-destructive font-medium text-sm">
 									Upozornenie: Táto kategória má {category.bookCount}{" "}
-									{category.bookCount === 1 ? "knihu" : "knihy"}. Musíte ich buď presunúť do inej kategórie, inak budú bez kategórie.
+									{category.bookCount === 1 ? "knihu" : "knihy"}. Musíte ich buď
+									presunúť do inej kategórie, inak budú bez kategórie.
 								</span>
 							)}
 							{category.subcategories && category.subcategories.length > 0 && (
@@ -471,7 +496,9 @@ function RouteComponent() {
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
-						<AlertDialogCancel className="text-xs sm:text-sm">Zrušiť</AlertDialogCancel>
+						<AlertDialogCancel className="text-xs sm:text-sm">
+							Zrušiť
+						</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={handleDelete}
 							className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-xs sm:text-sm"

@@ -66,10 +66,10 @@ export const Route = createFileRoute("/books/$bookId")({
 function BookDetailPage() {
 	const { bookId } = Route.useParams();
 	const navigate = useNavigate();
-	
+
 	// Použijeme správny auth hook podľa tvojho setupu
 	const { user } = useAuth(); // Uprav podľa tvojho auth providera
-	
+
 	const createReservation = useMutation(api.orders.createReservation);
 	const [isReservationOpen, setIsReservationOpen] = useState(false);
 	const [customPeriodEnabled, setCustomPeriodEnabled] = useState(false);
@@ -275,7 +275,9 @@ function BookDetailPage() {
 					className="max-w-md mx-auto text-center"
 				>
 					<AlertCircle className="h-12 sm:h-16 w-12 sm:w-16 text-muted-foreground mx-auto mb-4" />
-					<h2 className="text-xl sm:text-2xl font-bold mb-2">Kniha nebola nájdená</h2>
+					<h2 className="text-xl sm:text-2xl font-bold mb-2">
+						Kniha nebola nájdená
+					</h2>
 					<p className="text-sm sm:text-base text-muted-foreground mb-6">
 						Požadovaná kniha neexistuje alebo bola odstránená.
 					</p>
@@ -349,8 +351,9 @@ function BookDetailPage() {
 								)}
 								<div className="absolute top-2 right-2 sm:top-4 sm:right-4">
 									<Badge
-										className={`${statusColors[book.status]
-											} font-semibold px-2 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm`}
+										className={`${
+											statusColors[book.status]
+										} font-semibold px-2 py-0.5 sm:px-3 sm:py-1 text-xs sm:text-sm`}
 									>
 										{statusLabels[book.status]}
 									</Badge>
@@ -362,8 +365,12 @@ function BookDetailPage() {
 									{/* Informácie o dostupnosti */}
 									<div className="grid grid-cols-2 gap-3 sm:gap-4">
 										<div className="text-center p-3 bg-muted rounded-lg">
-											<p className="text-xs sm:text-sm text-muted-foreground">Celkovo</p>
-											<p className="text-xl sm:text-2xl font-bold">{book.totalCopies}</p>
+											<p className="text-xs sm:text-sm text-muted-foreground">
+												Celkovo
+											</p>
+											<p className="text-xl sm:text-2xl font-bold">
+												{book.totalCopies}
+											</p>
 											<p className="text-xs text-muted-foreground">výtlačkov</p>
 										</div>
 										<div className="text-center p-3 bg-green-50 rounded-lg">
@@ -384,9 +391,15 @@ function BookDetailPage() {
 											animate={{ opacity: 1, y: 0 }}
 											transition={{ delay: 0.5 }}
 										>
-											<Dialog open={isReservationOpen} onOpenChange={setIsReservationOpen}>
+											<Dialog
+												open={isReservationOpen}
+												onOpenChange={setIsReservationOpen}
+											>
 												<DialogTrigger asChild>
-													<Button size="lg" className="w-full text-sm sm:text-base">
+													<Button
+														size="lg"
+														className="w-full text-sm sm:text-base"
+													>
 														Rezervovať knihu
 													</Button>
 												</DialogTrigger>
@@ -419,7 +432,10 @@ function BookDetailPage() {
 																		{/* Osobný údaje */}
 																		<div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
 																			<div className="space-y-1 sm:space-y-2">
-																				<Label htmlFor="name" className="text-xs sm:text-sm">
+																				<Label
+																					htmlFor="name"
+																					className="text-xs sm:text-sm"
+																				>
 																					<UserIcon className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
 																					Meno a priezvisko *
 																				</Label>
@@ -438,7 +454,10 @@ function BookDetailPage() {
 																			</div>
 
 																			<div className="space-y-1 sm:space-y-2">
-																				<Label htmlFor="email" className="text-xs sm:text-sm">
+																				<Label
+																					htmlFor="email"
+																					className="text-xs sm:text-sm"
+																				>
 																					<Mail className="h-3 w-3 sm:h-4 sm:w-4 inline mr-1 sm:mr-2" />
 																					Email *
 																				</Label>
@@ -459,7 +478,10 @@ function BookDetailPage() {
 																		</div>
 
 																		<div className="space-y-1 sm:space-y-2">
-																			<Label htmlFor="phone" className="text-xs sm:text-sm">
+																			<Label
+																				htmlFor="phone"
+																				className="text-xs sm:text-sm"
+																			>
 																				Telefónne číslo
 																			</Label>
 																			<Input
@@ -512,22 +534,40 @@ function BookDetailPage() {
 																						<SelectValue placeholder="Vyberte dobu výpožičky" />
 																					</SelectTrigger>
 																					<SelectContent>
-																						<SelectItem value="1" className="text-sm sm:text-base">
+																						<SelectItem
+																							value="1"
+																							className="text-sm sm:text-base"
+																						>
 																							1 deň
 																						</SelectItem>
-																						<SelectItem value="3" className="text-sm sm:text-base">
+																						<SelectItem
+																							value="3"
+																							className="text-sm sm:text-base"
+																						>
 																							3 dni
 																						</SelectItem>
-																						<SelectItem value="7" className="text-sm sm:text-base">
+																						<SelectItem
+																							value="7"
+																							className="text-sm sm:text-base"
+																						>
 																							7 dní (štandard)
 																						</SelectItem>
-																						<SelectItem value="14" className="text-sm sm:text-base">
+																						<SelectItem
+																							value="14"
+																							className="text-sm sm:text-base"
+																						>
 																							14 dní
 																						</SelectItem>
-																						<SelectItem value="21" className="text-sm sm:text-base">
+																						<SelectItem
+																							value="21"
+																							className="text-sm sm:text-base"
+																						>
 																							21 dní
 																						</SelectItem>
-																						<SelectItem value="30" className="text-sm sm:text-base">
+																						<SelectItem
+																							value="30"
+																							className="text-sm sm:text-base"
+																						>
 																							30 dní
 																						</SelectItem>
 																					</SelectContent>
@@ -562,7 +602,12 @@ function BookDetailPage() {
 
 																		{/* Poznámka */}
 																		<div className="space-y-1 sm:space-y-2">
-																			<Label htmlFor="note" className="text-xs sm:text-sm">Poznámka</Label>
+																			<Label
+																				htmlFor="note"
+																				className="text-xs sm:text-sm"
+																			>
+																				Poznámka
+																			</Label>
 																			<Textarea
 																				id="note"
 																				placeholder="Váš komentár k rezervácii..."
@@ -592,7 +637,9 @@ function BookDetailPage() {
 																				<span className="text-xs sm:text-sm text-muted-foreground">
 																					Autor:
 																				</span>
-																				<span className="text-xs sm:text-sm">{book.author.name}</span>
+																				<span className="text-xs sm:text-sm">
+																					{book.author.name}
+																				</span>
 																			</div>
 																			<div className="flex justify-between">
 																				<span className="text-xs sm:text-sm text-muted-foreground">
@@ -801,13 +848,18 @@ function BookDetailPage() {
 								</TabsTrigger>
 							</TabsList>
 
-							<TabsContent value="details" className="space-y-3 sm:space-y-4 pt-3 sm:pt-4">
+							<TabsContent
+								value="details"
+								className="space-y-3 sm:space-y-4 pt-3 sm:pt-4"
+							>
 								<Card>
 									<CardContent className="pt-4 sm:pt-6">
 										<div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
 											<div className="space-y-3 sm:space-y-4">
 												<InfoItem
-													icon={<CalendarDays className="h-4 w-4 sm:h-5 sm:w-5" />}
+													icon={
+														<CalendarDays className="h-4 w-4 sm:h-5 sm:w-5" />
+													}
 													label="Rok vydania"
 													value={book.publishedYear?.toString() || "Neznámy"}
 												/>
@@ -879,7 +931,9 @@ function BookDetailPage() {
 									<CardContent className="pt-4 sm:pt-6">
 										<div className="space-y-3 sm:space-y-4">
 											<div>
-												<h4 className="font-medium mb-1 sm:mb-2 text-sm sm:text-base">Dátum pridania</h4>
+												<h4 className="font-medium mb-1 sm:mb-2 text-sm sm:text-base">
+													Dátum pridania
+												</h4>
 												<p className="text-xs sm:text-sm">
 													{new Date(book.addedAt).toLocaleDateString("sk-SK", {
 														day: "2-digit",
@@ -894,13 +948,17 @@ function BookDetailPage() {
 												<h4 className="font-medium mb-1 sm:mb-2 text-sm sm:text-base">
 													Počet kníh od autora
 												</h4>
-												<p className="text-xs sm:text-sm">{book.author.bookCount}</p>
+												<p className="text-xs sm:text-sm">
+													{book.author.bookCount}
+												</p>
 											</div>
 											<div>
 												<h4 className="font-medium mb-1 sm:mb-2 text-sm sm:text-base">
 													Počet kníh v kategórii
 												</h4>
-												<p className="text-xs sm:text-sm">{book.category.bookCount}</p>
+												<p className="text-xs sm:text-sm">
+													{book.category.bookCount}
+												</p>
 											</div>
 										</div>
 									</CardContent>
@@ -917,7 +975,9 @@ function BookDetailPage() {
 						>
 							<Card>
 								<CardHeader className="p-4 sm:p-6">
-									<CardTitle className="text-base sm:text-lg">Štatistiky</CardTitle>
+									<CardTitle className="text-base sm:text-lg">
+										Štatistiky
+									</CardTitle>
 								</CardHeader>
 								<CardContent className="p-4 sm:p-6 pt-0">
 									<div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
@@ -981,7 +1041,9 @@ interface StatItemProps {
 function StatItem({ label, value, color }: StatItemProps) {
 	return (
 		<div className="text-center">
-			<p className={`text-lg sm:text-xl md:text-2xl font-bold ${color}`}>{value}</p>
+			<p className={`text-lg sm:text-xl md:text-2xl font-bold ${color}`}>
+				{value}
+			</p>
 			<p className="text-xs sm:text-sm text-muted-foreground">{label}</p>
 		</div>
 	);

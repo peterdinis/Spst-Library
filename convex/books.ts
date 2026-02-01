@@ -7,7 +7,7 @@ import {
   UpdateBookInput, 
   UpdateBookSchema,
 } from "types/bookTypes";
-import { validateWithZod, createSearchableText } from "helpers/backendHelpers";
+import { validateWithZod, createSearchableText } from "utils/backendHelpers";
 
 interface BookWithRelations extends Doc<"books"> {
   author: Doc<"authors">;
