@@ -56,7 +56,7 @@ export const BooksFilters: FC<BooksFiltersProps> = ({
 						<Filter className="h-4 w-4 text-indigo-500" />
 					</div>
 					<div>
-						<h3 className="font-bold text-slate-200">Filtre a zoradenie</h3>
+						<h3 className="font-bold text-black dark:text-white">Filtre a zoradenie</h3>
 						<p className="text-xs text-slate-500">Prispôsobte si výber kníh</p>
 					</div>
 				</div>

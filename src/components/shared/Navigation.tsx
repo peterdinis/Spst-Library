@@ -23,24 +23,25 @@ export function Navigation() {
 
 	return (
 		<header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md supports-backdrop-filter:bg-background/60">
-			<div className="container mx-auto px-4">
+			<div className="container mx-auto px-4 sm:px-6">
 				<div className="flex h-16 items-center justify-between">
-					<Link to="/">
+					{/* Logo */}
+					<Link to="/" className="flex-shrink-0">
 						<motion.div
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
 							transition={{ duration: 0.15 }}
 							className="flex items-center space-x-2 cursor-pointer"
 						>
-							<BookOpen className="h-6 w-6 text-primary" />
-							<span className="text-xl font-bold text-primary">
+							<BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+							<span className="text-lg sm:text-xl font-bold text-primary whitespace-nowrap">
 								Školská knižnica
 							</span>
 						</motion.div>
 					</Link>
 
 					{/* Desktop Navigation */}
-					<nav className="hidden md:flex items-center space-x-6">
+					<nav className="hidden md:flex items-center space-x-4 lg:space-x-6 mx-4 lg:mx-8 flex-1 justify-center">
 						{navLinks.map((link, index) => (
 							<Link key={link.to} to={link.to} onClick={closeMenu}>
 								{({ isActive }) => (
@@ -61,7 +62,7 @@ export function Navigation() {
 											transition: { duration: 0.1 },
 										}}
 										className={`
-											text-sm font-medium transition-colors hover:text-primary relative cursor-pointer
+											text-sm lg:text-base font-medium transition-colors hover:text-primary relative cursor-pointer px-2 py-1
 											${link.to.startsWith("/admin") ? "text-red-600 dark:text-red-400" : ""}
 											${isActive ? "text-primary underline decoration-2 underline-offset-4" : "text-foreground/80"}
 										`}
@@ -76,23 +77,26 @@ export function Navigation() {
 						))}
 					</nav>
 
-					<div className="hidden md:flex items-center space-x-4">
+					{/* Desktop User Actions */}
+					<div className="hidden md:flex items-center space-x-3 lg:space-x-4 flex-shrink-0">
 						{user ? (
-							<div className="flex items-center space-x-2">
+							<div className="flex items-center space-x-2 lg:space-x-3">
 								<NotificationDropdown />
 								<UserProfile />
 							</div>
 						) : (
-							<>
+							<div className="flex items-center space-x-2 lg:space-x-3">
 								<LoginButton />
 								<RegisterButton />
-							</>
+							</div>
 						)}
 						<ThemeToggle />
 					</div>
 
-					{/* Mobile Menu Button */}
+					{/* Mobile Actions - zobrazí sa do 768px */}
 					<div className="flex items-center space-x-2 md:hidden">
+						{user && <NotificationDropdown />}
+						<ThemeToggle />
 						<motion.button
 							onClick={toggleMenu}
 							className="p-2 text-foreground hover:text-primary transition-colors"
@@ -136,7 +140,7 @@ export function Navigation() {
 							className="md:hidden overflow-hidden"
 						>
 							<nav className="py-4 border-t border-border/40">
-								<div className="flex flex-col space-y-3">
+								<div className="flex flex-col space-y-1">
 									{navLinks.map((link, index) => (
 										<Link key={link.to} to={link.to} onClick={closeMenu}>
 											{({ isActive }) => (
@@ -153,11 +157,11 @@ export function Navigation() {
 														transition: { duration: 0.1 },
 													}}
 													className={`
-														text-sm font-medium transition-colors py-2 text-left cursor-pointer block pl-4 border-l-2
+														text-base font-medium transition-colors py-3 px-4 text-left cursor-pointer block border-l-2
 														${link.to.startsWith("/admin") ? "border-red-600 text-red-600 dark:text-red-400" : "border-transparent"}
 														${isActive
-															? "text-primary underline decoration-2 underline-offset-4 border-primary"
-															: "text-foreground/80 hover:text-primary hover:border-primary/30"
+															? "text-primary bg-primary/5 underline decoration-2 underline-offset-4 border-primary"
+															: "text-foreground/80 hover:text-primary hover:bg-accent/10 hover:border-primary/30"
 														}
 													`}
 												>
@@ -172,52 +176,24 @@ export function Navigation() {
 										</Link>
 									))}
 
-									{/* Mobile Auth Buttons */}
-									<motion.div
-										initial={{ opacity: 0, x: -20 }}
-										animate={{ opacity: 1, x: 0 }}
-										transition={{
-											duration: 0.15,
-											delay: navLinks.length * 0.03,
-											ease: "easeOut",
-										}}
-										className="pt-2 space-y-2"
-									>
-										{user ? (
-											<div className="flex flex-col items-center gap-3 px-4">
-												<div className="flex items-center gap-2">
-													<NotificationDropdown />
-													<span className="text-sm text-foreground/80">Notifikácie</span>
-												</div>
-												<UserProfile />
+									{/* Mobile Auth Section */}
+									{!user && (
+										<motion.div
+											initial={{ opacity: 0, x: -20 }}
+											animate={{ opacity: 1, x: 0 }}
+											transition={{
+												duration: 0.15,
+												delay: navLinks.length * 0.03,
+												ease: "easeOut",
+											}}
+											className="pt-3 border-t border-border/40"
+										>
+											<div className="flex flex-col space-y-2 px-4">
+												<LoginButton />
+												<RegisterButton />
 											</div>
-										) : (
-											<>
-												<div className="px-4">
-													<LoginButton />
-												</div>
-												<div className="px-4">
-													<RegisterButton />
-												</div>
-											</>
-										)}
-									</motion.div>
-
-									{/* Mobile Theme Toggle */}
-									<motion.div
-										initial={{ opacity: 0, x: -20 }}
-										animate={{ opacity: 1, x: 0 }}
-										transition={{
-											duration: 0.15,
-											delay: (navLinks.length + 1) * 0.03,
-											ease: "easeOut",
-										}}
-										className="pt-2 border-t border-border/40 mt-2"
-									>
-										<div className="flex items-center justify-between px-4 py-2">
-											<span className="text-sm text-foreground/80">Téma</span>
-										</div>
-									</motion.div>
+										</motion.div>
+									)}
 								</div>
 							</nav>
 						</motion.div>

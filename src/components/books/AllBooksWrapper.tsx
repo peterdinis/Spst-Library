@@ -4,7 +4,6 @@ import { useQuery } from "convex/react";
 import { BookCard } from "@/components/books/BookCard";
 import { 
 	BookOpen, 
-	Filter, 
 	Search,
 	X,
 	SlidersHorizontal,
@@ -12,12 +11,10 @@ import {
 	Sparkles
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
-import { BooksSearch } from "./BookSearch";
 import { BooksPagination } from "./BookPagination";
 import { BooksFilters } from "./BookFilters";
 import { api } from "convex/_generated/api";
@@ -132,7 +129,7 @@ const AllBooksWrapper: FC = () => {
 					animate={{ y: 0, opacity: 1 }}
 					className="text-center sm:text-left space-y-2 mb-6"
 				>
-					<h1 className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">
+					<h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
 						Knižnica
 					</h1>
 					<p className="text-sm sm:text-base text-muted-foreground">
@@ -214,7 +211,7 @@ const AllBooksWrapper: FC = () => {
 							transition={{ duration: 0.3, ease: "easeInOut" }}
 							className="overflow-hidden"
 						>
-							<Card className="border-2 border-primary/10 bg-gradient-to-br from-background to-secondary/5">
+							<Card className="border-2 border-primary/10 bg-linear-to-br from-background to-muted/20">
 								<CardContent className="p-4 sm:p-6">
 									<BooksFilters
 										categories={categories || []}
@@ -244,7 +241,7 @@ const AllBooksWrapper: FC = () => {
 					className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
 				>
 					{Array.from({ length: 4 }).map((_, i) => (
-						<Card key={i} className="bg-gradient-to-br from-background to-secondary/5">
+						<Card key={i} className="bg-linear-to-br from-background to-muted/20">
 							<CardContent className="p-4 sm:p-6 text-center">
 								<Skeleton className="h-8 w-16 mx-auto mb-2" />
 								<Skeleton className="h-4 w-24 mx-auto" />
@@ -472,7 +469,7 @@ const StatCard: FC<{
 	};
 
 	return (
-		<Card className="bg-gradient-to-br from-background to-secondary/5 border-border/50 hover:border-border transition-all hover:shadow-md">
+		<Card className="bg-linear-to-br from-background to-muted/20 border-border/50 hover:border-border transition-all hover:shadow-md">
 			<CardContent className="p-4 sm:p-6 text-center">
 				<div className="flex items-center justify-center gap-2 mb-2">
 					<Icon className={`h-5 w-5 ${colorClasses[color]}`} />
@@ -492,23 +489,23 @@ const FilterChip: FC<{
 	variant: "default" | "indigo" | "purple" | "emerald" | "amber";
 }> = ({ label, onRemove, variant }) => {
 	const variantClasses = {
-		default: "bg-secondary/50 text-foreground border-border",
-		indigo: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
-		purple: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20",
-		emerald: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-		amber: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+		default: "bg-muted/80 text-foreground border-border hover:bg-muted",
+		indigo: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 hover:bg-indigo-500/25",
+		purple: "bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30 hover:bg-purple-500/25",
+		emerald: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25",
+		amber: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/25",
 	};
 
 	return (
 		<Badge
 			variant="secondary"
-			className={`${variantClasses[variant]} gap-2 pr-1 pl-3 py-1.5 text-sm font-medium border`}
+			className={`${variantClasses[variant]} gap-2 pr-1 pl-3 py-1.5 text-sm font-medium border transition-colors`}
 		>
 			{label}
 			<Button
 				variant="ghost"
 				size="sm"
-				className="h-5 w-5 p-0 ml-1 hover:bg-destructive/20 rounded-full"
+				className="h-5 w-5 p-0 ml-1 hover:bg-destructive/20 hover:text-destructive rounded-full transition-colors"
 				onClick={onRemove}
 			>
 				<X className="h-3 w-3" />
