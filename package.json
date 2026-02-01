@@ -11,9 +11,7 @@
     "format:write": "biome format . --write",
     "format:check": "biome format . --verbose",
     "lint": "biome lint .",
-    "lint:write": "biome lint . --apply",
     "check": "biome check .",
-    "check:write": "biome check . --apply",
     "check:ci": "biome ci ."
   },
   "dependencies": {
