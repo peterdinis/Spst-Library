@@ -37,7 +37,6 @@ import {
 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import {
 	Dialog,
@@ -58,6 +57,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/books/$bookId")({
 	component: BookDetailPage,
@@ -66,9 +66,12 @@ export const Route = createFileRoute("/books/$bookId")({
 function BookDetailPage() {
 	const { bookId } = Route.useParams();
 	const navigate = useNavigate();
-	const { user } = useAuth();
+	
+	// Použijeme správny auth hook podľa tvojho setupu
+	const { user } = useAuth(); // Uprav podľa tvojho auth providera
+	
 	const createReservation = useMutation(api.orders.createReservation);
-	const [, setIsReservationOpen] = useState(false);
+	const [isReservationOpen, setIsReservationOpen] = useState(false);
 	const [customPeriodEnabled, setCustomPeriodEnabled] = useState(false);
 	const [reservationData, setReservationData] = useState({
 		name: "",
@@ -149,6 +152,7 @@ function BookDetailPage() {
 	const [isLoading, setIsLoading] = useState(false);
 
 	const handleReservationSubmit = async () => {
+		// Skontrolovať, či je používateľ prihlásený
 		if (!user) {
 			toast.error("Musíte byť prihlásený", {
 				description: "Pre rezerváciu knihy sa prosím najskôr prihláste.",
@@ -159,6 +163,7 @@ function BookDetailPage() {
 					redirect: `/books/${bookId}`,
 				},
 			});
+			setIsReservationOpen(false);
 			return;
 		}
 
@@ -166,7 +171,7 @@ function BookDetailPage() {
 
 		try {
 			await createReservation({
-				userId: user._id,
+				userId: user.id,
 				bookId: bookId as Id<"books">,
 				notes: reservationData.note || undefined,
 			});
@@ -242,7 +247,7 @@ function BookDetailPage() {
 					<Skeleton className="h-8 w-48 mb-6" />
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
 						<div className="md:col-span-1">
-							<Skeleton className="h-[280px] sm:h-[320px] w-full rounded-lg" />
+							<Skeleton className="h-70 sm:h-80 w-full rounded-lg" />
 						</div>
 						<div className="md:col-span-2 space-y-4">
 							<Skeleton className="h-8 sm:h-10 w-3/4" />
@@ -379,7 +384,7 @@ function BookDetailPage() {
 											animate={{ opacity: 1, y: 0 }}
 											transition={{ delay: 0.5 }}
 										>
-											<Dialog>
+											<Dialog open={isReservationOpen} onOpenChange={setIsReservationOpen}>
 												<DialogTrigger asChild>
 													<Button size="lg" className="w-full text-sm sm:text-base">
 														Rezervovať knihu

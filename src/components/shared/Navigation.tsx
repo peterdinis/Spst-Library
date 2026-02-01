@@ -34,50 +34,52 @@ export function Navigation() {
 							className="flex items-center space-x-2 cursor-pointer"
 						>
 							<BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-							<span className="text-lg sm:text-xl font-bold text-primary whitespace-nowrap">
+							<span className="text-base sm:text-lg md:text-xl font-bold text-primary whitespace-nowrap">
 								Školská knižnica
 							</span>
 						</motion.div>
 					</Link>
 
-					{/* Desktop Navigation */}
-					<nav className="hidden md:flex items-center space-x-4 lg:space-x-6 mx-4 lg:mx-8 flex-1 justify-center">
-						{navLinks.map((link, index) => (
-							<Link key={link.to} to={link.to} onClick={closeMenu}>
-								{({ isActive }) => (
-									<motion.span
-										initial={{ opacity: 0, y: -20 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{
-											duration: 0.2,
-											delay: index * 0.05,
-											ease: "easeOut",
-										}}
-										whileHover={{
-											scale: 1.05,
-											transition: { duration: 0.15 },
-										}}
-										whileTap={{
-											scale: 0.95,
-											transition: { duration: 0.1 },
-										}}
-										className={`
-											text-sm lg:text-base font-medium transition-colors hover:text-primary relative cursor-pointer px-2 py-1
-											${link.to.startsWith("/admin") ? "text-red-600 dark:text-red-400" : ""}
-											${isActive ? "text-primary underline decoration-2 underline-offset-4" : "text-foreground/80"}
-										`}
-									>
-										{link.label}
-										{link.to.startsWith("/admin") && (
-											<span className="absolute -top-1 -right-2.5 h-2 w-2 rounded-full bg-red-500"></span>
-										)}
-									</motion.span>
-								)}
-							</Link>
-						))}
+					{/* Desktop Navigation - zobrazí sa od 768px */}
+					<nav className="hidden md:flex items-center flex-1 justify-center ml-4">
+						<div className="flex items-center space-x-3 lg:space-x-6">
+							{navLinks.map((link, index) => (
+								<Link key={link.to} to={link.to} onClick={closeMenu}>
+									{({ isActive }) => (
+										<motion.span
+											initial={{ opacity: 0, y: -20 }}
+											animate={{ opacity: 1, y: 0 }}
+											transition={{
+												duration: 0.2,
+												delay: index * 0.05,
+												ease: "easeOut",
+											}}
+											whileHover={{
+												scale: 1.05,
+												transition: { duration: 0.15 },
+											}}
+											whileTap={{
+												scale: 0.95,
+												transition: { duration: 0.1 },
+											}}
+											className={`
+												text-sm font-medium transition-colors hover:text-primary relative cursor-pointer px-2 py-1
+												${link.to.startsWith("/admin") ? "text-red-600 dark:text-red-400" : ""}
+												${isActive ? "text-primary underline decoration-2 underline-offset-4" : "text-foreground/80"}
+											`}
+										>
+											{link.label}
+											{link.to.startsWith("/admin") && (
+												<span className="absolute -top-1 -right-2.5 h-2 w-2 rounded-full bg-red-500"></span>
+											)}
+										</motion.span>
+									)}
+								</Link>
+							))}
+						</div>
 					</nav>
 
-					{/* Desktop User Actions */}
+					{/* Desktop User Actions - zobrazí sa od 768px */}
 					<div className="hidden md:flex items-center space-x-3 lg:space-x-4 flex-shrink-0">
 						{user ? (
 							<div className="flex items-center space-x-2 lg:space-x-3">
@@ -157,11 +159,11 @@ export function Navigation() {
 														transition: { duration: 0.1 },
 													}}
 													className={`
-														text-base font-medium transition-colors py-3 px-4 text-left cursor-pointer block border-l-2
-														${link.to.startsWith("/admin") ? "border-red-600 text-red-600 dark:text-red-400" : "border-transparent"}
+														text-sm font-medium transition-colors py-3 px-4 text-left cursor-pointer block
+														${link.to.startsWith("/admin") ? "text-red-600 dark:text-red-400" : ""}
 														${isActive
-															? "text-primary bg-primary/5 underline decoration-2 underline-offset-4 border-primary"
-															: "text-foreground/80 hover:text-primary hover:bg-accent/10 hover:border-primary/30"
+															? "text-primary bg-primary/5"
+															: "text-foreground/80 hover:text-primary hover:bg-accent/10"
 														}
 													`}
 												>
