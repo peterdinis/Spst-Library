@@ -26,7 +26,7 @@ export function Navigation() {
 			<div className="container mx-auto px-4 sm:px-6">
 				<div className="flex h-16 items-center justify-between">
 					{/* Logo */}
-					<Link to="/" className="flex-shrink-0">
+					<Link to="/" className="shrink-0">
 						<motion.div
 							whileHover={{ scale: 1.05 }}
 							whileTap={{ scale: 0.95 }}
@@ -80,7 +80,7 @@ export function Navigation() {
 					</nav>
 
 					{/* Desktop User Actions - zobrazí sa od 768px */}
-					<div className="hidden md:flex items-center space-x-3 lg:space-x-4 flex-shrink-0">
+					<div className="hidden md:flex items-center space-x-3 lg:space-x-4 shrink-0">
 						{user ? (
 							<div className="flex items-center space-x-2 lg:space-x-3">
 								<NotificationDropdown />
