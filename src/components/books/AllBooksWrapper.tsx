@@ -2,13 +2,13 @@ import { FC, useState } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useQuery } from "convex/react";
 import { BookCard } from "@/components/books/BookCard";
-import { 
-	BookOpen, 
+import {
+	BookOpen,
 	Search,
 	X,
 	SlidersHorizontal,
 	TrendingUp,
-	Sparkles
+	Sparkles,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -177,8 +177,8 @@ const AllBooksWrapper: FC = () => {
 							<span className="hidden sm:inline">Filtre a zoradenie</span>
 							<span className="sm:hidden">Filtre</span>
 							{activeFilterCount > 0 && (
-								<Badge 
-									variant="secondary" 
+								<Badge
+									variant="secondary"
 									className="ml-1 h-5 w-5 p-0 flex items-center justify-center bg-primary text-primary-foreground"
 								>
 									{activeFilterCount}
@@ -241,7 +241,10 @@ const AllBooksWrapper: FC = () => {
 					className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4"
 				>
 					{Array.from({ length: 4 }).map((_, i) => (
-						<Card key={i} className="bg-linear-to-br from-background to-muted/20">
+						<Card
+							key={i}
+							className="bg-linear-to-br from-background to-muted/20"
+						>
 							<CardContent className="p-4 sm:p-6 text-center">
 								<Skeleton className="h-8 w-16 mx-auto mb-2" />
 								<Skeleton className="h-4 w-24 mx-auto" />
@@ -311,7 +314,8 @@ const AllBooksWrapper: FC = () => {
 						{category !== "all" && (
 							<FilterChip
 								label={`Kategória: ${
-									categories?.find((c: any) => c._id === category)?.name || category
+									categories?.find((c: any) => c._id === category)?.name ||
+									category
 								}`}
 								onRemove={() => setCategory("all")}
 								variant="purple"
@@ -473,7 +477,9 @@ const StatCard: FC<{
 			<CardContent className="p-4 sm:p-6 text-center">
 				<div className="flex items-center justify-center gap-2 mb-2">
 					<Icon className={`h-5 w-5 ${colorClasses[color]}`} />
-					<p className={`text-2xl sm:text-3xl font-bold ${colorClasses[color]}`}>
+					<p
+						className={`text-2xl sm:text-3xl font-bold ${colorClasses[color]}`}
+					>
 						{value}
 					</p>
 				</div>
@@ -490,10 +496,14 @@ const FilterChip: FC<{
 }> = ({ label, onRemove, variant }) => {
 	const variantClasses = {
 		default: "bg-muted/80 text-foreground border-border hover:bg-muted",
-		indigo: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 hover:bg-indigo-500/25",
-		purple: "bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30 hover:bg-purple-500/25",
-		emerald: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25",
-		amber: "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/25",
+		indigo:
+			"bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 hover:bg-indigo-500/25",
+		purple:
+			"bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30 hover:bg-purple-500/25",
+		emerald:
+			"bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/25",
+		amber:
+			"bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 hover:bg-amber-500/25",
 	};
 
 	return (

@@ -161,9 +161,10 @@ export function Navigation() {
 													className={`
 														text-sm font-medium transition-colors py-3 px-4 text-left cursor-pointer block
 														${link.to.startsWith("/admin") ? "text-red-600 dark:text-red-400" : ""}
-														${isActive
-															? "text-primary bg-primary/5"
-															: "text-foreground/80 hover:text-primary hover:bg-accent/10"
+														${
+															isActive
+																? "text-primary bg-primary/5"
+																: "text-foreground/80 hover:text-primary hover:bg-accent/10"
 														}
 													`}
 												>

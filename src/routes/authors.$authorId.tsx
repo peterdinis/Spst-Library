@@ -79,12 +79,14 @@ function RouteComponent() {
 						<div className="text-center space-y-4">
 							<AlertCircle className="h-12 w-12 mx-auto text-destructive" />
 							<div>
-								<h2 className="text-xl sm:text-2xl font-bold">Author Not Found</h2>
+								<h2 className="text-xl sm:text-2xl font-bold">
+									Author Not Found
+								</h2>
 								<p className="text-sm sm:text-base text-muted-foreground mt-2">
 									The author you're looking for doesn't exist.
 								</p>
 							</div>
-							<Button 
+							<Button
 								onClick={() => navigate({ to: "/authors" })}
 								className="w-full sm:w-auto"
 							>
@@ -316,14 +318,18 @@ function RouteComponent() {
 							{author.bookCount === 0 ? (
 								<div className="text-center py-8 sm:py-12 text-muted-foreground">
 									<BookOpen className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-4 opacity-20" />
-									<p className="text-sm sm:text-base">No books found for this author</p>
+									<p className="text-sm sm:text-base">
+										No books found for this author
+									</p>
 									<Button variant="link" className="mt-2">
 										Add a book
 									</Button>
 								</div>
 							) : (
 								<div className="text-center py-6 sm:py-8 text-muted-foreground">
-									<p className="text-sm sm:text-base">Book list will be displayed here</p>
+									<p className="text-sm sm:text-base">
+										Book list will be displayed here
+									</p>
 									<p className="text-xs sm:text-sm mt-2">
 										({author.bookCount}{" "}
 										{author.bookCount === 1 ? "book" : "books"})
@@ -339,7 +345,9 @@ function RouteComponent() {
 			<AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
 				<AlertDialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg">
 					<AlertDialogHeader>
-						<AlertDialogTitle className="text-lg sm:text-xl">Delete Author?</AlertDialogTitle>
+						<AlertDialogTitle className="text-lg sm:text-xl">
+							Delete Author?
+						</AlertDialogTitle>
 						<AlertDialogDescription className="text-sm sm:text-base">
 							Are you sure you want to delete <strong>{author.name}</strong>?
 							This action cannot be undone.
@@ -353,7 +361,9 @@ function RouteComponent() {
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter className="flex-col sm:flex-row gap-2">
-						<AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+						<AlertDialogCancel className="w-full sm:w-auto">
+							Cancel
+						</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={handleDelete}
 							className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
