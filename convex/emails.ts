@@ -16,13 +16,11 @@ export const sendEmail = internalAction({
 		html: v.optional(v.string()),
 	},
 	handler: async (_ctx, args) => {
-		const { SMTP_HOST: host, SMTP_PORT: port, SMTP_USER: user, SMTP_PASS: pass, SMTP_FROM: from_env } = env;
-		const from = from_env || user;
+		const { SMTP_HOST: host, SMTP_PORT: port, SMTP_USER: user, SMTP_PASS: pass } = env;
 
 		const transporter = nodemailer.createTransport({
 			host,
 			port: Number(port),
-			secure: Number(port) === 465, // true for port 465, false for other ports
 			auth: {
 				user,
 				pass,
@@ -31,7 +29,7 @@ export const sendEmail = internalAction({
 
 		try {
 			const info = await transporter.sendMail({
-				from: `"SPŠT Knižnica" <${from}>`,
+				from: `"SPŠT Knižnica"`,
 				to: args.to,
 				subject: args.subject,
 				text: args.text,
