@@ -2,7 +2,8 @@
 "use node";
 
 import { v } from "convex/values";
-import { internalAction } from "./_generated/server";
+import { internalAction, action } from "./_generated/server";
+import { internal } from "./_generated/api";
 import nodemailer from "nodemailer";
 
 /**
@@ -18,48 +19,81 @@ export const sendEmail = internalAction({
 	handler: async (_ctx, args) => {
 		// Čítajte priamo z process.env
 		const host = process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io";
-		const port = process.env.SMTP_PORT || "2525";
+		const port = process.env.SMTP_PORT
 		const user = process.env.SMTP_USER || "";
 		const pass = process.env.SMTP_PASS || "";
 		const fromEmail = process.env.SMTP_FROM || user;
 
+		// Debug logging
+		console.log("📧 Email sending attempt:", {
+			host,
+			port,
+			user: user ? `${user.substring(0, 4)}...` : "NOT_SET",
+			pass: pass ? "***" : "NOT_SET",
+			to: args.to,
+		});
+
 		// Skontrolujte, či sú nastavené povinné údaje
 		if (!user || !pass) {
-			console.error("SMTP credentials not configured in environment variables");
+			const errorMsg = "SMTP credentials not configured in environment variables. Please set SMTP_USER and SMTP_PASS in Convex dashboard (Settings → Environment Variables).";
+			console.error("❌", errorMsg);
 			return { 
 				success: false, 
 				error: "SMTP credentials not configured",
-				message: "Please set SMTP_USER and SMTP_PASS environment variables in Convex dashboard."
+				message: errorMsg
 			};
 		}
 
+		// Pre Mailtrap port 587 potrebujeme secure: false, ale pre port 465 secure: true
+		const portNum = Number(port);
+		const isSecure = portNum === 465;
+		
 		const transporter = nodemailer.createTransport({
 			host,
-			port: Number(port),
-			secure: false, // Mailtrap nevyžaduje SSL pre porty 25, 587, 2525
+			port: portNum,
+			secure: isSecure,
 			auth: {
 				user,
 				pass,
 			},
 			tls: {
-				rejectUnauthorized: false, // Pre testovacie účely
+				rejectUnauthorized: false, // Pre testovacie účely (Mailtrap)
 			},
 		});
 
 		try {
-			const info = await transporter.sendMail({
+			// Overenie pripojenia pred odoslaním
+			console.log("🔍 Verifying SMTP connection...");
+			await transporter.verify();
+			console.log("✅ SMTP connection verified");
+
+			const mailOptions = {
 				from: fromEmail ? `"SPŠT Knižnica" <${fromEmail}>` : `"SPŠT Knižnica" <${user}>`,
 				to: args.to,
 				subject: args.subject,
 				text: args.text,
 				html: args.html || args.text,
-			});
+			};
+
+			console.log("📤 Sending email to:", args.to);
+			const info = await transporter.sendMail(mailOptions);
 
 			console.log("✅ Message sent successfully:", info.messageId);
 			return { success: true, messageId: info.messageId };
-		} catch (error) {
+		} catch (error: any) {
 			console.error("❌ Error sending email:", error);
-			return { success: false, error: String(error) };
+			const errorDetails = {
+				message: error.message || String(error),
+				code: error.code,
+				command: error.command,
+				response: error.response,
+			};
+			console.error("Error details:", errorDetails);
+			return { 
+				success: false, 
+				error: error.message || String(error),
+				details: errorDetails
+			};
 		}
 	},
 });
@@ -73,7 +107,7 @@ export const testConnection = internalAction({
 	},
 	handler: async (_ctx, args) => {
 		const host = process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io";
-		const port = process.env.SMTP_PORT || "2525";
+		const port = process.env.SMTP_PORT || "587"; // Mailtrap default port
 		const user = process.env.SMTP_USER || "";
 		const pass = process.env.SMTP_PASS || "";
 		const fromEmail = process.env.SMTP_FROM || user;
@@ -91,10 +125,14 @@ export const testConnection = internalAction({
 			};
 		}
 
+		// Pre Mailtrap port 587 potrebujeme secure: false, ale pre port 465 secure: true
+		const portNum = Number(port);
+		const isSecure = portNum === 465;
+
 		const transporter = nodemailer.createTransport({
 			host,
-			port: Number(port),
-			secure: false,
+			port: portNum,
+			secure: isSecure,
 			auth: {
 				user,
 				pass,
@@ -150,6 +188,37 @@ export const testConnection = internalAction({
 					user,
 					timestamp: new Date().toISOString(),
 				}
+			};
+		}
+	},
+});
+
+/**
+ * Public action to test email sending (for debugging)
+ * Call this from Convex dashboard or frontend to test email functionality
+ */
+export const testSendEmail = action({
+	args: {
+		to: v.string(),
+	},
+	handler: async (ctx, args): Promise<{ success: boolean; error?: string; messageId?: string }> => {
+		console.log("🧪 Test email action called for:", args.to);
+		
+		try {
+			const result = await ctx.runAction(internal.emails.sendEmail, {
+				to: args.to,
+				subject: "Test email - SPŠT Knižnica",
+				text: "Toto je testovací email z SPŠT Knižnice.",
+				html: "<p>Toto je <strong>testovací email</strong> z SPŠT Knižnice.</p>",
+			}) as { success: boolean; error?: string; messageId?: string };
+			
+			console.log("✅ Test email result:", result);
+			return result;
+		} catch (error: any) {
+			console.error("❌ Test email failed:", error);
+			return {
+				success: false,
+				error: error.message || String(error),
 			};
 		}
 	},

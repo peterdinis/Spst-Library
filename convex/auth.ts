@@ -104,12 +104,19 @@ export const register = mutation({
 		});
 
 		// Schedule welcome email
-		await ctx.scheduler.runAfter(0, internal.emails.sendEmail, {
-			to: args.email.toLowerCase(),
-			subject: "Vitajte v SPŠT Knižnici!",
-			text: `Dobrý deň ${args.firstName},\n\nďakujeme za registráciu v našej knižnici. Váš účet bol úspešne vytvorený.\n\nS pozdravom,\nSPŠT Knižnica`,
-			html: `<p>Dobrý deň <strong>${args.firstName}</strong>,</p><p>ďakujeme za registráciu v našej knižnici. Váš účet bol úspešne vytvorený.</p><p>S pozdravom,<br>SPŠT Knižnica</p>`,
-		});
+		try {
+			console.log("📧 Scheduling welcome email for:", args.email.toLowerCase());
+			await ctx.scheduler.runAfter(0, internal.emails.sendEmail, {
+				to: args.email.toLowerCase(),
+				subject: "Vitajte v SPŠT Knižnici!",
+				text: `Dobrý deň ${args.firstName},\n\nďakujeme za registráciu v našej knižnici. Váš účet bol úspešne vytvorený.\n\nS pozdravom,\nSPŠT Knižnica`,
+				html: `<p>Dobrý deň <strong>${args.firstName}</strong>,</p><p>ďakujeme za registráciu v našej knižnici. Váš účet bol úspešne vytvorený.</p><p>S pozdravom,<br>SPŠT Knižnica</p>`,
+			});
+			console.log("✅ Email scheduled successfully");
+		} catch (error) {
+			console.error("❌ Failed to schedule email:", error);
+			// Nech pokračuje aj keď email zlyhá
+		}
 
 		return {
 			userId,
