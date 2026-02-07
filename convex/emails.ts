@@ -1,9 +1,9 @@
+// convex/email.ts
 "use node";
 
 import { v } from "convex/values";
 import { internalAction } from "./_generated/server";
 import nodemailer from "nodemailer";
-import { env } from "./env";
 
 /**
  * Send an email using Nodemailer
@@ -16,30 +16,49 @@ export const sendEmail = internalAction({
 		html: v.optional(v.string()),
 	},
 	handler: async (_ctx, args) => {
-		const { SMTP_HOST: host, SMTP_PORT: port, SMTP_USER: user, SMTP_PASS: pass } = env;
+		// Čítajte priamo z process.env
+		const host = process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io";
+		const port = process.env.SMTP_PORT || "2525";
+		const user = process.env.SMTP_USER || "";
+		const pass = process.env.SMTP_PASS || "";
+		const fromEmail = process.env.SMTP_FROM || user;
+
+		// Skontrolujte, či sú nastavené povinné údaje
+		if (!user || !pass) {
+			console.error("SMTP credentials not configured in environment variables");
+			return { 
+				success: false, 
+				error: "SMTP credentials not configured",
+				message: "Please set SMTP_USER and SMTP_PASS environment variables in Convex dashboard."
+			};
+		}
 
 		const transporter = nodemailer.createTransport({
 			host,
 			port: Number(port),
+			secure: false, // Mailtrap nevyžaduje SSL pre porty 25, 587, 2525
 			auth: {
 				user,
 				pass,
+			},
+			tls: {
+				rejectUnauthorized: false, // Pre testovacie účely
 			},
 		});
 
 		try {
 			const info = await transporter.sendMail({
-				from: `"SPŠT Knižnica"`,
+				from: fromEmail ? `"SPŠT Knižnica" <${fromEmail}>` : `"SPŠT Knižnica" <${user}>`,
 				to: args.to,
 				subject: args.subject,
 				text: args.text,
 				html: args.html || args.text,
 			});
 
-			console.log("Message sent: %s", info.messageId);
+			console.log("✅ Message sent successfully:", info.messageId);
 			return { success: true, messageId: info.messageId };
 		} catch (error) {
-			console.error("Error sending email:", error);
+			console.error("❌ Error sending email:", error);
 			return { success: false, error: String(error) };
 		}
 	},
@@ -53,31 +72,85 @@ export const testConnection = internalAction({
 		to: v.string(),
 	},
 	handler: async (_ctx, args) => {
-		const { SMTP_HOST: host, SMTP_USER: user, SMTP_PASS: pass, SMTP_PORT: port, SMTP_FROM: from_env } = env;
+		const host = process.env.SMTP_HOST || "sandbox.smtp.mailtrap.io";
+		const port = process.env.SMTP_PORT || "2525";
+		const user = process.env.SMTP_USER || "";
+		const pass = process.env.SMTP_PASS || "";
+		const fromEmail = process.env.SMTP_FROM || user;
+
+		if (!user || !pass) {
+			return { 
+				success: false, 
+				error: "SMTP credentials not configured",
+				details: {
+					host,
+					port,
+					user: "NOT_SET",
+					timestamp: new Date().toISOString(),
+				}
+			};
+		}
 
 		const transporter = nodemailer.createTransport({
 			host,
 			port: Number(port),
-			secure: Number(port) === 465,
+			secure: false,
 			auth: {
 				user,
 				pass,
+			},
+			tls: {
+				rejectUnauthorized: false,
 			},
 		});
 
 		try {
 			await transporter.verify();
+			console.log("✅ SMTP connection verified");
+			
 			const info = await transporter.sendMail({
-				from: `"SPŠT Knižnica Test" <${from_env || user}>`,
+				from: fromEmail ? `"SPŠT Knižnica Test" <${fromEmail}>` : `"SPŠT Knižnica Test" <${user}>`,
 				to: args.to,
-				subject: "Test pripojenia SMTP",
-				text: "Toto je testovací email z SPŠT Knižnice. Vaše nastavenia SMTP sú správne.",
-				html: "<h1>Test pripojenia SMTP</h1><p>Toto je testovací email z <strong>SPŠT Knižnice</strong>. Vaše nastavenia SMTP sú správne.</p>",
+				subject: "Test pripojenia SMTP - SPŠT Knižnica",
+				text: `Testovací email z SPŠT Knižnice\n\nDetaily:\nHost: ${host}\nPort: ${port}\nPoužívateľ: ${user}`,
+				html: `
+					<h1>Test pripojenia SMTP</h1>
+					<p>Toto je testovací email z <strong>SPŠT Knižnice</strong>.</p>
+					<p>✅ Vaše nastavenia SMTP sú správne!</p>
+					<hr>
+					<p><strong>Detaily pripojenia:</strong></p>
+					<ul>
+						<li><strong>Host:</strong> ${host}</li>
+						<li><strong>Port:</strong> ${port}</li>
+						<li><strong>Používateľ:</strong> ${user}</li>
+						<li><strong>Čas:</strong> ${new Date().toLocaleString()}</li>
+					</ul>
+				`,
 			});
 
-			return { success: true, messageId: info.messageId };
+			console.log("✅ Test email sent:", info.messageId);
+			return { 
+				success: true, 
+				messageId: info.messageId,
+				details: {
+					host,
+					port,
+					user,
+					timestamp: new Date().toISOString(),
+				}
+			};
 		} catch (error) {
-			return { success: false, error: String(error) };
+			console.error("❌ SMTP connection test failed:", error);
+			return { 
+				success: false, 
+				error: String(error),
+				details: {
+					host,
+					port,
+					user,
+					timestamp: new Date().toISOString(),
+				}
+			};
 		}
 	},
 });
