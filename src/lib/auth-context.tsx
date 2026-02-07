@@ -98,7 +98,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		getCurrentUserMutation({ token })
 			.then((user) => {
 				if (cancelled) return;
-				
+
 				if (user) {
 					debugLog("User loaded successfully:", user.email);
 					setCurrentUser(user);
@@ -114,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 			})
 			.catch((error) => {
 				if (cancelled) return;
-				
+
 				debugLog("Error loading user:", error);
 
 				// Retry logic - max 2 retries
