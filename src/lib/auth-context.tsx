@@ -93,8 +93,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		debugLog("Fetching current user with token");
 		setIsLoading(true);
 
+		let cancelled = false;
+
 		getCurrentUserMutation({ token })
 			.then((user) => {
+				if (cancelled) return;
+
 				if (user) {
 					debugLog("User loaded successfully:", user.email);
 					setCurrentUser(user);
@@ -109,32 +113,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				}
 			})
 			.catch((error) => {
+				if (cancelled) return;
+
 				debugLog("Error loading user:", error);
 
 				// Retry logic - max 2 retries
-				if (retryCount < 2) {
-					debugLog(`Retrying... (attempt ${retryCount + 1}/2)`);
-					setRetryCount(retryCount + 1);
-					setTimeout(
-						() => {
-							// Trigger re-fetch by updating a dummy state
-							setToken(token);
-						},
-						1000 * (retryCount + 1),
-					); // Exponential backoff
-				} else {
-					debugLog("Max retries reached, clearing token");
-					setCurrentUser(null);
-					setToken(null);
-					setRetryCount(0);
-					toast.error("Chyba pri načítaní používateľa", {
-						description: "Prosím prihláste sa znova",
-					});
-				}
+				setRetryCount((prevCount) => {
+					if (prevCount < 2) {
+						debugLog(`Retrying... (attempt ${prevCount + 1}/2)`);
+						setTimeout(
+							() => {
+								// Trigger re-fetch by updating token (which will trigger this effect again)
+								setToken((prevToken) => prevToken);
+							},
+							1000 * (prevCount + 1),
+						); // Exponential backoff
+						return prevCount + 1;
+					} else {
+						debugLog("Max retries reached, clearing token");
+						setCurrentUser(null);
+						setToken(null);
+						toast.error("Chyba pri načítaní používateľa", {
+							description: "Prosím prihláste sa znova",
+						});
+						return 0;
+					}
+				});
 			})
 			.finally(() => {
-				setIsLoading(false);
+				if (!cancelled) {
+					setIsLoading(false);
+				}
 			});
+
+		return () => {
+			cancelled = true;
+		};
 	}, [token, getCurrentUserMutation]);
 
 	const login = async (email: string, password: string) => {

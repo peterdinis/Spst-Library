@@ -322,9 +322,10 @@ export const NotificationDropdown: FC<NotificationDropdownProps> = ({
 	className,
 }) => {
 	const { user } = useAuth();
-	const convexNotifications = useQuery(api.notifications.getUserNotifications, {
-		userId: user?.id as any,
-	});
+	const convexNotifications = useQuery(
+		api.notifications.getUserNotifications,
+		user?._id ? { userId: user._id } : "skip",
+	);
 
 	const markAsReadMutation = useMutation(api.notifications.markAsRead);
 	const markAllAsReadMutation = useMutation(api.notifications.markAllAsRead);
@@ -366,8 +367,8 @@ export const NotificationDropdown: FC<NotificationDropdownProps> = ({
 	);
 
 	const markAllAsRead = async () => {
-		if (user?.id) {
-			await markAllAsReadMutation({ userId: user.id as any });
+		if (user?._id) {
+			await markAllAsReadMutation({ userId: user._id });
 		}
 	};
 

@@ -13,6 +13,7 @@ import type * as authors from "../authors.js";
 import type * as books from "../books.js";
 import type * as categories from "../categories.js";
 import type * as emails from "../emails.js";
+import type * as env from "../env.js";
 import type * as files from "../files.js";
 import type * as notifications from "../notifications.js";
 import type * as orders from "../orders.js";
@@ -31,6 +32,7 @@ declare const fullApi: ApiFromModules<{
   books: typeof books;
   categories: typeof categories;
   emails: typeof emails;
+  env: typeof env;
   files: typeof files;
   notifications: typeof notifications;
   orders: typeof orders;
