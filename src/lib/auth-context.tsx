@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const [token, setToken] = useState<string | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [currentUser, setCurrentUser] = useState<User | null>(null);
-	const [retryCount, setRetryCount] = useState(0);
+	const [, setRetryCount] = useState(0);
 
 	const loginMutation = useMutation(api.auth.login);
 	const registerMutation = useMutation(api.auth.register);
