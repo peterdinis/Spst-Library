@@ -4,121 +4,127 @@ import { authors, categories, books, borrowedBooks } from "@/db/schema";
 import { eq, and, like, or, count } from "drizzle-orm";
 
 export interface BookFilters {
-  search?: string;
-  authorId?: string;
-  categoryId?: string;
-  limit?: number;
-  offset?: number;
+	search?: string;
+	authorId?: string;
+	categoryId?: string;
+	limit?: number;
+	offset?: number;
 }
 
 export const getBooks = unstable_cache(
-  async (filters: BookFilters = {}) => {
-    const { search, authorId, categoryId, limit = 20, offset = 0 } = filters;
-    
-    const conditions = [];
-    if (search) {
-      conditions.push(or(like(books.title, `%${search}%`), like(books.isbn, `%${search}%`)));
-    }
-    if (authorId) {
-      conditions.push(eq(books.authorId, authorId));
-    }
-    if (categoryId) {
-      conditions.push(eq(books.categoryId, categoryId));
-    }
+	async (filters: BookFilters = {}) => {
+		const { search, authorId, categoryId, limit = 20, offset = 0 } = filters;
 
-    const where = conditions.length > 0 ? and(...conditions) : undefined;
+		const conditions = [];
+		if (search) {
+			conditions.push(
+				or(like(books.title, `%${search}%`), like(books.isbn, `%${search}%`)),
+			);
+		}
+		if (authorId) {
+			conditions.push(eq(books.authorId, authorId));
+		}
+		if (categoryId) {
+			conditions.push(eq(books.categoryId, categoryId));
+		}
 
-    const [items, totalCount] = await Promise.all([
-      db.query.books.findMany({
-        where,
-        limit,
-        offset,
-        with: {
-            author: true,
-            category: true,
-        },
-        orderBy: (books, { desc }) => [desc(books.createdAt)],
-      }),
-      db.select({ value: count() }).from(books).where(where).then(res => res[0].value)
-    ]);
+		const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-    return { items, total: totalCount };
-  },
-  ["books-list"],
-  {
-    tags: ["books"],
-    revalidate: 3600,
-  }
+		const [items, totalCount] = await Promise.all([
+			db.query.books.findMany({
+				where,
+				limit,
+				offset,
+				with: {
+					author: true,
+					category: true,
+				},
+				orderBy: (books, { desc }) => [desc(books.createdAt)],
+			}),
+			db
+				.select({ value: count() })
+				.from(books)
+				.where(where)
+				.then((res) => res[0].value),
+		]);
+
+		return { items, total: totalCount };
+	},
+	["books-list"],
+	{
+		tags: ["books"],
+		revalidate: 3600,
+	},
 );
 
 export const getAuthors = unstable_cache(
-  async () => {
-    return db.query.authors.findMany();
-  },
-  ["authors"],
-  {
-    tags: ["authors"],
-    revalidate: 3600,
-  }
+	async () => {
+		return db.query.authors.findMany();
+	},
+	["authors"],
+	{
+		tags: ["authors"],
+		revalidate: 3600,
+	},
 );
 
 export const getCategories = unstable_cache(
-  async () => {
-    return db.query.categories.findMany();
-  },
-  ["categories"],
-  {
-    tags: ["categories"],
-    revalidate: 3600,
-  }
+	async () => {
+		return db.query.categories.findMany();
+	},
+	["categories"],
+	{
+		tags: ["categories"],
+		revalidate: 3600,
+	},
 );
 
 export const getBorrowedByUserId = unstable_cache(
-  async (userId: string) => {
-    return db.query.borrowedBooks.findMany({
-      where: eq(borrowedBooks.userId, userId),
-      with: {
-        book: true,
-      },
-    });
-  },
-  ["borrowed-books"],
-  {
-    tags: ["borrowed-books"],
-    revalidate: 60, // Shorter revalidation for user-specific data
-  }
+	async (userId: string) => {
+		return db.query.borrowedBooks.findMany({
+			where: eq(borrowedBooks.userId, userId),
+			with: {
+				book: true,
+			},
+		});
+	},
+	["borrowed-books"],
+	{
+		tags: ["borrowed-books"],
+		revalidate: 60, // Shorter revalidation for user-specific data
+	},
 );
 
 export const getBookById = unstable_cache(
-  async (id: string) => {
-    return db.query.books.findFirst({
-      where: eq(books.id, id),
-      with: {
-        author: true,
-        category: true,
-      },
-    });
-  },
-  ["book-detail"],
-  {
-    tags: ["books"],
-  }
+	async (id: string) => {
+		return db.query.books.findFirst({
+			where: eq(books.id, id),
+			with: {
+				author: true,
+				category: true,
+			},
+		});
+	},
+	["book-detail"],
+	{
+		tags: ["books"],
+	},
 );
 
 export const getAuthorById = unstable_cache(
-  async (id: string) => {
-    return db.query.authors.findFirst({
-      where: eq(authors.id, id),
-      with: {
-        books: {
-          with: { category: true },
-          orderBy: (b, { desc }) => [desc(b.createdAt)],
-        },
-      },
-    });
-  },
-  ["author-detail"],
-  {
-    tags: ["authors", "books"],
-  }
+	async (id: string) => {
+		return db.query.authors.findFirst({
+			where: eq(authors.id, id),
+			with: {
+				books: {
+					with: { category: true },
+					orderBy: (b, { desc }) => [desc(b.createdAt)],
+				},
+			},
+		});
+	},
+	["author-detail"],
+	{
+		tags: ["authors", "books"],
+	},
 );

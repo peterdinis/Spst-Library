@@ -1,42 +1,48 @@
-import type { Metadata } from 'next';
-import { Ubuntu } from 'next/font/google';
-import './globals.css';
-import { TRPCProvider } from '@/trpc/Provider';
-import { Toaster } from '@/components/ui/sonner'
-import { Navbar } from '@/components/layout/Navbar';
+import type { Metadata } from "next";
+import { Ubuntu } from "next/font/google";
+import "./globals.css";
+import { TRPCProvider } from "@/trpc/Provider";
+import { Toaster } from "@/components/ui/sonner";
+import { Navbar } from "@/components/layout/Navbar";
 
 const ubuntu = Ubuntu({
-  variable: '--font-ubuntu',
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '700'],
+	variable: "--font-ubuntu",
+	subsets: ["latin"],
+	weight: ["300", "400", "500", "700"],
 });
 
-import { ThemeProvider } from '@/components/theme-provider';
-import { Loader2 } from 'lucide-react';
+import { ThemeProvider } from "@/components/theme-provider";
+import { Loader2 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: 'SPST Knižnica',
-  description: 'Spravujte a vypožičiavajte si knihy zo školskej knižnice SPST.',
+	title: "SPST Knižnica",
+	description: "Spravujte a vypožičiavajte si knihy zo školskej knižnice SPST.",
 };
 
 export default function RootLayout({
-  children,
+	children,
 }: Readonly<{
-  children: React.ReactNode;
+	children: React.ReactNode;
 }>) {
-  return (
-    <html lang="sk" suppressHydrationWarning suppressContentEditableWarning>
-      <body
-        className={`${ubuntu.variable} font-sans antialiased flex min-h-screen flex-col bg-background text-foreground`}
-      >
-        <ThemeProvider fallback={<Loader2 className="animate-spin" />} attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <TRPCProvider>
-            <Navbar />
-            {children}
-            <Toaster />
-          </TRPCProvider>
-        </ThemeProvider>
-      </body>
-    </html>
-  );
+	return (
+		<html lang="sk" suppressHydrationWarning suppressContentEditableWarning>
+			<body
+				className={`${ubuntu.variable} font-sans antialiased flex min-h-screen flex-col bg-background text-foreground`}
+			>
+				<ThemeProvider
+					fallback={<Loader2 className="animate-spin" />}
+					attribute="class"
+					defaultTheme="system"
+					enableSystem
+					disableTransitionOnChange
+				>
+					<TRPCProvider>
+						<Navbar />
+						{children}
+						<Toaster />
+					</TRPCProvider>
+				</ThemeProvider>
+			</body>
+		</html>
+	);
 }

@@ -1,32 +1,32 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { ThemeProvider as NextThemesProvider } from "next-themes"
-import { useIsMounted } from "@/hooks/useIsMounted"
+import * as React from "react";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 function ThemeProviderInner({
-  children,
-  ...props
+	children,
+	...props
 }: React.ComponentProps<typeof NextThemesProvider>) {
-  const isMounted = useIsMounted()
+	const isMounted = useIsMounted();
 
-  if (!isMounted()) {
-    return <>{children}</>
-  }
+	if (!isMounted()) {
+		return <>{children}</>;
+	}
 
-  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
+	return <NextThemesProvider {...props}>{children}</NextThemesProvider>;
 }
 
 export function ThemeProvider({
-  children,
-  fallback,
-  ...props
+	children,
+	fallback,
+	...props
 }: React.ComponentProps<typeof NextThemesProvider> & {
-  fallback?: React.ReactNode
+	fallback?: React.ReactNode;
 }) {
-  return (
-    <React.Suspense fallback={fallback ?? null}>
-      <ThemeProviderInner {...props}>{children}</ThemeProviderInner>
-    </React.Suspense>
-  )
+	return (
+		<React.Suspense fallback={fallback ?? null}>
+			<ThemeProviderInner {...props}>{children}</ThemeProviderInner>
+		</React.Suspense>
+	);
 }
