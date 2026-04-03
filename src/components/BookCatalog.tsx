@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
 
 const ITEMS_PER_PAGE = 8;
 
@@ -80,7 +79,7 @@ export function BookCatalog() {
                         <SelectValue placeholder="Všetci autori" />
                     </SelectTrigger>
                     <SelectContent className="rounded-2xl shadow-2xl border-slate-200/50">
-                        <SelectItem value="all">Všetci autori</SelectItem>
+                        <SelectItem>Všetci autori</SelectItem>
                         {authors?.map(a => <SelectItem key={a.id} value={a.id} className="rounded-xl">{a.name}</SelectItem>)}
                     </SelectContent>
                 </Select>
@@ -92,8 +91,8 @@ export function BookCatalog() {
                         <SelectValue placeholder="Všetky kategórie" />
                     </SelectTrigger>
                     <SelectContent className="rounded-2xl shadow-2xl border-slate-200/50">
-                        <SelectItem value="all">Všetky kategórie</SelectItem>
-                        {categories?.map(c => <SelectItem key={c.id} value={c.id} className="rounded-xl">{c.name}</SelectItem>)}
+                        <SelectItem>Všetky kategórie</SelectItem>
+                        {categories?.map(c => <SelectItem key={c.id} value={c.name} className="rounded-xl">{c.name}</SelectItem>)}
                     </SelectContent>
                 </Select>
 
