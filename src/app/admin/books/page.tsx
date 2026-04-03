@@ -1,17 +1,7 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
 import { BookForm } from "@/components/admin/BookForm";
 import { BooksTable } from "@/components/admin/Catalogs";
 
 export default async function AdminBooksPage() {
-  const session = await auth();
-
-  // Simple admin check: in a real app, verify role
-  if (!session?.user || (session.user as any).role !== "admin") {
-    redirect("/admin/login");
-  }
-
-  // Pre-fetch auth and categories for the form on server side
   return (
     <div className="space-y-12 pb-20">
       <div className="flex flex-col gap-2">

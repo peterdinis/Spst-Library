@@ -1,16 +1,8 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { BookOpen, Users, Tags, ArrowRight } from "lucide-react";
 
 export default async function AdminDashboardPage() {
-  const session = await auth();
-
-  if (!session?.user || (session.user as any).role !== "admin") {
-    redirect("/admin/login");
-  }
-
   const sections = [
     {
       title: "Knihy",

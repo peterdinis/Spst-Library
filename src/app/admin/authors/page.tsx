@@ -1,16 +1,8 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
 import { AuthorForm } from "@/components/admin/AuthorForm";
 import { AuthorsTable } from "@/components/admin/Catalogs";
 import { Users } from "lucide-react";
 
 export default async function AdminAuthorsPage() {
-  const session = await auth();
-
-  if (!session?.user || (session.user as any).role !== "admin") {
-    redirect("/admin/login");
-  }
-
   return (
     <div className="space-y-12 pb-20">
       <div className="flex flex-col gap-2">
