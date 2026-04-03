@@ -1,39 +1,63 @@
 import Image from "next/image";
-import { mockAuthors, mockBooks } from "@/lib/mockData";
 import { notFound } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { User, BookOpen, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { getAuthorById } from "@/lib/data";
+import type { Metadata } from "next";
 
-export default async function AuthorDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+type Props = { params: Promise<{ id: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  
-  const author = mockAuthors.find((a) => a.id === id);
+  const author = await getAuthorById(id);
+  if (!author) return { title: "Autor" };
+  return {
+    title: `${author.name} | Autori`,
+    description: author.bio?.slice(0, 160) || `Profil autora ${author.name} a knihy v katalógu.`,
+  };
+}
+
+export default async function AuthorDetailsPage({ params }: Props) {
+  const { id } = await params;
+
+  const author = await getAuthorById(id);
   if (!author) notFound();
 
-  // Find all books by this author
-  const authorBooks = mockBooks.filter((b) => b.author === author.name);
+  const authorBooks = author.books ?? [];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 pb-16">
+    <div className="mx-auto max-w-4xl space-y-12 pb-16">
       <Link href="/authors">
         <Button variant="ghost" className="mb-4 rounded-full pl-2">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Späť na Autorov
+          Späť na autorov
         </Button>
       </Link>
 
-      <Card className="bg-card/40 backdrop-blur-xl border-slate-200/50 dark:border-slate-800/50 overflow-hidden rounded-[2.5rem] shadow-2xl relative">
-        <div className="absolute top-0 w-full h-40 bg-gradient-to-br from-primary/30 via-primary/10 to-transparent z-0" />
-        <CardContent className="pt-20 px-8 sm:px-12 pb-12 relative z-10 flex flex-col md:flex-row gap-8 items-center md:items-start text-center md:text-left">
-          <div className="h-40 w-40 rounded-[2rem] bg-background shadow-xl flex items-center justify-center border-4 border-white dark:border-slate-900 shrink-0">
-            <User className="h-20 w-20 text-primary/60" />
+      <Card className="relative overflow-hidden rounded-[2.5rem] border-slate-200/50 bg-card/40 shadow-2xl backdrop-blur-xl dark:border-slate-800/50">
+        <div className="absolute top-0 z-0 h-40 w-full bg-gradient-to-br from-primary/30 via-primary/10 to-transparent" />
+        <CardContent className="relative z-10 flex flex-col items-center gap-8 px-8 pb-12 pt-20 text-center md:flex-row md:items-start md:text-left sm:px-12">
+          <div className="flex h-40 w-40 shrink-0 items-center justify-center overflow-hidden rounded-[2rem] border-4 border-background bg-muted shadow-xl dark:border-slate-900">
+            {author.imageUrl ? (
+              <Image
+                src={author.imageUrl}
+                alt={`Fotografia autora ${author.name}`}
+                width={160}
+                height={160}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <User className="h-20 w-20 text-primary/60" />
+            )}
           </div>
-          <div className="space-y-4 flex-1">
-            <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground">{author.name}</h1>
-            <div className="h-1 w-20 bg-primary/40 rounded-full mx-auto md:mx-0" />
-            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+          <div className="flex-1 space-y-4">
+            <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
+              {author.name}
+            </h1>
+            <div className="mx-auto h-1 w-20 rounded-full bg-primary/40 md:mx-0" />
+            <p className="text-lg font-medium leading-relaxed text-slate-600 dark:text-slate-300">
               {author.bio || "Životopis pre tohto autora momentálne nie je k dispozícii."}
             </p>
           </div>
@@ -41,39 +65,53 @@ export default async function AuthorDetailsPage({ params }: { params: Promise<{ 
       </Card>
 
       <div className="space-y-6">
-        <div className="flex items-center gap-3 mb-8">
+        <div className="mb-8 flex items-center gap-3">
           <BookOpen className="h-6 w-6 text-primary" />
           <h2 className="text-3xl font-bold tracking-tight">Knihy od autora</h2>
+          <span className="rounded-full bg-muted px-3 py-0.5 text-sm font-semibold text-muted-foreground">
+            {authorBooks.length}
+          </span>
         </div>
 
         {authorBooks.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {authorBooks.map((book) => (
               <Link href={`/books/${book.id}`} key={book.id}>
-                <Card className="h-full bg-card/60 backdrop-blur-md hover:-translate-y-1 transition-all duration-300 hover:shadow-xl hover:border-primary/50 group rounded-2xl overflow-hidden flex flex-row">
-                  {book.coverUrl && (
-                    <div className="w-1/3 aspect-[3/4] relative overflow-hidden bg-slate-100 dark:bg-slate-900 shrink-0">
+                <Card className="group flex h-full flex-row overflow-hidden rounded-2xl bg-card/60 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-xl dark:bg-slate-900/40">
+                  {book.coverUrl ? (
+                    <div className="relative aspect-[3/4] w-1/3 shrink-0 overflow-hidden bg-slate-100 dark:bg-slate-900">
                       <Image
                         src={book.coverUrl}
                         alt={book.title}
                         fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 768px) 33vw, 120px"
                       />
                     </div>
+                  ) : (
+                    <div className="flex aspect-[3/4] w-1/3 shrink-0 items-center justify-center bg-muted">
+                      <BookOpen className="h-8 w-8 text-muted-foreground/50" />
+                    </div>
                   )}
-                  <div className="p-4 flex-1 flex flex-col justify-center">
-                    <CardTitle className="text-xl group-hover:text-primary transition-colors line-clamp-2">{book.title}</CardTitle>
-                    <p className="text-sm font-semibold uppercase tracking-wider text-primary/80 mt-2">{book.category}</p>
+                  <div className="flex flex-1 flex-col justify-center p-4">
+                    <CardTitle className="line-clamp-2 text-xl transition-colors group-hover:text-primary">
+                      {book.title}
+                    </CardTitle>
+                    {book.category?.name ? (
+                      <p className="mt-2 text-sm font-semibold uppercase tracking-wider text-primary/80">
+                        {book.category.name}
+                      </p>
+                    ) : null}
                   </div>
                 </Card>
               </Link>
             ))}
           </div>
         ) : (
-          <div className="text-center py-16 bg-muted/30 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
-            <BookOpen className="h-12 w-12 text-slate-300 mx-auto mb-4" />
+          <div className="rounded-3xl border border-dashed border-slate-300 py-16 text-center dark:border-slate-700">
+            <BookOpen className="mx-auto mb-4 h-12 w-12 text-slate-300" />
             <h3 className="text-xl font-bold">Zatiaľ žiadne knihy</h3>
-            <p className="text-slate-500 mt-2">V našej databáze sa od tohto autora nenachádzajú žiadne diela.</p>
+            <p className="mt-2 text-slate-500">V katalógu zatiaľ nie sú priradené žiadne tituly tomuto autorovi.</p>
           </div>
         )}
       </div>

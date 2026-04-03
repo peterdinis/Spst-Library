@@ -104,3 +104,21 @@ export const getBookById = unstable_cache(
     tags: ["books"],
   }
 );
+
+export const getAuthorById = unstable_cache(
+  async (id: string) => {
+    return db.query.authors.findFirst({
+      where: eq(authors.id, id),
+      with: {
+        books: {
+          with: { category: true },
+          orderBy: (b, { desc }) => [desc(b.createdAt)],
+        },
+      },
+    });
+  },
+  ["author-detail"],
+  {
+    tags: ["authors", "books"],
+  }
+);

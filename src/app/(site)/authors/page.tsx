@@ -1,11 +1,14 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { useState, useMemo } from "react";
 import { trpc } from "@/trpc/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { User, Search, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 const ITEMS_PER_PAGE = 6;
@@ -69,22 +72,44 @@ export default function AuthorsPage() {
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3 }}
               >
-                <Card className="h-full bg-card/70 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/50 dark:border-slate-800/80 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 rounded-3xl overflow-hidden group">
-                  <div className="h-24 bg-gradient-to-r from-primary/20 to-secondary/20 dark:from-primary/20 dark:to-slate-800 relative">
+                <Card className="group flex h-full flex-col overflow-hidden rounded-3xl border-slate-200/50 bg-card/70 backdrop-blur-md transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl dark:border-slate-800/80 dark:bg-slate-900/80">
+                  <div className="relative h-24 bg-gradient-to-r from-primary/20 to-secondary/20 dark:from-primary/20 dark:to-slate-800">
                     <div className="absolute -bottom-8 left-6">
-                      <div className="h-16 w-16 rounded-2xl bg-background dark:bg-slate-900 shadow-lg flex items-center justify-center border border-slate-100 dark:border-slate-700 rotate-3 group-hover:rotate-0 transition-transform">
-                        <User className="h-8 w-8 text-primary" />
+                      <div className="flex h-16 w-16 rotate-3 items-center justify-center overflow-hidden rounded-2xl border border-slate-100 bg-background shadow-lg transition-transform group-hover:rotate-0 dark:border-slate-700 dark:bg-slate-900">
+                        {author.imageUrl ? (
+                          <Image
+                            src={author.imageUrl}
+                            alt={`${author.name} — náhľad`}
+                            width={64}
+                            height={64}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <User className="h-8 w-8 text-primary" />
+                        )}
                       </div>
                     </div>
                   </div>
                   <CardHeader className="pt-12">
                     <CardTitle className="text-2xl font-bold text-slate-900 dark:text-slate-100">{author.name}</CardTitle>
                   </CardHeader>
-                  <CardContent className="pb-8">
-                    <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm line-clamp-4">
+                  <CardContent className="flex-1 pb-2">
+                    <p className="line-clamp-4 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
                       {author.bio || "Životopis momentálne nie je k dispozícii v našej databáze."}
                     </p>
                   </CardContent>
+                  <CardFooter className="pt-2 pb-8">
+                    <Link
+                      href={`/authors/${author.id}`}
+                      className={cn(
+                        buttonVariants({ variant: "secondary", size: "lg" }),
+                        "w-full rounded-xl py-2.5 text-base font-semibold"
+                      )}
+                    >
+                      Profil a knihy
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                  </CardFooter>
                 </Card>
               </motion.div>
             ))}
