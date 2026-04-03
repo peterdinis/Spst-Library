@@ -111,7 +111,12 @@ export function AdminOrdersPanel() {
 									disabled={updateStatus.isPending}
 								>
 									<SelectTrigger className="h-9 rounded-xl w-full">
-										<SelectValue />
+										<SelectValue>
+											{(value) =>
+												statusLabels[String(value)] ??
+												String(value ?? "")
+											}
+										</SelectValue>
 									</SelectTrigger>
 									<SelectContent>
 										{Object.entries(statusLabels).map(([value, label]) => (

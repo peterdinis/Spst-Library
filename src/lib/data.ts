@@ -1,11 +1,12 @@
 import { unstable_cache } from "next/cache";
 import { db } from "@/db";
 import { authors, categories, books, borrowedBooks } from "@/db/schema";
-import { eq, and, like, or, count } from "drizzle-orm";
+import { eq, and, like, or, count, inArray, sql } from "drizzle-orm";
 
 export interface BookFilters {
 	search?: string;
-	authorId?: string;
+	/** Presné meno autora (z katalógu), nie ID — vyhľadajú sa všetky knihy autorov s týmto menom */
+	authorName?: string;
 	categoryId?: string;
 	limit?: number;
 	offset?: number;
@@ -13,16 +14,40 @@ export interface BookFilters {
 
 export const getBooks = unstable_cache(
 	async (filters: BookFilters = {}) => {
-		const { search, authorId, categoryId, limit = 20, offset = 0 } = filters;
+		const { search, authorName, categoryId, limit = 20, offset = 0 } = filters;
 
 		const conditions = [];
-		if (search) {
-			conditions.push(
-				or(like(books.title, `%${search}%`), like(books.isbn, `%${search}%`)),
-			);
+		if (search?.trim()) {
+			const term = `%${search.trim()}%`;
+			const authorsByName = await db
+				.select({ id: authors.id })
+				.from(authors)
+				.where(like(authors.name, term));
+			const authorIdsForSearch = authorsByName.map((r) => r.id);
+			const searchClauses = [
+				like(books.title, term),
+				like(books.isbn, term),
+			] as const;
+			if (authorIdsForSearch.length > 0) {
+				conditions.push(
+					or(...searchClauses, inArray(books.authorId, authorIdsForSearch)),
+				);
+			} else {
+				conditions.push(or(...searchClauses));
+			}
 		}
-		if (authorId) {
-			conditions.push(eq(books.authorId, authorId));
+		if (authorName?.trim()) {
+			const name = authorName.trim();
+			const rows = await db
+				.select({ id: authors.id })
+				.from(authors)
+				.where(eq(authors.name, name));
+			const ids = rows.map((r) => r.id);
+			if (ids.length === 0) {
+				conditions.push(sql`1 = 0`);
+			} else {
+				conditions.push(inArray(books.authorId, ids));
+			}
 		}
 		if (categoryId) {
 			conditions.push(eq(books.categoryId, categoryId));

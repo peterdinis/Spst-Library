@@ -31,28 +31,23 @@ export function NotificationBell() {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger>
-				<Button
-					variant="ghost"
-					size="icon"
-					className="relative group rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
-				>
-					<Bell className="h-6 w-6 text-slate-600 dark:text-slate-400 group-hover:text-indigo-600 transition-colors" />
-					<AnimatePresence>
-						{unreadCount > 0 && (
-							<motion.div
-								initial={{ scale: 0 }}
-								animate={{ scale: 1 }}
-								exit={{ scale: 0 }}
-								className="absolute -top-1 -right-1"
-							>
-								<Badge className="h-5 min-w-[20px] px-1 bg-rose-500 text-white border-2 border-white dark:border-slate-950 flex items-center justify-center text-[10px] font-black rounded-full">
-									{unreadCount}
-								</Badge>
-							</motion.div>
-						)}
-					</AnimatePresence>
-				</Button>
+			{/* Nie vnorené <Button> — Trigger už renderuje <button> (Base UI). */}
+			<DropdownMenuTrigger className="group relative inline-flex size-9 items-center justify-center rounded-full transition-colors hover:bg-slate-100 dark:hover:bg-slate-800">
+				<Bell className="h-6 w-6 text-slate-600 transition-colors group-hover:text-indigo-600 dark:text-slate-400" />
+				<AnimatePresence>
+					{unreadCount > 0 && (
+						<motion.div
+							initial={{ scale: 0 }}
+							animate={{ scale: 1 }}
+							exit={{ scale: 0 }}
+							className="absolute -top-1 -right-1"
+						>
+							<Badge className="flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-rose-500 px-1 text-[10px] font-black text-white dark:border-slate-950">
+								{unreadCount}
+							</Badge>
+						</motion.div>
+					)}
+				</AnimatePresence>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent
 				align="end"
