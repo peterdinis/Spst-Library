@@ -1,36 +1,21 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
 import { CategoryForm } from "@/components/admin/CategoryForm";
 import { CategoriesTable } from "@/components/admin/Catalogs";
-import { Tags } from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
-export default async function AdminCategoriesPage() {
-  const session = await auth();
+export default function AdminCategoriesPage() {
+	return (
+		<div className="space-y-10 pb-12">
+			<AdminPageHeader
+				title="Správa kategórií"
+				description="Žánre a tematické okruhy pre knihy v katalógu."
+			/>
 
-  if (!session?.user || (session.user as any).role !== "admin") {
-    redirect("/admin/login");
-  }
-
-  return (
-    <div className="space-y-12 pb-20">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-3">
-            <div className="p-3 bg-purple-100 text-purple-600 rounded-2xl">
-                <Tags className="h-6 w-6" />
-            </div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">Správa Kategórií</h1>
-        </div>
-        <p className="text-lg text-slate-500 ml-1">Spravujte kategórie kníh vo vašej knižnici.</p>
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        <div className="lg:col-span-1 sticky top-8">
-          <CategoryForm />
-        </div>
-        <div className="lg:col-span-2">
-            <CategoriesTable />
-        </div>
-      </div>
-    </div>
-  );
+			<div className="grid grid-cols-1 xl:grid-cols-[minmax(0,420px),1fr] gap-8 xl:gap-10 items-start">
+				<div className="relative z-10 bg-slate-50 pb-1 dark:bg-background xl:sticky xl:top-24 xl:max-h-[calc(100dvh-6rem)] xl:shrink-0 xl:overflow-y-auto xl:self-start xl:overscroll-contain">
+					<CategoryForm />
+				</div>
+				<CategoriesTable />
+			</div>
+		</div>
+	);
 }

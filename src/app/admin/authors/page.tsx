@@ -1,36 +1,21 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
 import { AuthorForm } from "@/components/admin/AuthorForm";
 import { AuthorsTable } from "@/components/admin/Catalogs";
-import { Users } from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
-export default async function AdminAuthorsPage() {
-  const session = await auth();
+export default function AdminAuthorsPage() {
+	return (
+		<div className="space-y-10 pb-12">
+			<AdminPageHeader
+				title="Správa autorov"
+				description="Pridajte autorov s fotkou (Azure Blob, priečinok authors). Fotka sa zobrazí v tabuľke aj vo formulári."
+			/>
 
-  if (!session?.user || (session.user as any).role !== "admin") {
-    redirect("/admin/login");
-  }
-
-  return (
-    <div className="space-y-12 pb-20">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-100 text-amber-600 rounded-2xl">
-                <Users className="h-6 w-6" />
-            </div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">Správa Autorov</h1>
-        </div>
-        <p className="text-lg text-slate-500 ml-1">Spravujte autorov vo vašom knižnom katalógu.</p>
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        <div className="lg:col-span-1 sticky top-8">
-          <AuthorForm />
-        </div>
-        <div className="lg:col-span-2">
-            <AuthorsTable />
-        </div>
-      </div>
-    </div>
-  );
+			<div className="grid grid-cols-1 xl:grid-cols-[minmax(0,420px),1fr] gap-8 xl:gap-10 items-start">
+				<div className="relative z-10 bg-slate-50 pb-1 dark:bg-background xl:sticky xl:top-24 xl:max-h-[calc(100dvh-6rem)] xl:shrink-0 xl:overflow-y-auto xl:self-start xl:overscroll-contain">
+					<AuthorForm />
+				</div>
+				<AuthorsTable />
+			</div>
+		</div>
+	);
 }

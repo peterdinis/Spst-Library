@@ -1,29 +1,41 @@
-import { BlobServiceClient } from '@azure/storage-blob';
+import { BlobServiceClient } from "@azure/storage-blob";
 
-const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING as string;
+const AZURE_STORAGE_CONNECTION_STRING = process.env
+	.AZURE_STORAGE_CONNECTION_STRING as string;
 
-export async function uploadImageToAzure(file: File): Promise<string> {
-  if (!AZURE_STORAGE_CONNECTION_STRING) {
-    throw new Error('Azure Storage Connection String not found');
-  }
+export type AzureUploadOptions = {
+	/** Optional folder prefix inside the container (e.g. "books", "authors") */
+	prefix?: string;
+};
 
-  const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
-  const containerName = 'covers';
-  const containerClient = blobServiceClient.getContainerClient(containerName);
+export async function uploadImageToAzure(
+	file: File,
+	options?: AzureUploadOptions,
+): Promise<string> {
+	if (!AZURE_STORAGE_CONNECTION_STRING) {
+		throw new Error("Azure Storage Connection String not found");
+	}
 
-  // Ensure container exists
-  await containerClient.createIfNotExists({
-    access: 'blob',
-  });
+	const blobServiceClient = BlobServiceClient.fromConnectionString(
+		AZURE_STORAGE_CONNECTION_STRING,
+	);
+	const containerName = "covers";
+	const containerClient = blobServiceClient.getContainerClient(containerName);
 
-  const blobName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-  const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+	// Ensure container exists
+	await containerClient.createIfNotExists({
+		access: "blob",
+	});
 
-  const buffer = Buffer.from(await file.arrayBuffer());
+	const prefix = options?.prefix ? `${options.prefix.replace(/\/$/, "")}/` : "";
+	const blobName = `${prefix}${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "_")}`;
+	const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
-  await blockBlobClient.uploadData(buffer, {
-    blobHTTPHeaders: { blobContentType: file.type },
-  });
+	const buffer = Buffer.from(await file.arrayBuffer());
 
-  return blockBlobClient.url;
+	await blockBlobClient.uploadData(buffer, {
+		blobHTTPHeaders: { blobContentType: file.type },
+	});
+
+	return blockBlobClient.url;
 }

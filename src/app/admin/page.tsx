@@ -1,70 +1,101 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BookOpen, Users, Tags, ArrowRight } from "lucide-react";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+	CardDescription,
+} from "@/components/ui/card";
+import {
+	BookOpen,
+	Users,
+	Tags,
+	ArrowRight,
+	ClipboardList,
+	Cloud,
+} from "lucide-react";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
-export default async function AdminDashboardPage() {
-  const session = await auth();
+export default function AdminDashboardPage() {
+	const sections = [
+		{
+			title: "Knihy",
+			description:
+				"Pridávajte, upravujte a mažte knihy v katalógu vrátane obálok (Azure).",
+			href: "/admin/books",
+			icon: BookOpen,
+			iconBg:
+				"bg-indigo-100 text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-300",
+		},
+		{
+			title: "Objednávky",
+			description:
+				"Spracujte žiadosti čitateľov na prevzatie knihy v knižnici.",
+			href: "/admin/orders",
+			icon: ClipboardList,
+			iconBg:
+				"bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300",
+		},
+		{
+			title: "Entra",
+			description:
+				"Zoznam používateľov z Microsoft Entra ID (Graph API, app permissions).",
+			href: "/admin/entra-users",
+			icon: Cloud,
+			iconBg: "bg-sky-100 text-sky-700 dark:bg-sky-950/80 dark:text-sky-300",
+		},
+		{
+			title: "Autori",
+			description: "Spravujte autorov, životopisy a fotky nahrané do úložiska.",
+			href: "/admin/authors",
+			icon: Users,
+			iconBg:
+				"bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300",
+		},
+		{
+			title: "Kategórie",
+			description: "Organizujte knihy do žánrov a tematických okruhov.",
+			href: "/admin/categories",
+			icon: Tags,
+			iconBg:
+				"bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300",
+		},
+	];
 
-  if (!session?.user || (session.user as any).role !== "admin") {
-    redirect("/admin/login");
-  }
+	return (
+		<div className="space-y-10 pb-12">
+			<AdminPageHeader
+				title="Administrácia"
+				description="Rýchly prehľad sekcií. Použite menu vľavo na prepínanie medzi knihami, autormi a kategóriami."
+			/>
 
-  const sections = [
-    {
-      title: "Knihy",
-      description: "Pridávajte, upravujte a mažte knihy z vášho katalógu.",
-      href: "/admin/books",
-      icon: BookOpen,
-      color: "bg-indigo-100 text-indigo-600",
-      countLabel: "Všetky knihy"
-    },
-    {
-      title: "Autori",
-      description: "Spravujte zoznam autorov a ich životopisy.",
-      href: "/admin/authors",
-      icon: Users,
-      color: "bg-amber-100 text-amber-600",
-      countLabel: "Všetci autori"
-    },
-    {
-      title: "Kategórie",
-      description: "Organizujte knihy do kategórií pre lepšiu prehľadnosť.",
-      href: "/admin/categories",
-      icon: Tags,
-      color: "bg-purple-100 text-purple-600",
-      countLabel: "Všetky kategórie"
-    }
-  ];
-
-  return (
-    <div className="space-y-12 pb-20">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">Administrácia</h1>
-        <p className="text-lg text-slate-500">Vitajte v centre správy SPST Knižnice.</p>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {sections.map((section) => (
-          <Link key={section.href} href={section.href}>
-            <Card className="h-full hover:shadow-2xl transition-all duration-300 border-slate-200/50 group cursor-pointer rounded-3xl overflow-hidden active:scale-[0.98]">
-              <CardHeader className="pb-4">
-                <div className={`w-14 h-14 rounded-2xl ${section.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                  <section.icon className="h-7 w-7" />
-                </div>
-                <CardTitle className="text-2xl">{section.title}</CardTitle>
-                <CardDescription className="text-base mt-2">{section.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                 <div className="flex items-center text-sm font-semibold text-slate-900 group-hover:text-primary transition-colors">
-                    Prejsť na správu <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                 </div>
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
-      </div>
-    </div>
-  );
+			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+				{sections.map((section) => (
+					<Link key={section.href} href={section.href}>
+						<Card className="h-full border-slate-200/80 dark:border-border bg-white dark:bg-card hover:shadow-lg hover:border-primary/25 transition-all duration-200 rounded-2xl overflow-hidden group">
+							<CardHeader className="pb-3">
+								<div
+									className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform ${section.iconBg}`}
+								>
+									<section.icon className="h-6 w-6" />
+								</div>
+								<CardTitle className="text-xl text-slate-900 dark:text-foreground">
+									{section.title}
+								</CardTitle>
+								<CardDescription className="text-slate-600 dark:text-muted-foreground leading-relaxed">
+									{section.description}
+								</CardDescription>
+							</CardHeader>
+							<CardContent className="pt-0">
+								<div className="flex items-center text-sm font-semibold text-primary">
+									Otvoriť sekciu
+									<ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
+								</div>
+							</CardContent>
+						</Card>
+					</Link>
+				))}
+			</div>
+		</div>
+	);
 }
