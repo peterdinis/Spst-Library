@@ -17,9 +17,9 @@ export default async function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-[3rem] bg-gradient-to-br from-slate-900 via-primary/90 to-slate-900 text-white dark:from-background dark:via-primary/20 dark:to-background border border-slate-800/50 shadow-2xl py-24 px-6 sm:px-12 text-center mb-24">
+      <section className="relative overflow-hidden rounded-[3rem] bg-linear-to-br from-slate-900 via-primary/90 to-slate-900 text-white dark:from-background dark:via-primary/20 dark:to-background border border-slate-800/50 shadow-2xl py-24 px-6 sm:px-12 text-center mb-24">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-transparent to-black/20 z-0"></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-linear-to-b from-transparent to-black/20 z-0"></div>
         
         <div className="relative z-10 max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
           <div className="inline-flex items-center justify-center p-4 bg-white/10 rounded-full mb-4 backdrop-blur-md shadow-inner border border-white/20">
@@ -27,7 +27,7 @@ export default async function Home() {
           </div>
           <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight leading-tight">
             Vaša Brána K <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 to-cyan-300">Nekonečným Príbehom</span>
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-300 to-cyan-300">Nekonečným Príbehom</span>
           </h1>
           <p className="text-lg sm:text-2xl text-slate-200 font-light max-w-2xl mx-auto">
             Najmodernejší knižničný systém SPŠT. Požičiavajte si knihy elektronicky, bleskovo a bez čakania.
@@ -40,7 +40,7 @@ export default async function Home() {
               </Button>
             </Link>
             <Link href="/categories">
-              <Button size="lg" variant="outline" className="rounded-full shadow-lg border-white/30 text-white hover:bg-white/10 h-14 px-8 text-lg backdrop-blur-sm">
+              <Button size="lg" className="rounded-full shadow-xl bg-white text-primary hover:bg-slate-100 h-14 px-8 text-lg font-bold group">
                 Objavovať Kategórie
               </Button>
             </Link>
@@ -69,7 +69,7 @@ export default async function Home() {
           {topBooks.map((book) => (
             <Link href={`/books/${book.id}`} key={book.id} className="group">
               <Card className="h-full bg-card/50 backdrop-blur-sm border-slate-200/50 hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 rounded-3xl overflow-hidden">
-                <div className="aspect-[3/4] relative overflow-hidden bg-slate-100 dark:bg-slate-900">
+                <div className="aspect-3/4 relative overflow-hidden bg-slate-100 dark:bg-slate-900">
                   {book.coverUrl ? (
                     <Image
                       src={book.coverUrl}
@@ -112,7 +112,7 @@ export default async function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {topCategories.map((cat) => (
               <Link href={`/categories/${cat.id}`} key={cat.id}>
-                <Card className="bg-gradient-to-br from-card to-secondary/30 hover:shadow-lg transition-all duration-300 border-slate-200/50 hover:border-primary/40 rounded-2xl group">
+                <Card className="bg-linear-to-br from-card to-secondary/30 hover:shadow-lg transition-all duration-300 border-slate-200/50 hover:border-primary/40 rounded-2xl group">
                   <CardHeader className="p-6">
                     <CardTitle className="text-lg group-hover:text-primary flex items-center justify-between">
                       {cat.name}

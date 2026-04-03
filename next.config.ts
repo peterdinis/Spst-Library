@@ -4,7 +4,6 @@ const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
   reactStrictMode: true,
-  compress: true,
   images: {
     remotePatterns: [
       {
@@ -17,9 +16,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  experimental: {
-    cssChunking: true
-  }
+  typedRoutes: true
 };
 
 export default nextConfig;
