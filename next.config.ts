@@ -5,6 +5,18 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   reactStrictMode: true,
   compress: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "**",
+      },
+      {
+        protocol: "http",
+        hostname: "**",
+      },
+    ],
+  },
   experimental: {
     cssChunking: true
   }
