@@ -3,14 +3,25 @@
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, BookOpen, Star, User, Library, Calendar, CheckCircle2, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  Star,
+  User,
+  Library,
+  Calendar,
+  CheckCircle2,
+  AlertCircle,
+  Package,
+} from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useAction } from "next-safe-action/hooks";
 import { borrowBookAction } from "@/lib/actions";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { mockAuthors } from "@/lib/mockData";
+import { trpc } from "@/trpc/client";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -18,17 +29,43 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { useState } from "react";
 
+type BookForDetails = {
+  id: string;
+  title: string;
+  description: string | null;
+  coverUrl: string | null;
+  isbn: string | null;
+  availableCopies: number;
+  author: string | null;
+  authorId: string | null;
+  category: string | null;
+};
+
 type BookDetailsClientProps = {
-  book: any;
-  user: any;
+  book: BookForDetails;
+  user: { name?: string | null; email?: string | null } | null;
 };
 
 export function BookDetailsClient({ book, user }: BookDetailsClientProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isOrderOpen, setIsOrderOpen] = useState(false);
+  const [orderNote, setOrderNote] = useState("");
+
+  const isPatron = Boolean(user && (user as { role?: string }).role !== "admin");
+
+  const createOrder = trpc.orders.create.useMutation({
+    onSuccess: () => {
+      toast.success("Objednávka bola odoslaná. Knižnica ju čoskoro spracuje.");
+      setIsOrderOpen(false);
+      setOrderNote("");
+    },
+    onError: (e) => {
+      toast.error(e.message || "Objednávku sa nepodarilo vytvoriť.");
+    },
+  });
 
   const { execute, isExecuting } = useAction(borrowBookAction, {
     onSuccess: () => {
@@ -42,6 +79,13 @@ export function BookDetailsClient({ book, user }: BookDetailsClientProps) {
 
   const handleConfirmBorrow = () => {
     execute({ bookId: book.id });
+  };
+
+  const handleSubmitOrder = () => {
+    createOrder.mutate({
+      bookId: book.id,
+      note: orderNote.trim() || undefined,
+    });
   };
 
   return (
@@ -90,7 +134,7 @@ export function BookDetailsClient({ book, user }: BookDetailsClientProps) {
           >
             <div className="flex flex-wrap gap-2 mb-4">
               <Badge variant="outline" className="px-3 py-1 rounded-full border-primary/30 text-primary bg-primary/5 hover:bg-primary/10 transition-colors uppercase tracking-widest text-xs font-bold">
-                {book.category || "Nezaťažené"}
+                {book.category ?? "Nezaradené"}
               </Badge>
               <Badge variant={book.availableCopies > 0 ? "secondary" : "destructive"} className="px-3 py-1 rounded-full uppercase tracking-widest text-xs font-bold">
                 {book.availableCopies > 0 ? `${book.availableCopies} Na Sklade` : "Vypredané"}
@@ -100,7 +144,7 @@ export function BookDetailsClient({ book, user }: BookDetailsClientProps) {
             <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight leading-tight text-foreground">{book.title}</h1>
             
             <div className="flex items-center gap-3 text-2xl text-slate-600 dark:text-slate-400 font-medium">
-              <span className="text-primary italic">Napisal(a):</span> {book.author || "Neznámy Autor"}
+              <span className="text-primary italic">Napísal(a):</span> {book.author ?? "Neznámy autor"}
             </div>
           </motion.div>
 
@@ -146,21 +190,84 @@ export function BookDetailsClient({ book, user }: BookDetailsClientProps) {
             initial={{ opacity: 0, y: 20 }} 
             animate={{ opacity: 1, y: 0 }} 
             transition={{ delay: 0.4, duration: 0.5 }}
-            className="pt-4 flex flex-col sm:flex-row gap-4"
+            className="pt-4 flex flex-col sm:flex-row flex-wrap gap-4"
           >
+            {/* Objednávka na prevzatie */}
+            <Dialog open={isOrderOpen} onOpenChange={setIsOrderOpen}>
+              <Button
+                type="button"
+                size="lg"
+                variant="secondary"
+                className="h-16 px-8 rounded-2xl text-lg font-bold border-2 border-border shadow-md"
+                onClick={() => setIsOrderOpen(true)}
+              >
+                <Package className="mr-3 h-6 w-6" />
+                Objednať na prevzatie
+              </Button>
+              <DialogContent className="sm:max-w-[440px] rounded-3xl">
+                <DialogHeader>
+                  <DialogTitle className="text-xl">Objednávka knihy</DialogTitle>
+                  <DialogDescription>
+                    Pošlite žiadosť knižnici. Upozornenie: ide o rezerváciu/prevzatie v budove, nie o okamžitú
+                    výpožičku.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-3 py-2">
+                  <p className="text-sm font-medium text-foreground">
+                    {book.title}
+                    <span className="block text-muted-foreground font-normal">
+                      {book.author ?? "Neznámy autor"}
+                    </span>
+                  </p>
+                  {!isPatron ? (
+                    <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex gap-2">
+                      <AlertCircle className="h-5 w-5 shrink-0" />
+                      <span>
+                        Objednávky môžu vytvárať len prihlásení čitatelia cez Microsoft účet (nie administrátor).
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        Poznámka (voliteľné)
+                      </label>
+                      <Textarea
+                        value={orderNote}
+                        onChange={(e) => setOrderNote(e.target.value)}
+                        placeholder="Napr. termín vyzdvihnutia, trieda…"
+                        className="min-h-[100px] rounded-xl"
+                        maxLength={500}
+                      />
+                    </>
+                  )}
+                </div>
+                <DialogFooter className="gap-2 sm:gap-0">
+                  <Button type="button" variant="ghost" onClick={() => setIsOrderOpen(false)}>
+                    Zrušiť
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleSubmitOrder}
+                    disabled={!isPatron || createOrder.isPending}
+                  >
+                    {createOrder.isPending ? "Odosielam…" : "Odoslať objednávku"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+
             {/* Vypožičanie Modal */}
             <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-              {/* @ts-ignore */}
-              <DialogTrigger asChild>
-                <Button 
-                  size="lg" 
-                  className={`h-16 px-10 text-lg rounded-2xl font-bold shadow-xl transition-all ${book.availableCopies > 0 ? "bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-primary/30 hover:-translate-y-1" : "bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed"}`}
-                  disabled={book.availableCopies <= 0 || isExecuting}
-                >
-                  <BookOpen className="mr-3 h-6 w-6" />
-                  {book.availableCopies > 0 ? "Ihneď Vypožičať (Zadarmo)" : "Všetky Kusy Vypožičané"}
-                </Button>
-              </DialogTrigger>
+              <Button
+                type="button"
+                size="lg"
+                className={`h-16 px-10 text-lg rounded-2xl font-bold shadow-xl transition-all ${book.availableCopies > 0 ? "bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-primary/30 hover:-translate-y-1" : "bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed"}`}
+                disabled={book.availableCopies <= 0 || isExecuting}
+                onClick={() => setIsModalOpen(true)}
+              >
+                <BookOpen className="mr-3 h-6 w-6" />
+                {book.availableCopies > 0 ? "Ihneď Vypožičať (Zadarmo)" : "Všetky Kusy Vypožičané"}
+              </Button>
               <DialogContent className="sm:max-w-[425px] rounded-3xl p-0 overflow-hidden border-0 shadow-2xl">
                 <div className="bg-gradient-to-br from-primary/20 to-transparent p-6 pb-4 border-b border-primary/10">
                   <DialogHeader>
@@ -242,12 +349,18 @@ export function BookDetailsClient({ book, user }: BookDetailsClientProps) {
               </DialogContent>
             </Dialog>
 
-            <Link href={`/authors/${mockAuthors.find((a: any) => a.name === book.author)?.id || ''}`}>
-              <Button size="lg" variant="outline" className="h-16 w-full sm:w-auto px-8 rounded-2xl text-lg font-bold border-2 hover:bg-muted">
-                <User className="mr-2 h-5 w-5" />
-                Viac od Autora
-              </Button>
-            </Link>
+            {book.authorId ? (
+              <Link href={`/authors/${book.authorId}`}>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="h-16 w-full sm:w-auto px-8 rounded-2xl text-lg font-bold border-2 hover:bg-muted"
+                >
+                  <User className="mr-2 h-5 w-5" />
+                  Viac od autora
+                </Button>
+              </Link>
+            ) : null}
           </motion.div>
         </div>
       </div>

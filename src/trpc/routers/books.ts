@@ -34,7 +34,7 @@ export const booksRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const id = crypto.randomUUID();
-      await ctx.db.insert(books).values({ id, ...input }).run();
+      ctx.db.insert(books).values({ id, ...input }).run();
       revalidateTag("books", "page" as any);
       return { success: true, id };
     }),

@@ -25,13 +25,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="sk" suppressHydrationWarning>
-      <body className={`${ubuntu.variable} font-sans antialiased min-h-screen flex flex-col bg-background text-foreground`}>
+      <body
+        className={`${ubuntu.variable} font-sans antialiased flex min-h-screen min-h-dvh flex-col bg-background text-foreground`}
+      >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <TRPCProvider>
             <Navbar />
-            <main className="flex-1 container mx-auto px-4 py-8">
-              {children}
-            </main>
+            {children}
             <Toaster />
           </TRPCProvider>
         </ThemeProvider>

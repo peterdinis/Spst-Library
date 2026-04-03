@@ -11,6 +11,7 @@ export const authors = sqliteTable('authors', {
   id: text('id').primaryKey(), // using uuid or similar
   name: text('name').notNull(),
   bio: text('bio'),
+  imageUrl: text('image_url'),
   createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
@@ -42,6 +43,21 @@ export const borrowedBooks = sqliteTable('borrowed_books', {
   status: text('status', { enum: ['borrowed', 'returned'] }).default('borrowed').notNull(),
 });
 
+/** Objednávka knihy na prevzatie (spracovanie v knižnici) */
+export const bookOrders = sqliteTable('book_orders', {
+  id: text('id').primaryKey(),
+  userId: text('user_id').references(() => users.id).notNull(),
+  bookId: text('book_id').references(() => books.id).notNull(),
+  status: text('status', {
+    enum: ['pending', 'approved', 'fulfilled', 'cancelled'],
+  })
+    .default('pending')
+    .notNull(),
+  note: text('note'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
 export const notifications = sqliteTable('notifications', {
   id: text('id').primaryKey(),
   userId: text('user_id').references(() => users.id).notNull(),
@@ -71,6 +87,7 @@ import { relations } from 'drizzle-orm';
 
 export const usersRelations = relations(users, ({ many, one }) => ({
   borrowedBooks: many(borrowedBooks),
+  bookOrders: many(bookOrders),
   notifications: many(notifications),
   settings: one(userSettings, {
     fields: [users.id],
@@ -93,7 +110,7 @@ export const categoriesRelations = relations(categories, ({ many }) => ({
   books: many(books),
 }));
 
-export const booksRelations = relations(books, ({ one }) => ({
+export const booksRelations = relations(books, ({ one, many }) => ({
   author: one(authors, {
     fields: [books.authorId],
     references: [authors.id],
@@ -102,6 +119,7 @@ export const booksRelations = relations(books, ({ one }) => ({
     fields: [books.categoryId],
     references: [categories.id],
   }),
+  bookOrders: many(bookOrders),
 }));
 
 export const borrowedBooksRelations = relations(borrowedBooks, ({ one }) => ({
@@ -111,6 +129,17 @@ export const borrowedBooksRelations = relations(borrowedBooks, ({ one }) => ({
   }),
   book: one(books, {
     fields: [borrowedBooks.bookId],
+    references: [books.id],
+  }),
+}));
+
+export const bookOrdersRelations = relations(bookOrders, ({ one }) => ({
+  user: one(users, {
+    fields: [bookOrders.userId],
+    references: [users.id],
+  }),
+  book: one(books, {
+    fields: [bookOrders.bookId],
     references: [books.id],
   }),
 }));

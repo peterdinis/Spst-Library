@@ -2,7 +2,12 @@ import { BlobServiceClient } from '@azure/storage-blob';
 
 const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING as string;
 
-export async function uploadImageToAzure(file: File): Promise<string> {
+export type AzureUploadOptions = {
+  /** Optional folder prefix inside the container (e.g. "books", "authors") */
+  prefix?: string;
+};
+
+export async function uploadImageToAzure(file: File, options?: AzureUploadOptions): Promise<string> {
   if (!AZURE_STORAGE_CONNECTION_STRING) {
     throw new Error('Azure Storage Connection String not found');
   }
@@ -16,7 +21,8 @@ export async function uploadImageToAzure(file: File): Promise<string> {
     access: 'blob',
   });
 
-  const blobName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+  const prefix = options?.prefix ? `${options.prefix.replace(/\/$/, '')}/` : '';
+  const blobName = `${prefix}${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
   const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
   const buffer = Buffer.from(await file.arrayBuffer());

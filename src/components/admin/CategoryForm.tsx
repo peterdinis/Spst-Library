@@ -5,7 +5,7 @@ import { trpc } from "@/trpc/client";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 interface CategoryFormProps {
   initialData?: { id: string; name: string };
@@ -47,9 +47,10 @@ export function CategoryForm({ initialData, onSuccess }: CategoryFormProps) {
   };
 
   return (
-    <Card className="shadow-xl border-slate-200/50 rounded-3xl overflow-hidden">
-      <CardHeader className="bg-slate-50/50">
-        <CardTitle>{isEditing ? "Upraviť kategóriu" : "Pridať novú kategóriu"}</CardTitle>
+    <Card className="shadow-lg border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-slate-900">
+      <CardHeader className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/50">
+        <CardTitle className="text-xl">{isEditing ? "Upraviť kategóriu" : "Nová kategória"}</CardTitle>
+        <CardDescription>Názov žánru alebo tematického okruhu.</CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -63,7 +64,7 @@ export function CategoryForm({ initialData, onSuccess }: CategoryFormProps) {
           <Button 
             disabled={createCategory.isPending || updateCategory.isPending} 
             type="submit" 
-            className="w-full rounded-xl"
+            className="w-full rounded-xl h-11 font-semibold"
           >
             {isEditing ? "Uložiť zmeny" : "Vytvoriť kategóriu"}
           </Button>

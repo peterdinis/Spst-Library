@@ -1,21 +1,20 @@
 import { BookForm } from "@/components/admin/BookForm";
 import { BooksTable } from "@/components/admin/Catalogs";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
-export default async function AdminBooksPage() {
+export default function AdminBooksPage() {
   return (
-    <div className="space-y-12 pb-20">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-4xl font-extrabold tracking-tight text-slate-900">Správa Kníh</h1>
-        <p className="text-lg text-slate-500">Pridávajte nové knihy do knižnice alebo upravujte existujúce.</p>
-      </div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        <div className="lg:col-span-1 sticky top-8">
+    <div className="space-y-10 pb-12">
+      <AdminPageHeader
+        title="Správa kníh"
+        description="Vytvárajte a upravujte tituly. Obálku môžete nahrať do Azure Blob (priečinok books v kontajneri covers)."
+      />
+
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,420px),1fr] gap-8 xl:gap-10 items-start">
+        <div className="relative z-10 space-y-4 bg-slate-50 pb-1 dark:bg-background xl:sticky xl:top-24 xl:max-h-[calc(100dvh-6rem)] xl:shrink-0 xl:overflow-y-auto xl:self-start xl:overscroll-contain">
           <BookForm />
         </div>
-        <div className="lg:col-span-2">
-            <BooksTable />
-        </div>
+        <BooksTable />
       </div>
     </div>
   );

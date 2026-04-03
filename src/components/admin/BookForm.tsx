@@ -1,19 +1,29 @@
 "use client";
 
 import Image from "next/image";
-import { useAction } from "next-safe-action/hooks";
 import { toast } from "sonner";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { trpc } from "@/trpc/client";
 import { FileUpload } from "./FileUpload";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+export type BookFormInitial = {
+  id: string;
+  title: string;
+  description?: string | null;
+  isbn?: string | null;
+  availableCopies?: number | null;
+  authorId?: string | null;
+  categoryId?: string | null;
+  coverUrl?: string | null;
+};
+
 interface BookFormProps {
-  initialData?: any;
+  initialData?: BookFormInitial;
   onSuccess?: () => void;
 }
 
@@ -21,7 +31,7 @@ export function BookForm({ initialData, onSuccess }: BookFormProps) {
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(initialData?.description || "");
   const [isbn, setIsbn] = useState(initialData?.isbn || "");
-  const [availableCopies, setAvailableCopies] = useState(initialData?.availableCopies || 1);
+  const [availableCopies, setAvailableCopies] = useState(initialData?.availableCopies ?? 1);
   const [authorId, setAuthorId] = useState(initialData?.authorId || "");
   const [categoryId, setCategoryId] = useState(initialData?.categoryId || "");
   const [coverUrl, setCoverUrl] = useState(initialData?.coverUrl || "");
@@ -80,72 +90,109 @@ export function BookForm({ initialData, onSuccess }: BookFormProps) {
     }
   };
 
+  const pending = createBook.isPending || updateBook.isPending;
+
   return (
-    <Card className="shadow-xl border-slate-200/50 rounded-3xl overflow-hidden">
-      <CardHeader className="bg-slate-50/50">
-        <CardTitle>{isEditing ? "Upraviť knihu" : "Pridať novú knihu"}</CardTitle>
+    <Card className="shadow-lg border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-slate-900">
+      <CardHeader className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/50">
+        <CardTitle className="text-xl">{isEditing ? "Upraviť knihu" : "Nová kniha"}</CardTitle>
+        <CardDescription>
+          Údaje, autor, kategória a obálka (upload do Azure).
+        </CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-5">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Základné informácie</label>
-              <Input placeholder="Názov knihy" value={title} onChange={e => setTitle(e.target.value)} required className="rounded-xl" />
-              <Textarea placeholder="Popis" value={description} onChange={e => setDescription(e.target.value)} className="rounded-xl min-h-[100px]" />
-              <Input placeholder="ISBN (voliteľné)" value={isbn} onChange={e => setIsbn(e.target.value)} className="rounded-xl" />
-              <Input type="number" placeholder="Počet kusov" value={availableCopies} onChange={e => setAvailableCopies(Number(e.target.value))} required className="rounded-xl" />
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Základné informácie</label>
+              <Input
+                placeholder="Názov knihy"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                className="rounded-xl"
+              />
+              <Textarea
+                placeholder="Popis"
+                value={description || ""}
+                onChange={(e) => setDescription(e.target.value)}
+                className="rounded-xl min-h-[100px]"
+              />
+              <Input
+                placeholder="ISBN (voliteľné)"
+                value={isbn || ""}
+                onChange={(e) => setIsbn(e.target.value)}
+                className="rounded-xl"
+              />
+              <Input
+                type="number"
+                min={0}
+                placeholder="Počet kusov"
+                value={availableCopies}
+                onChange={(e) => setAvailableCopies(Number(e.target.value))}
+                required
+                className="rounded-xl"
+              />
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Kategorizácia</label>
-              <Select value={authorId} onValueChange={setAuthorId} required>
-                <SelectTrigger className="rounded-xl">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Autor a kategória</label>
+              <Select
+                value={authorId}
+                onValueChange={(v) => setAuthorId(v ?? "")}
+                required
+              >
+                <SelectTrigger className="rounded-xl w-full">
                   <SelectValue placeholder="Vyberte autora" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
-                  {authors?.map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
+                  {authors?.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>
+                      {a.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 
-              <Select value={categoryId} onValueChange={setCategoryId} required>
-                <SelectTrigger className="rounded-xl">
+              <Select
+                value={categoryId}
+                onValueChange={(v) => setCategoryId(v ?? "")}
+                required
+              >
+                <SelectTrigger className="rounded-xl w-full">
                   <SelectValue placeholder="Vyberte kategóriu" />
                 </SelectTrigger>
                 <SelectContent className="rounded-xl">
-                  {categories?.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  {categories?.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-5">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-slate-700">Obálka knihy</label>
-              <FileUpload onUploadComplete={setCoverUrl} defaultValue={coverUrl} />
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-200">Obálka knihy</label>
+              <FileUpload uploadFolder="books" onUploadComplete={setCoverUrl} defaultValue={coverUrl || undefined} />
               {coverUrl && (
-                <div className="mt-2 p-2 border rounded-xl bg-slate-50 overflow-hidden">
-                  <p className="text-xs text-slate-500 truncate mb-1">Nahrané: {coverUrl}</p>
-                  <div className="relative h-32 w-24 mx-auto">
-                    <Image
-                      src={coverUrl}
-                      alt="Preview"
-                      fill
-                      className="object-cover rounded-lg shadow-md"
-                    />
+                <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 bg-slate-50 dark:bg-slate-800/50">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 truncate mb-2">{coverUrl}</p>
+                  <div className="relative h-40 w-28 mx-auto">
+                    <Image src={coverUrl} alt="Náhľad obálky" fill className="object-cover rounded-lg shadow-md" />
                   </div>
                 </div>
               )}
+              {!coverUrl && (
+                <p className="text-xs text-slate-500 dark:text-slate-400">Obálka je voliteľná — knihu môžete uložiť aj bez obrázka.</p>
+              )}
             </div>
 
-            <div className="pt-4">
-              <Button 
-                disabled={createBook.isPending || updateBook.isPending || (!coverUrl && !isEditing)} 
-                type="submit" 
-                className="w-full h-12 rounded-xl text-lg font-semibold shadow-indigo-200/50 shadow-lg"
-              >
-                {isEditing ? "Uložiť zmeny" : "Vytvoriť knihu"}
-              </Button>
-            </div>
+            <Button disabled={pending} type="submit" className="w-full h-11 rounded-xl text-base font-semibold">
+              {isEditing ? "Uložiť zmeny" : "Vytvoriť knihu"}
+            </Button>
           </div>
         </form>
       </CardContent>
