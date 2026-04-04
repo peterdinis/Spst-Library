@@ -1,7 +1,5 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardHeader,
@@ -9,13 +7,10 @@ import {
 	CardDescription,
 	CardContent,
 } from "@/components/ui/card";
+import { MicrosoftEntraSignInButton } from "@/components/auth/MicrosoftEntraSignInButton";
 import { BookOpen, LogIn, Shield } from "lucide-react";
 
 export default function LoginPage() {
-	const handleMicrosoftLogin = () => {
-		signIn("microsoft-entra-id", { callbackUrl: "/welcome" });
-	};
-
 	return (
 		<div className="flex min-h-dvh items-center justify-center bg-background px-4">
 			<Card className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border-border shadow-xl">
@@ -34,14 +29,13 @@ export default function LoginPage() {
 				</CardHeader>
 
 				<CardContent className="space-y-6 px-8 py-7">
-					<Button
-						type="button"
-						className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 text-base font-semibold text-white shadow-md transition-all hover:scale-[1.01] hover:bg-emerald-700 active:scale-[0.99] dark:bg-emerald-500 dark:hover:bg-emerald-400"
-						onClick={handleMicrosoftLogin}
+					<MicrosoftEntraSignInButton
+						callbackUrl="/welcome"
+						className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 text-base font-semibold text-white shadow-md transition-all hover:scale-[1.01] hover:bg-emerald-700 active:scale-[0.99] disabled:opacity-90 dark:bg-emerald-500 dark:hover:bg-emerald-400"
+						icon={<BookOpen className="h-5 w-5" />}
 					>
-						<BookOpen className="h-5 w-5" />
 						Prihlásiť sa cez Microsoft
-					</Button>
+					</MicrosoftEntraSignInButton>
 
 					<div className="flex items-start gap-3 rounded-2xl border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
 						<Shield className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />

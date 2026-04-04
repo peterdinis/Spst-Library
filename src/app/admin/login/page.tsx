@@ -1,7 +1,5 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardHeader,
@@ -9,13 +7,9 @@ import {
 	CardDescription,
 	CardContent,
 } from "@/components/ui/card";
+import { MicrosoftEntraSignInButton } from "@/components/auth/MicrosoftEntraSignInButton";
 
 export default function AdminLoginPage() {
-	const handleMicrosoftAdminLogin = () => {
-		// Admin login – rovnaké prihlásenie cez Microsoft, ale po úspechu smeruje do /admin
-		signIn("microsoft-entra-id", { callbackUrl: "/admin" });
-	};
-
 	return (
 		<div className="relative flex min-h-dvh items-center justify-center bg-background p-4">
 			<div
@@ -33,13 +27,13 @@ export default function AdminLoginPage() {
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="flex flex-col gap-4 px-8 pb-10">
-					<Button
-						type="button"
-						className="h-12 w-full rounded-2xl bg-indigo-600 text-base font-semibold text-white shadow-md transition-all hover:scale-[1.02] hover:bg-indigo-700 active:scale-[0.98] dark:bg-indigo-500 dark:hover:bg-indigo-400"
-						onClick={handleMicrosoftAdminLogin}
+					<MicrosoftEntraSignInButton
+						callbackUrl="/admin"
+						pendingHint="Presmerovanie na Microsoft…"
+						className="h-12 w-full rounded-2xl bg-indigo-600 text-base font-semibold text-white shadow-md transition-all hover:scale-[1.02] hover:bg-indigo-700 active:scale-[0.98] disabled:opacity-90 dark:bg-indigo-500 dark:hover:bg-indigo-400"
 					>
 						Prihlásiť sa ako admin
-					</Button>
+					</MicrosoftEntraSignInButton>
 				</CardContent>
 			</Card>
 		</div>
