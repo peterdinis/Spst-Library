@@ -1,4 +1,9 @@
-import { router, publicProcedure, protectedProcedure } from "../server";
+import {
+	router,
+	protectedProcedure,
+	adminProcedure,
+} from "../server";
+import { userHasAdminAccess } from "@/lib/admin-access";
 import { bookOrders, books } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -22,11 +27,11 @@ export const ordersRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			if ((ctx.session.user as { role?: string }).role === "admin") {
+			if (await userHasAdminAccess(ctx.session)) {
 				throw new TRPCError({
 					code: "FORBIDDEN",
 					message:
-						"Objednávky môžu vytvárať len čitatelia prihlásení cez Microsoft (nie administrátorský účet).",
+						"Objednávky môžu vytvárať len čitatelia (nie účty so správcovským oprávnením).",
 				});
 			}
 
@@ -94,7 +99,7 @@ export const ordersRouter = router({
 		return getCachedMyOrders();
 	}),
 
-	listAll: publicProcedure.query(async ({ ctx }) => {
+	listAll: adminProcedure.query(async ({ ctx }) => {
 		const getCachedAllOrders = unstable_cache(
 			async () =>
 				ctx.db.query.bookOrders.findMany({
@@ -114,7 +119,7 @@ export const ordersRouter = router({
 		return getCachedAllOrders();
 	}),
 
-	updateStatus: publicProcedure
+	updateStatus: adminProcedure
 		.input(
 			z.object({
 				id: z.string(),

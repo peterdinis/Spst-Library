@@ -1,4 +1,9 @@
-import { router, publicProcedure, protectedProcedure } from "../server";
+import {
+	router,
+	publicProcedure,
+	protectedProcedure,
+	adminProcedure,
+} from "../server";
 import { getBooks, getBorrowedByUserId } from "@/lib/data";
 import { books } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -49,7 +54,7 @@ export const booksRouter = router({
 		return cached();
 	}),
 
-	create: protectedProcedure
+	create: adminProcedure
 		.input(
 			z.object({
 				title: z.string().min(1),
@@ -71,7 +76,7 @@ export const booksRouter = router({
 			return { success: true, id };
 		}),
 
-	update: protectedProcedure
+	update: adminProcedure
 		.input(
 			z.object({
 				id: z.string(),
@@ -91,7 +96,7 @@ export const booksRouter = router({
 			return { success: true };
 		}),
 
-	delete: protectedProcedure
+	delete: adminProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			await ctx.db.delete(books).where(eq(books.id, input.id)).run();

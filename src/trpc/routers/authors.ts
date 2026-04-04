@@ -1,4 +1,4 @@
-import { router, publicProcedure, protectedProcedure } from "../server";
+import { router, publicProcedure, adminProcedure } from "../server";
 import { getAuthors } from "@/lib/data";
 import { authors } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -20,7 +20,7 @@ export const authorsRouter = router({
 		return getCachedAuthors();
 	}),
 
-	create: protectedProcedure
+	create: adminProcedure
 		.input(
 			z.object({
 				name: z.string().min(1),
@@ -38,7 +38,7 @@ export const authorsRouter = router({
 			return { success: true, id };
 		}),
 
-	update: protectedProcedure
+	update: adminProcedure
 		.input(
 			z.object({
 				id: z.string(),
@@ -54,7 +54,7 @@ export const authorsRouter = router({
 			return { success: true };
 		}),
 
-	delete: protectedProcedure
+	delete: adminProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			await ctx.db.delete(authors).where(eq(authors.id, input.id)).run();

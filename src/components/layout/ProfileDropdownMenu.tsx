@@ -14,13 +14,19 @@ import { BookMarked, Settings, User, Activity } from "lucide-react";
 type ProfileDropdownMenuProps = {
 	name?: string | null;
 	email?: string | null;
+	/** Z DB (`is_admin`); bez toho sa nezobrazí položka Administrácia. */
+	showAdminLink?: boolean;
 };
 
 /**
  * Samostatný client komponent: navigácia cez router (nie Link vnútri Menu.Item),
  * odhlásenie bez vnoreného &lt;button&gt; v položke menu — Base UI Menu inak padá / správa sa divne.
  */
-export function ProfileDropdownMenu({ name, email }: ProfileDropdownMenuProps) {
+export function ProfileDropdownMenu({
+	name,
+	email,
+	showAdminLink = false,
+}: ProfileDropdownMenuProps) {
 	const router = useRouter();
 
 	return (
@@ -84,17 +90,19 @@ export function ProfileDropdownMenu({ name, email }: ProfileDropdownMenuProps) {
 					</span>
 				</DropdownMenuItem>
 
-				<DropdownMenuItem
-					className="cursor-pointer gap-3 rounded-lg py-2 focus:bg-amber-50 dark:focus:bg-amber-950/60"
-					onClick={() => router.push("/admin")}
-				>
-					<div className="rounded-md bg-amber-100/50 p-1.5 text-amber-600 dark:bg-amber-500/20 dark:text-amber-200">
-						<Settings className="h-3.5 w-3.5" />
-					</div>
-					<span className="font-semibold text-amber-700 dark:text-amber-200">
-						Administrácia
-					</span>
-				</DropdownMenuItem>
+				{showAdminLink ? (
+					<DropdownMenuItem
+						className="cursor-pointer gap-3 rounded-lg py-2 focus:bg-amber-50 dark:focus:bg-amber-950/60"
+						onClick={() => router.push("/admin")}
+					>
+						<div className="rounded-md bg-amber-100/50 p-1.5 text-amber-600 dark:bg-amber-500/20 dark:text-amber-200">
+							<Settings className="h-3.5 w-3.5" />
+						</div>
+						<span className="font-semibold text-amber-700 dark:text-amber-200">
+							Administrácia
+						</span>
+					</DropdownMenuItem>
+				) : null}
 
 				<DropdownMenuSeparator className="my-1 bg-slate-100 dark:bg-slate-700" />
 

@@ -1,4 +1,4 @@
-import { router, publicProcedure } from "../server";
+import { router, adminProcedure } from "../server";
 import { fetchEntraDirectoryUsers } from "@/lib/microsoft-graph";
 import { unstable_cache } from "next/cache";
 import { CACHE_TAGS, CACHE_TTL } from "../cache-config";
@@ -28,7 +28,7 @@ const getCachedEntraUsers = unstable_cache(
 
 export const entraRouter = router({
 	/** Používatelia z Entra (Graph). Vyžaduje app permission User.Read.All + admin consent. */
-	listDirectoryUsers: publicProcedure.query(async () => {
+	listDirectoryUsers: adminProcedure.query(async () => {
 		return getCachedEntraUsers();
 	}),
 });

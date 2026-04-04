@@ -30,10 +30,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 	const pathname = usePathname();
 	const [collapsed, setCollapsed] = useState(false);
 
-	if (pathname === "/admin/login") {
-		return <>{children}</>;
-	}
-
 	return (
 		<div
 			className={cn(

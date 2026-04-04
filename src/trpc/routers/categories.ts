@@ -1,4 +1,4 @@
-import { router, publicProcedure, protectedProcedure } from "../server";
+import { router, publicProcedure, adminProcedure } from "../server";
 import { getCategories } from "@/lib/data";
 import { categories } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -20,7 +20,7 @@ export const categoriesRouter = router({
 		return getCachedCategories();
 	}),
 
-	create: protectedProcedure
+	create: adminProcedure
 		.input(z.object({ name: z.string().min(1) }))
 		.mutation(async ({ ctx, input }) => {
 			const id = crypto.randomUUID();
@@ -32,7 +32,7 @@ export const categoriesRouter = router({
 			return { success: true, id };
 		}),
 
-	update: protectedProcedure
+	update: adminProcedure
 		.input(z.object({ id: z.string(), name: z.string().min(1) }))
 		.mutation(async ({ ctx, input }) => {
 			const { id, ...data } = input;
@@ -45,7 +45,7 @@ export const categoriesRouter = router({
 			return { success: true };
 		}),
 
-	delete: protectedProcedure
+	delete: adminProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			await ctx.db
