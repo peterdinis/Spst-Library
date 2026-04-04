@@ -12,7 +12,6 @@ const ubuntu = Ubuntu({
 });
 
 import { ThemeProvider } from "@/components/theme-provider";
-import { Loader2 } from "lucide-react";
 
 export const metadata: Metadata = {
 	title: "SPST Knižnica",
@@ -29,13 +28,7 @@ export default function RootLayout({
 			<body
 				className={`${ubuntu.variable} font-sans antialiased flex min-h-screen flex-col bg-background text-foreground`}
 			>
-				<ThemeProvider
-					fallback={<Loader2 className="animate-spin" />}
-					attribute="class"
-					defaultTheme="system"
-					enableSystem
-					disableTransitionOnChange
-				>
+				<ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
 					<TRPCProvider>
 						<Navbar />
 						{children}

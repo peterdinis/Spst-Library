@@ -2,7 +2,8 @@ import { router, protectedProcedure } from "../server";
 import { userSettings } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
+import { CACHE_TAGS, CACHE_TTL } from "../cache-config";
 
 export const settingsRouter = router({
 	getSettings: protectedProcedure.query(async ({ ctx }) => {
@@ -30,7 +31,20 @@ export const settingsRouter = router({
 			});
 		}
 
-		return settings;
+		// User-scoped cache: refresh settings from DB then cache per user
+		const getCachedSettings = unstable_cache(
+			async () =>
+				ctx.db.query.userSettings.findFirst({
+					where: eq(userSettings.userId, userId),
+				}),
+			["settings", userId],
+			{
+				tags: [CACHE_TAGS.settings],
+				revalidate: CACHE_TTL.settings,
+			},
+		);
+
+		return getCachedSettings() ?? settings;
 	}),
 
 	updateSettings: protectedProcedure
@@ -51,7 +65,7 @@ export const settingsRouter = router({
 				.where(eq(userSettings.userId, userId))
 				.run();
 
-			revalidateTag("settings", "page" as any);
+			revalidateTag(CACHE_TAGS.settings, "default");
 			return { success: true };
 		}),
 });

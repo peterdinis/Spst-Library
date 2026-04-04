@@ -38,36 +38,40 @@ export function AdminOrdersPanel() {
 	});
 
 	if (isLoading) {
-		return (
-			<p className="text-sm text-muted-foreground">Načítavam objednávky…</p>
-		);
+		return <div className="h-48 animate-pulse rounded-2xl bg-muted" />;
 	}
 
 	if (error) {
-		return <p className="text-sm text-destructive">{error.message}</p>;
+		return (
+			<p className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+				{error.message}
+			</p>
+		);
 	}
 
 	if (!orders?.length) {
 		return (
-			<p className="text-sm text-muted-foreground">Zatiaľ žiadne objednávky.</p>
+			<p className="rounded-2xl border border-dashed border-border bg-muted/20 px-6 py-12 text-center text-sm text-muted-foreground">
+				Zatiaľ žiadne objednávky.
+			</p>
 		);
 	}
 
 	return (
-		<div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
+		<div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
 			<Table>
 				<TableHeader>
-					<TableRow className="bg-muted/50 hover:bg-muted/50">
-						<TableHead>Dátum</TableHead>
+					<TableRow className="border-b bg-muted/20 hover:bg-muted/20">
+						<TableHead className="whitespace-nowrap">Dátum</TableHead>
 						<TableHead>Kniha</TableHead>
 						<TableHead>Čitateľ</TableHead>
-						<TableHead>Poznámka</TableHead>
-						<TableHead className="w-[160px]">Stav</TableHead>
+						<TableHead className="max-w-[min(100%,14rem)]">Poznámka</TableHead>
+						<TableHead className="min-w-[10rem] whitespace-nowrap">Stav</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
 					{orders.map((row) => (
-						<TableRow key={row.id}>
+						<TableRow key={row.id} className="hover:bg-muted/40">
 							<TableCell className="whitespace-nowrap text-muted-foreground text-sm">
 								{row.createdAt
 									? new Date(row.createdAt).toLocaleString("sk-SK", {
@@ -92,10 +96,10 @@ export function AdminOrdersPanel() {
 									</span>
 								) : null}
 							</TableCell>
-							<TableCell className="max-w-[200px] truncate text-sm text-muted-foreground">
-								{row.note || "—"}
+							<TableCell className="max-w-md text-sm text-muted-foreground">
+								<span className="line-clamp-2">{row.note || "—"}</span>
 							</TableCell>
-							<TableCell>
+							<TableCell className="whitespace-nowrap align-middle">
 								<Select
 									value={row.status}
 									onValueChange={(status) =>
@@ -110,8 +114,13 @@ export function AdminOrdersPanel() {
 									}
 									disabled={updateStatus.isPending}
 								>
-									<SelectTrigger className="h-9 rounded-xl w-full">
-										<SelectValue />
+									<SelectTrigger className="h-9 w-full min-w-[10.5rem] rounded-xl">
+										<SelectValue>
+											{(value) =>
+												statusLabels[String(value)] ??
+												String(value ?? "")
+											}
+										</SelectValue>
 									</SelectTrigger>
 									<SelectContent>
 										{Object.entries(statusLabels).map(([value, label]) => (

@@ -47,16 +47,18 @@ type BookForDetails = {
 type BookDetailsClientProps = {
 	book: BookForDetails;
 	user: { name?: string | null; email?: string | null } | null;
+	/** Môže objednať / vypožičať ako čitateľ (nie správca z DB). */
+	isPatron: boolean;
 };
 
-export function BookDetailsClient({ book, user }: BookDetailsClientProps) {
+export function BookDetailsClient({
+	book,
+	user,
+	isPatron,
+}: BookDetailsClientProps) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [isOrderOpen, setIsOrderOpen] = useState(false);
 	const [orderNote, setOrderNote] = useState("");
-
-	const isPatron = Boolean(
-		user && (user as { role?: string }).role !== "admin",
-	);
 
 	const createOrder = trpc.orders.create.useMutation({
 		onSuccess: () => {
@@ -253,8 +255,9 @@ export function BookDetailsClient({ book, user }: BookDetailsClientProps) {
 										<div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex gap-2">
 											<AlertCircle className="h-5 w-5 shrink-0" />
 											<span>
-												Objednávky môžu vytvárať len prihlásení čitatelia cez
-												Microsoft účet (nie administrátor).
+												{user
+													? "Účty so správcovským oprávnením nemôžu vytvárať čitateľské objednávky."
+													: "Objednávku môžeš vytvoriť po prihlásení cez Microsoft účet."}
 											</span>
 										</div>
 									) : (

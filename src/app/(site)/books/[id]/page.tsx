@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { BookDetailsClient } from "@/components/BookDetailsClient";
 import { getBookById } from "@/lib/data";
+import { userHasAdminAccess } from "@/lib/admin-access";
 
 export default async function BookDetailsPage({
 	params,
@@ -29,6 +30,14 @@ export default async function BookDetailsPage({
 	};
 
 	const session = await auth();
+	const isPatron =
+		Boolean(session?.user) && !(await userHasAdminAccess(session));
 
-	return <BookDetailsClient book={book} user={session?.user ?? null} />;
+	return (
+		<BookDetailsClient
+			book={book}
+			user={session?.user ?? null}
+			isPatron={isPatron}
+		/>
+	);
 }

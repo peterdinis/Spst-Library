@@ -1,15 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { userHasAdminAccess } from "@/lib/admin-access";
 import { db } from "@/db";
 import { books } from "@/db/schema";
 import { uploadImageToAzure } from "@/lib/azure-storage";
-import { revalidatePath, revalidateTag } from "next/cache";
-import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export async function POST(req: NextRequest) {
 	const session = await auth();
 	if (!session?.user) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	}
+	if (!(await userHasAdminAccess(session))) {
+		return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 	}
 
 	try {

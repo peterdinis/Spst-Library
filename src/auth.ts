@@ -49,7 +49,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 				return {
 					id: admin.id,
 					name: admin.name || admin.username,
-					email: admin.username, // Using username as email for credentials provider context
+					email: admin.username,
 					role: "admin",
 				};
 			},
@@ -65,6 +65,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 					.from(users)
 					.where(eq(users.email, user.email))
 					.get();
+
 				if (!existingUser) {
 					db.insert(users)
 						.values({
@@ -72,6 +73,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 							name: user.name,
 							email: user.email,
 							image: user.image,
+							isAdmin: false,
 						})
 						.run();
 				} else {
@@ -83,19 +85,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 						.where(eq(users.email, user.email))
 						.run();
 				}
+
+				// Attach role from DB so the jwt callback can read it
+				const dbUser = db
+					.select()
+					.from(users)
+					.where(eq(users.email, user.email))
+					.get();
+
+				if (dbUser?.isAdmin) {
+					(user as any).role = "admin";
+				}
 			}
 			return true;
 		},
 		async jwt({ token, user }) {
 			if (user) {
-				token.role = (user as any).role;
+				// Persists role into JWT for both Credentials admins and Entra admins
+				token.role = (user as any).role ?? null;
 			}
 			return token;
 		},
 		async session({ session, token }) {
 			if (session.user) {
 				session.user.id = token.sub as string;
-				(session.user as any).role = token.role;
+				(session.user as any).role = token.role ?? null;
 			}
 			return session;
 		},

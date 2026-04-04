@@ -8,8 +8,22 @@ import {
 	CardDescription,
 	CardContent,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { BookOpen, Library, User, ArrowRight } from "lucide-react";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+	BookOpen,
+	Library,
+	User,
+	ArrowRight,
+	Sparkles,
+	CheckCircle2,
+} from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+	title: "Vitajte",
+	description: "Ste prihlásený do knižnice SPŠT.",
+};
 
 export default async function WelcomePage() {
 	const session = await auth();
@@ -18,105 +32,122 @@ export default async function WelcomePage() {
 		redirect("/login");
 	}
 
-	const name = session.user.name || "čitateľ";
+	const name = session.user.name?.trim() || "čitateľ";
+	const initial = name.at(0)?.toUpperCase() ?? "?";
+
+	const linkButtonClass =
+		"flex h-12 w-full items-center justify-between gap-2 rounded-2xl px-5 text-base font-semibold";
 
 	return (
-		<div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-slate-50 px-4 py-10">
-			<div className="max-w-5xl w-full grid gap-8 lg:grid-cols-[1.2fr,1fr] items-stretch">
-				<Card className="rounded-[2.25rem] border-slate-200 shadow-xl bg-white">
-					<CardHeader className="pb-2 space-y-3">
-						<p className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-600 flex items-center gap-2">
-							<span className="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
+		<div className="relative min-h-[calc(100dvh-4rem)] overflow-x-hidden bg-background px-4 py-10 md:py-14">
+			<div
+				className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] bg-size-[24px_24px] opacity-50 mask-[radial-gradient(ellipse_65%_55%_at_50%_40%,#000_45%,transparent_100%)] dark:bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] dark:opacity-100"
+				aria-hidden
+			/>
+
+			<div className="relative mx-auto grid w-full max-w-5xl gap-6 lg:grid-cols-[1.15fr_1fr] lg:items-stretch lg:gap-8">
+				<Card className="overflow-hidden rounded-[2rem] border-border shadow-lg lg:rounded-[2.25rem]">
+					<CardHeader className="space-y-4 pb-2">
+						<p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400">
+							<CheckCircle2
+								className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400"
+								aria-hidden
+							/>
 							Prihlásenie úspešné
 						</p>
-						<CardTitle className="text-3xl md:text-4xl font-extrabold tracking-tight text-slate-900">
+						<CardTitle className="font-heading text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
 							Vitaj späť, {name}!
 						</CardTitle>
-						<CardDescription className="text-base text-slate-500">
-							Teraz môžete spravovať svoje výpožičky, objavovať nové knihy a
-							upravovať svoj profil.
+						<CardDescription className="text-base leading-relaxed">
+							Môžeš spravovať výpožičky, prehliadať katalóg a upraviť profil — všetko
+							z jedného miesta.
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="pt-4 pb-7 space-y-5">
+					<CardContent className="space-y-6 pb-8 pt-4">
 						<div className="grid gap-3 sm:grid-cols-2">
-							<Link href="/my-books">
-								<Button className="w-full h-12 rounded-2xl font-semibold flex items-center justify-between px-5">
-									<span className="flex items-center gap-2">
-										<BookOpen className="w-4 h-4" />
-										Moje výpožičky
-									</span>
-									<ArrowRight className="w-4 h-4" />
-								</Button>
+							<Link
+								href="/my-books"
+								className={cn(
+									buttonVariants({ variant: "default" }),
+									linkButtonClass,
+								)}
+							>
+								<span className="flex items-center gap-2">
+									<BookOpen className="size-4 shrink-0" />
+									Moje výpožičky
+								</span>
+								<ArrowRight className="size-4 shrink-0 opacity-80" />
 							</Link>
-							<Link href="/books">
-								<Button
-									className="w-full h-12 rounded-2xl font-semibold flex items-center justify-between px-5"
-									variant="outline"
-								>
-									<span className="flex items-center gap-2">
-										<Library className="w-4 h-4" />
-										Prejsť do katalógu
-									</span>
-									<ArrowRight className="w-4 h-4" />
-								</Button>
+							<Link
+								href="/books"
+								className={cn(
+									buttonVariants({ variant: "outline" }),
+									linkButtonClass,
+								)}
+							>
+								<span className="flex items-center gap-2">
+									<Library className="size-4 shrink-0" />
+									Katalóg kníh
+								</span>
+								<ArrowRight className="size-4 shrink-0 opacity-80" />
 							</Link>
 						</div>
 
-						<div className="flex flex-wrap gap-3 items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
-							<div className="flex items-center gap-3">
-								<div className="h-9 w-9 rounded-full bg-slate-900 text-slate-50 flex items-center justify-center text-sm font-bold">
-									{name.charAt(0).toUpperCase()}
+						<div className="flex flex-col gap-4 rounded-2xl border border-border bg-muted/40 p-4 sm:flex-row sm:items-center sm:justify-between">
+							<div className="flex min-w-0 items-center gap-3">
+								<div
+									className="flex size-11 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-sm"
+									aria-hidden
+								>
+									{initial}
 								</div>
-								<div className="flex flex-col">
-									<span className="text-sm font-semibold text-slate-900">
-										Profil čitateľa
-									</span>
-									<span className="text-xs text-slate-500">
-										Nastavte si preferencie notifikácií a prezrite si históriu.
-									</span>
+								<div className="min-w-0">
+									<p className="text-sm font-semibold text-foreground">
+										Tvoj profil
+									</p>
+									<p className="text-xs text-muted-foreground">
+										Notifikácie, údaje účtu a história.
+									</p>
 								</div>
 							</div>
-							<Link href="/profile">
-								<Button
-									variant="ghost"
-									size="sm"
-									className="flex items-center gap-1 text-slate-700"
-								>
-									<User className="w-4 h-4" />
-									Otvoriť profil
-								</Button>
+							<Link
+								href="/profile"
+								className={cn(
+									buttonVariants({ variant: "ghost", size: "sm" }),
+									"shrink-0 gap-1.5 self-start sm:self-center",
+								)}
+							>
+								<User className="size-4 shrink-0" />
+								Otvoriť profil
 							</Link>
 						</div>
 					</CardContent>
 				</Card>
 
-				<Card className="rounded-[2.25rem] border-slate-200/80 bg-slate-900 text-slate-50 shadow-xl overflow-hidden">
-					<CardHeader className="pb-3 space-y-3">
-						<div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 text-emerald-300 px-3 py-1 text-xs font-semibold">
-							<span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-							Rýchly prehľad účtu
+				<Card className="overflow-hidden rounded-[2rem] border-primary/25 bg-primary text-primary-foreground shadow-lg lg:rounded-[2.25rem]">
+					<CardHeader className="space-y-3 pb-2">
+						<div className="inline-flex w-fit items-center gap-2 rounded-full bg-primary-foreground/15 px-3 py-1 text-xs font-semibold text-primary-foreground backdrop-blur-sm">
+							<Sparkles className="size-3.5 shrink-0 opacity-90" aria-hidden />
+							Rýchly štart
 						</div>
-						<CardTitle className="text-2xl font-extrabold tracking-tight">
-							Pokračujte v čítaní tam, kde ste skončili.
+						<CardTitle className="font-heading text-2xl font-extrabold tracking-tight text-primary-foreground">
+							Pokračuj v čítaní
 						</CardTitle>
-						<CardDescription className="text-slate-400">
-							V sekcii „Moje výpožičky“ nájdete knihy, ktoré máte aktuálne
-							požičané, vrátane termínov vrátenia.
+						<CardDescription className="text-base text-primary-foreground/85">
+							V &quot;Moje výpožičky&quot; uvidíš aktuálne knihy a termíny vrátenia.
 						</CardDescription>
 					</CardHeader>
-					<CardContent className="pt-2 space-y-4">
-						<div className="rounded-2xl border border-slate-800/60 bg-slate-900/60 px-4 py-3 text-sm text-slate-300">
-							Po prihlásení sa môžete v navigácii hore kedykoľvek prepnúť medzi
-							katalógom, profilom a správou výpožičiek.
+					<CardContent className="space-y-5 pb-8 pt-2">
+						<div className="rounded-2xl border border-primary-foreground/20 bg-primary-foreground/10 px-4 py-3 text-sm leading-relaxed text-primary-foreground/95">
+							V hornom menu prepínaš medzi katalógom, profilom a výpožičkami.
+							Theme (svetlá / tmavá) nájdeš v hlavičke stránky.
 						</div>
-						<div className="flex flex-col gap-2 text-xs text-slate-400">
-							<p className="font-semibold text-slate-300">
-								Tipy po prihlásení:
-							</p>
-							<ul className="list-disc list-inside space-y-1">
-								<li>Navštívte „Moje výpožičky“ pre prehľad aktuálnych kníh.</li>
-								<li>V profile si nastavte emailové upozornenia na vrátenie.</li>
-								<li>Preskúmajte kategórie a objavte nové tituly.</li>
+						<div className="space-y-2 text-sm text-primary-foreground/80">
+							<p className="font-semibold text-primary-foreground">Tipy:</p>
+							<ul className="list-inside list-disc space-y-1.5 marker:text-primary-foreground/50">
+								<li>Skontroluj výpožičky pred koncom trimestra.</li>
+								<li>V profile si nastav upozornenia na vrátenie.</li>
+								<li>Prezri kategórie — nájdeš tam nové tituly.</li>
 							</ul>
 						</div>
 					</CardContent>

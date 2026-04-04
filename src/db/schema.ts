@@ -5,7 +5,9 @@ export const users = sqliteTable("users", {
 	name: text("name"),
 	email: text("email").unique(),
 	image: text("image"),
+	isAdmin: integer("is_admin", { mode: "boolean" }).default(false).notNull(),
 });
+
 
 export const authors = sqliteTable("authors", {
 	id: text("id").primaryKey(), // using uuid or similar

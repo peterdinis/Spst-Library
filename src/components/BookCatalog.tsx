@@ -48,16 +48,21 @@ export function BookCatalog() {
 		return () => clearTimeout(timer);
 	}, [searchQuery]);
 
+	const { data: authors } = trpc.authors.getAll.useQuery();
+	const { data: categories } = trpc.categories.getAll.useQuery();
+
+	const authorNameForQuery =
+		selectedAuthor === "all"
+			? undefined
+			: authors?.find((a) => a.id === selectedAuthor)?.name;
+
 	const { data, isLoading } = trpc.books.getAll.useQuery({
 		search: debouncedSearch || undefined,
-		authorId: selectedAuthor === "all" ? undefined : selectedAuthor,
+		authorName: authorNameForQuery,
 		categoryId: selectedCategory === "all" ? undefined : selectedCategory,
 		limit: ITEMS_PER_PAGE,
 		offset: (currentPage - 1) * ITEMS_PER_PAGE,
 	});
-
-	const { data: authors } = trpc.authors.getAll.useQuery();
-	const { data: categories } = trpc.categories.getAll.useQuery();
 
 	const books = data?.items || [];
 	const totalItems = data?.total || 0;
@@ -109,10 +114,20 @@ export function BookCatalog() {
 							}
 						>
 							<SelectTrigger className="w-[220px] h-12 rounded-2xl border-none bg-white dark:bg-slate-950 shadow-sm font-bold text-slate-600">
-								<SelectValue placeholder="Všetci autori" />
+								<SelectValue placeholder="Všetci autori">
+									{(value) => {
+										const v = value as string | null | undefined;
+										if (v == null || v === "" || v === "all") {
+											return "Všetci autori";
+										}
+										return authors?.find((a) => a.id === v)?.name ?? v;
+									}}
+								</SelectValue>
 							</SelectTrigger>
 							<SelectContent className="rounded-2xl shadow-2xl border-slate-200/50">
-								<SelectItem>Všetci autori</SelectItem>
+								<SelectItem value="all" className="rounded-xl">
+									Všetci autori
+								</SelectItem>
 								{authors?.map((a) => (
 									<SelectItem key={a.id} value={a.id} className="rounded-xl">
 										{a.name}
@@ -130,12 +145,22 @@ export function BookCatalog() {
 							}
 						>
 							<SelectTrigger className="w-[220px] h-12 rounded-2xl border-none bg-white dark:bg-slate-950 shadow-sm font-bold text-slate-600">
-								<SelectValue placeholder="Všetky kategórie" />
+								<SelectValue placeholder="Všetky kategórie">
+									{(value) => {
+										const v = value as string | null | undefined;
+										if (v == null || v === "" || v === "all") {
+											return "Všetky kategórie";
+										}
+										return categories?.find((c) => c.id === v)?.name ?? v;
+									}}
+								</SelectValue>
 							</SelectTrigger>
 							<SelectContent className="rounded-2xl shadow-2xl border-slate-200/50">
-								<SelectItem>Všetky kategórie</SelectItem>
+								<SelectItem value="all" className="rounded-xl">
+									Všetky kategórie
+								</SelectItem>
 								{categories?.map((c) => (
-									<SelectItem key={c.id} value={c.name} className="rounded-xl">
+									<SelectItem key={c.id} value={c.id} className="rounded-xl">
 										{c.name}
 									</SelectItem>
 								))}
@@ -186,7 +211,7 @@ export function BookCatalog() {
 										</button>
 									</Badge>
 								)}
-								{selectedAuthor !== "all" && (
+								{selectedAuthor !== "all" && authorNameForQuery && (
 									<Badge
 										variant="secondary"
 										className="pl-3 pr-1 py-1 gap-1 rounded-full bg-emerald-50 border-emerald-100 text-emerald-600 hover:bg-emerald-100 transition-colors"
@@ -194,7 +219,7 @@ export function BookCatalog() {
 										<span className="text-[10px] font-bold uppercase tracking-tight opacity-50">
 											Autor:
 										</span>
-										{authors?.find((a) => a.id === selectedAuthor)?.name}
+										{authorNameForQuery}
 										<button
 											onClick={() => {
 												setSelectedAuthor("all");
@@ -355,6 +380,8 @@ export function BookCatalog() {
 							setSearchQuery("");
 							setSelectedAuthor("all");
 							setSelectedCategory("all");
+							setTempAuthor("all");
+							setTempCategory("all");
 							setCurrentPage(1);
 						}}
 						className="mt-8 rounded-2xl px-8 h-12 border-slate-200 hover:bg-slate-50"

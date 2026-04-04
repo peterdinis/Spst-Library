@@ -168,7 +168,15 @@ export function BookForm({ initialData, onSuccess }: BookFormProps) {
 								required
 							>
 								<SelectTrigger className="rounded-xl w-full">
-									<SelectValue placeholder="Vyberte autora" />
+									<SelectValue placeholder="Vyberte autora">
+										{(value) => {
+											const v = value as string | null | undefined;
+											if (v == null || v === "") {
+												return "Vyberte autora";
+											}
+											return authors?.find((a) => a.id === v)?.name ?? v;
+										}}
+									</SelectValue>
 								</SelectTrigger>
 								<SelectContent className="rounded-xl">
 									{authors?.map((a) => (
@@ -185,7 +193,15 @@ export function BookForm({ initialData, onSuccess }: BookFormProps) {
 								required
 							>
 								<SelectTrigger className="rounded-xl w-full">
-									<SelectValue placeholder="Vyberte kategóriu" />
+									<SelectValue placeholder="Vyberte kategóriu">
+										{(value) => {
+											const v = value as string | null | undefined;
+											if (v == null || v === "") {
+												return "Vyberte kategóriu";
+											}
+											return categories?.find((c) => c.id === v)?.name ?? v;
+										}}
+									</SelectValue>
 								</SelectTrigger>
 								<SelectContent className="rounded-xl">
 									{categories?.map((c) => (

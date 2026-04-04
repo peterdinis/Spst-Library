@@ -1,7 +1,5 @@
 "use client";
 
-import { signIn } from "next-auth/react";
-import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardHeader,
@@ -9,34 +7,33 @@ import {
 	CardDescription,
 	CardContent,
 } from "@/components/ui/card";
+import { MicrosoftEntraSignInButton } from "@/components/auth/MicrosoftEntraSignInButton";
 
 export default function AdminLoginPage() {
-	const handleMicrosoftAdminLogin = () => {
-		// Admin login – rovnaké prihlásenie cez Microsoft, ale po úspechu smeruje do /admin
-		signIn("microsoft-entra-id", { callbackUrl: "/admin" });
-	};
-
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-			<div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+		<div className="relative flex min-h-dvh items-center justify-center bg-background p-4">
+			<div
+				className="pointer-events-none absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:20px_20px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)] dark:bg-[radial-gradient(rgba(255,255,255,0.07)_1px,transparent_1px)]"
+				aria-hidden
+			/>
 
-			<Card className="w-full max-w-md relative z-10 rounded-[2.5rem] border-slate-200/60 shadow-2xl overflow-hidden">
-				<CardHeader className="bg-white pt-12 pb-6 text-center space-y-3">
-					<CardTitle className="text-3xl font-black tracking-tight text-slate-900">
+			<Card className="relative z-10 w-full max-w-md overflow-hidden rounded-[2.5rem] border-border shadow-2xl">
+				<CardHeader className="space-y-3 pb-6 pt-12 text-center">
+					<CardTitle className="text-3xl font-black tracking-tight text-foreground">
 						Admin prihlásenie
 					</CardTitle>
-					<CardDescription className="text-slate-500 font-medium">
+					<CardDescription className="font-medium">
 						Prihláste sa cez Microsoft účet s administrátorským prístupom.
 					</CardDescription>
 				</CardHeader>
-				<CardContent className="bg-white px-8 pb-10 flex flex-col gap-4">
-					<Button
-						type="button"
-						className="w-full h-12 rounded-2xl text-base font-semibold shadow-md bg-indigo-600 hover:bg-indigo-700 text-white hover:scale-[1.02] active:scale-[0.98] transition-all"
-						onClick={handleMicrosoftAdminLogin}
+				<CardContent className="flex flex-col gap-4 px-8 pb-10">
+					<MicrosoftEntraSignInButton
+						callbackUrl="/admin"
+						pendingHint="Presmerovanie na Microsoft…"
+						className="h-12 w-full rounded-2xl bg-indigo-600 text-base font-semibold text-white shadow-md transition-all hover:scale-[1.02] hover:bg-indigo-700 active:scale-[0.98] disabled:opacity-90 dark:bg-indigo-500 dark:hover:bg-indigo-400"
 					>
 						Prihlásiť sa ako admin
-					</Button>
+					</MicrosoftEntraSignInButton>
 				</CardContent>
 			</Card>
 		</div>

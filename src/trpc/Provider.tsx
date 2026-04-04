@@ -10,7 +10,15 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 		() =>
 			new QueryClient({
 				defaultOptions: {
-					queries: { refetchOnWindowFocus: false, staleTime: 5 * 1000 },
+					queries: {
+						refetchOnWindowFocus: false,
+						// Keep client-side data fresh for 1 minute before a background refetch.
+						// This pairs with server-side unstable_cache TTLs in each router.
+						staleTime: 60 * 1000, // 1 min
+						// Keep unused query data in memory for 5 minutes to avoid
+						// redundant fetches on rapid page navigations.
+						gcTime: 5 * 60 * 1000, // 5 min
+					},
 				},
 			}),
 	);

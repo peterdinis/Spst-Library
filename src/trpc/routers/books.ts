@@ -1,9 +1,15 @@
-import { router, publicProcedure, protectedProcedure } from "../server";
+import {
+	router,
+	publicProcedure,
+	protectedProcedure,
+	adminProcedure,
+} from "../server";
 import { getBooks, getBorrowedByUserId } from "@/lib/data";
 import { books } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
+import { CACHE_TAGS, CACHE_TTL } from "../cache-config";
 
 export const booksRouter = router({
 	getAll: publicProcedure
@@ -11,7 +17,7 @@ export const booksRouter = router({
 			z
 				.object({
 					search: z.string().optional(),
-					authorId: z.string().optional(),
+					authorName: z.string().optional(),
 					categoryId: z.string().optional(),
 					limit: z.number().min(1).max(100).default(20),
 					offset: z.number().min(0).default(0),
@@ -19,14 +25,36 @@ export const booksRouter = router({
 				.optional(),
 		)
 		.query(async ({ input }) => {
-			return await getBooks(input || {});
+			const resolvedInput = input || {};
+			// Build a stable cache key from the input parameters
+			const cacheKey = JSON.stringify(resolvedInput);
+			const cached = unstable_cache(
+				async () => getBooks(resolvedInput),
+				["books", cacheKey],
+				{
+					tags: [CACHE_TAGS.books],
+					revalidate: CACHE_TTL.books,
+				},
+			);
+			return cached();
 		}),
+
 	getBorrowedByUser: protectedProcedure.query(async ({ ctx }) => {
 		const userId = ctx.session?.user?.id;
 		if (!userId) return [];
-		return await getBorrowedByUserId(userId);
+		// User-scoped cache: key includes userId so each user gets their own cache entry
+		const cached = unstable_cache(
+			async () => getBorrowedByUserId(userId),
+			["books", "borrowed", userId],
+			{
+				tags: [CACHE_TAGS.books],
+				revalidate: CACHE_TTL.books,
+			},
+		);
+		return cached();
 	}),
-	create: protectedProcedure
+
+	create: adminProcedure
 		.input(
 			z.object({
 				title: z.string().min(1),
@@ -44,10 +72,11 @@ export const booksRouter = router({
 				.insert(books)
 				.values({ id, ...input })
 				.run();
-			revalidateTag("books", "page" as any);
+			revalidateTag(CACHE_TAGS.books, "default");
 			return { success: true, id };
 		}),
-	update: protectedProcedure
+
+	update: adminProcedure
 		.input(
 			z.object({
 				id: z.string(),
@@ -63,14 +92,15 @@ export const booksRouter = router({
 		.mutation(async ({ ctx, input }) => {
 			const { id, ...data } = input;
 			await ctx.db.update(books).set(data).where(eq(books.id, id)).run();
-			revalidateTag("books", "page" as any);
+			revalidateTag(CACHE_TAGS.books, "default");
 			return { success: true };
 		}),
-	delete: protectedProcedure
+
+	delete: adminProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			await ctx.db.delete(books).where(eq(books.id, input.id)).run();
-			revalidateTag("books", "page" as any);
+			revalidateTag(CACHE_TAGS.books, "default");
 			return { success: true };
 		}),
 });

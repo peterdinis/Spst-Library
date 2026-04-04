@@ -22,7 +22,7 @@ export default function AdminDashboardPage() {
 			title: "Knihy",
 			description:
 				"Pridávajte, upravujte a mažte knihy v katalógu vrátane obálok (Azure).",
-			href: "/admin/books",
+			href: "/admin/books" as const,
 			icon: BookOpen,
 			iconBg:
 				"bg-indigo-100 text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-300",
@@ -31,7 +31,7 @@ export default function AdminDashboardPage() {
 			title: "Objednávky",
 			description:
 				"Spracujte žiadosti čitateľov na prevzatie knihy v knižnici.",
-			href: "/admin/orders",
+			href: "/admin/orders" as const,
 			icon: ClipboardList,
 			iconBg:
 				"bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300",
@@ -40,14 +40,14 @@ export default function AdminDashboardPage() {
 			title: "Entra",
 			description:
 				"Zoznam používateľov z Microsoft Entra ID (Graph API, app permissions).",
-			href: "/admin/entra-users",
+			href: "/admin/entra-users" as const,
 			icon: Cloud,
 			iconBg: "bg-sky-100 text-sky-700 dark:bg-sky-950/80 dark:text-sky-300",
 		},
 		{
 			title: "Autori",
 			description: "Spravujte autorov, životopisy a fotky nahrané do úložiska.",
-			href: "/admin/authors",
+			href: "/admin/authors" as const,
 			icon: Users,
 			iconBg:
 				"bg-amber-100 text-amber-700 dark:bg-amber-950/80 dark:text-amber-300",
@@ -55,7 +55,7 @@ export default function AdminDashboardPage() {
 		{
 			title: "Kategórie",
 			description: "Organizujte knihy do žánrov a tematických okruhov.",
-			href: "/admin/categories",
+			href: "/admin/categories" as const,
 			icon: Tags,
 			iconBg:
 				"bg-purple-100 text-purple-700 dark:bg-purple-950/80 dark:text-purple-300",

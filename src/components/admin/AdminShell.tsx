@@ -18,21 +18,17 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 const NAV = [
-	{ href: "/admin", label: "Prehľad", icon: LayoutDashboard, exact: true },
-	{ href: "/admin/books", label: "Knihy", icon: BookOpen },
-	{ href: "/admin/orders", label: "Objednávky", icon: ClipboardList },
-	{ href: "/admin/entra-users", label: "Entra", icon: Cloud },
-	{ href: "/admin/authors", label: "Autori", icon: Users },
-	{ href: "/admin/categories", label: "Kategórie", icon: Tags },
+	{ href: "/admin" as const, label: "Prehľad", icon: LayoutDashboard, exact: true },
+	{ href: "/admin/books" as const, label: "Knihy", icon: BookOpen },
+	{ href: "/admin/orders" as const, label: "Objednávky", icon: ClipboardList },
+	{ href: "/admin/entra-users" as const, label: "Entra", icon: Cloud },
+	{ href: "/admin/authors" as const, label: "Autori", icon: Users },
+	{ href: "/admin/categories" as const, label: "Kategórie", icon: Tags },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
 	const pathname = usePathname();
 	const [collapsed, setCollapsed] = useState(false);
-
-	if (pathname === "/admin/login") {
-		return <>{children}</>;
-	}
 
 	return (
 		<div
