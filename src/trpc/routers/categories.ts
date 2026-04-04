@@ -3,12 +3,23 @@ import { getCategories } from "@/lib/data";
 import { categories } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
+import { CACHE_TAGS, CACHE_TTL } from "../cache-config";
+
+const getCachedCategories = unstable_cache(
+	async () => getCategories(),
+	["categories"],
+	{
+		tags: [CACHE_TAGS.categories],
+		revalidate: CACHE_TTL.categories,
+	},
+);
 
 export const categoriesRouter = router({
 	getAll: publicProcedure.query(async () => {
-		return await getCategories();
+		return getCachedCategories();
 	}),
+
 	create: protectedProcedure
 		.input(z.object({ name: z.string().min(1) }))
 		.mutation(async ({ ctx, input }) => {
@@ -17,9 +28,10 @@ export const categoriesRouter = router({
 				.insert(categories)
 				.values({ id, ...input })
 				.run();
-			revalidateTag("categories", "page" as any);
+			revalidateTag(CACHE_TAGS.categories, "default");
 			return { success: true, id };
 		}),
+
 	update: protectedProcedure
 		.input(z.object({ id: z.string(), name: z.string().min(1) }))
 		.mutation(async ({ ctx, input }) => {
@@ -29,14 +41,18 @@ export const categoriesRouter = router({
 				.set(data)
 				.where(eq(categories.id, id))
 				.run();
-			revalidateTag("categories", "page" as any);
+			revalidateTag(CACHE_TAGS.categories, "default");
 			return { success: true };
 		}),
+
 	delete: protectedProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ ctx, input }) => {
-			await ctx.db.delete(categories).where(eq(categories.id, input.id)).run();
-			revalidateTag("categories", "page" as any);
+			await ctx.db
+				.delete(categories)
+				.where(eq(categories.id, input.id))
+				.run();
+			revalidateTag(CACHE_TAGS.categories, "default");
 			return { success: true };
 		}),
 });

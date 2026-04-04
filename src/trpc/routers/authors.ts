@@ -3,12 +3,23 @@ import { getAuthors } from "@/lib/data";
 import { authors } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
+import { CACHE_TAGS, CACHE_TTL } from "../cache-config";
+
+const getCachedAuthors = unstable_cache(
+	async () => getAuthors(),
+	["authors"],
+	{
+		tags: [CACHE_TAGS.authors],
+		revalidate: CACHE_TTL.authors,
+	},
+);
 
 export const authorsRouter = router({
 	getAll: publicProcedure.query(async () => {
-		return await getAuthors();
+		return getCachedAuthors();
 	}),
+
 	create: protectedProcedure
 		.input(
 			z.object({
@@ -23,9 +34,10 @@ export const authorsRouter = router({
 				.insert(authors)
 				.values({ id, ...input })
 				.run();
-			revalidateTag("authors", "page" as "page");
+			revalidateTag(CACHE_TAGS.authors, "default");
 			return { success: true, id };
 		}),
+
 	update: protectedProcedure
 		.input(
 			z.object({
@@ -38,14 +50,15 @@ export const authorsRouter = router({
 		.mutation(async ({ ctx, input }) => {
 			const { id, ...data } = input;
 			await ctx.db.update(authors).set(data).where(eq(authors.id, id)).run();
-			revalidateTag("authors", "page" as "page");
+			revalidateTag(CACHE_TAGS.authors, "default");
 			return { success: true };
 		}),
+
 	delete: protectedProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			await ctx.db.delete(authors).where(eq(authors.id, input.id)).run();
-			revalidateTag("authors", "page" as "page");
+			revalidateTag(CACHE_TAGS.authors, "default");
 			return { success: true };
 		}),
 });

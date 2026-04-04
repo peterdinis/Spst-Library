@@ -2,8 +2,9 @@ import { router, publicProcedure, protectedProcedure } from "../server";
 import { bookOrders, books } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
 import { TRPCError } from "@trpc/server";
+import { CACHE_TAGS, CACHE_TTL } from "../cache-config";
 
 const orderStatusSchema = z.enum([
 	"pending",
@@ -62,7 +63,7 @@ export const ordersRouter = router({
 					updatedAt: now,
 				})
 				.run();
-			revalidateTag("book-orders", "page" as "page");
+			revalidateTag(CACHE_TAGS.orders, "default");
 			return { success: true, id };
 		}),
 
@@ -74,21 +75,43 @@ export const ordersRouter = router({
 				message: "Chýba identifikátor používateľa.",
 			});
 		}
-		return ctx.db.query.bookOrders.findMany({
-			where: eq(bookOrders.userId, userId),
-			orderBy: (t, { desc: d }) => [d(t.createdAt)],
-			with: { book: { with: { author: true, category: true } } },
-		});
+
+		// User-scoped cache key so each user's orders are cached independently
+		const getCachedMyOrders = unstable_cache(
+			async () =>
+				ctx.db.query.bookOrders.findMany({
+					where: eq(bookOrders.userId, userId),
+					orderBy: (t, { desc: d }) => [d(t.createdAt)],
+					with: { book: { with: { author: true, category: true } } },
+				}),
+			["orders", "user", userId],
+			{
+				tags: [CACHE_TAGS.orders],
+				revalidate: CACHE_TTL.orders,
+			},
+		);
+
+		return getCachedMyOrders();
 	}),
 
 	listAll: publicProcedure.query(async ({ ctx }) => {
-		return ctx.db.query.bookOrders.findMany({
-			orderBy: (t, { desc: d }) => [d(t.createdAt)],
-			with: {
-				user: true,
-				book: { with: { author: true, category: true } },
+		const getCachedAllOrders = unstable_cache(
+			async () =>
+				ctx.db.query.bookOrders.findMany({
+					orderBy: (t, { desc: d }) => [d(t.createdAt)],
+					with: {
+						user: true,
+						book: { with: { author: true, category: true } },
+					},
+				}),
+			["orders", "all"],
+			{
+				tags: [CACHE_TAGS.orders],
+				revalidate: CACHE_TTL.orders,
 			},
-		});
+		);
+
+		return getCachedAllOrders();
 	}),
 
 	updateStatus: publicProcedure
@@ -104,7 +127,7 @@ export const ordersRouter = router({
 				.set({ status: input.status, updatedAt: new Date() })
 				.where(eq(bookOrders.id, input.id))
 				.run();
-			revalidateTag("book-orders", "page" as "page");
+			revalidateTag(CACHE_TAGS.orders, "default");
 			return { success: true };
 		}),
 });

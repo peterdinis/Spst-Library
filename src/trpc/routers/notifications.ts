@@ -2,7 +2,8 @@ import { router, protectedProcedure } from "../server";
 import { notifications } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { z } from "zod";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, unstable_cache } from "next/cache";
+import { CACHE_TAGS, CACHE_TTL } from "../cache-config";
 
 export const notificationsRouter = router({
 	getAll: protectedProcedure.query(async ({ ctx }) => {
@@ -14,7 +15,7 @@ export const notificationsRouter = router({
 		twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
 
 		const upcomingBooks = await ctx.db.query.borrowedBooks.findMany({
-			where: (bb, { and, eq, lte, gt }) =>
+			where: (bb, { and, eq, lte }) =>
 				and(
 					eq(bb.userId, userId),
 					eq(bb.status, "borrowed"),
@@ -26,20 +27,6 @@ export const notificationsRouter = router({
 		});
 
 		for (const bb of upcomingBooks) {
-			// Check if a reminder already exists for this book
-			const existingReminder = await ctx.db.query.notifications.findFirst({
-				where: (n, { and, eq }) =>
-					and(
-						eq(n.userId, userId),
-						eq(n.type, "reminder"),
-						// Simple heuristic: if message contains the book title, it's a reminder for it
-						// Or better, we could add a referenceId column, but let's keep it simple for now
-						// We'll use a specific message format
-					),
-			});
-
-			// To be more precise, let's just check if we sent a reminder in the last 24h for "this" book
-			// For simplicity in this demo, I'll just check for any reminder with the book title
 			const message = `Pripomienka: Kniha "${bb.book.title}" má termín vrátenia o menej ako 2 dni!`;
 
 			const alreadySent = await ctx.db.query.notifications.findFirst({
@@ -61,11 +48,22 @@ export const notificationsRouter = router({
 			}
 		}
 
-		return await ctx.db.query.notifications.findMany({
-			where: eq(notifications.userId, userId),
-			orderBy: [desc(notifications.createdAt)],
-			limit: 20,
-		});
+		// User-scoped cache: each user gets their own notifications cache entry
+		const getCachedNotifications = unstable_cache(
+			async () =>
+				ctx.db.query.notifications.findMany({
+					where: eq(notifications.userId, userId),
+					orderBy: [desc(notifications.createdAt)],
+					limit: 20,
+				}),
+			["notifications", userId],
+			{
+				tags: [CACHE_TAGS.notifications],
+				revalidate: CACHE_TTL.notifications,
+			},
+		);
+
+		return getCachedNotifications();
 	}),
 
 	markAsRead: protectedProcedure
@@ -77,7 +75,7 @@ export const notificationsRouter = router({
 				.where(eq(notifications.id, input.id))
 				.run();
 
-			revalidateTag("notifications", "page" as any);
+			revalidateTag(CACHE_TAGS.notifications, "default");
 			return { success: true };
 		}),
 
@@ -91,7 +89,7 @@ export const notificationsRouter = router({
 			.where(eq(notifications.userId, userId))
 			.run();
 
-		revalidateTag("notifications", "page" as any);
+		revalidateTag(CACHE_TAGS.notifications, "default");
 		return { success: true };
 	}),
 });

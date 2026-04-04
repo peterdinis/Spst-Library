@@ -1,9 +1,10 @@
 import { router, publicProcedure } from "../server";
 import { fetchEntraDirectoryUsers } from "@/lib/microsoft-graph";
+import { unstable_cache } from "next/cache";
+import { CACHE_TAGS, CACHE_TTL } from "../cache-config";
 
-export const entraRouter = router({
-	/** Používatelia z Entra (Graph). Vyžaduje app permission User.Read.All + admin consent. */
-	listDirectoryUsers: publicProcedure.query(async () => {
+const getCachedEntraUsers = unstable_cache(
+	async () => {
 		try {
 			const users = await fetchEntraDirectoryUsers();
 			return { users, error: null as string | null };
@@ -17,5 +18,17 @@ export const entraRouter = router({
 				error: message,
 			};
 		}
+	},
+	["entra-users"],
+	{
+		tags: [CACHE_TAGS.entra],
+		revalidate: CACHE_TTL.entra,
+	},
+);
+
+export const entraRouter = router({
+	/** Používatelia z Entra (Graph). Vyžaduje app permission User.Read.All + admin consent. */
+	listDirectoryUsers: publicProcedure.query(async () => {
+		return getCachedEntraUsers();
 	}),
 });
