@@ -14,7 +14,6 @@ export default function ErrorPage({
 	reset: () => void;
 }) {
 	useEffect(() => {
-		// Odoslanie chyby do logovacieho systému
 		console.error("Aplikácia narazila na chybu:", error);
 	}, [error]);
 

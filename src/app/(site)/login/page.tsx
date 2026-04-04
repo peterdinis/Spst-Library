@@ -17,34 +17,34 @@ export default function LoginPage() {
 	};
 
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-			<Card className="w-full max-w-md relative z-10 rounded-3xl border-slate-200/70 bg-white shadow-xl overflow-hidden">
-				<CardHeader className="pt-10 pb-6 px-8 text-center space-y-4 border-b border-slate-100 bg-white">
-					<div className="mx-auto w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
-						<LogIn className="w-7 h-7 text-emerald-500" />
+		<div className="flex min-h-dvh items-center justify-center bg-background px-4">
+			<Card className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border-border shadow-xl">
+				<CardHeader className="space-y-4 border-b border-border px-8 pb-6 pt-10 text-center">
+					<div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 dark:border-emerald-400/25 dark:bg-emerald-400/10">
+						<LogIn className="h-7 w-7 text-emerald-600 dark:text-emerald-400" />
 					</div>
 					<div className="space-y-1">
-						<CardTitle className="text-3xl font-black tracking-tight text-slate-900">
+						<CardTitle className="text-3xl font-black tracking-tight text-foreground">
 							Prihlásenie do knižnice
 						</CardTitle>
-						<CardDescription className="text-slate-500 font-medium">
+						<CardDescription className="font-medium">
 							Použite svoj školský Microsoft účet SPŠT na vstup do systému.
 						</CardDescription>
 					</div>
 				</CardHeader>
 
-				<CardContent className="px-8 py-7 space-y-6 bg-white">
+				<CardContent className="space-y-6 px-8 py-7">
 					<Button
 						type="button"
-						className="w-full h-12 rounded-2xl text-base font-semibold shadow-md bg-emerald-500 hover:bg-emerald-600 text-white hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+						className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 text-base font-semibold text-white shadow-md transition-all hover:scale-[1.01] hover:bg-emerald-700 active:scale-[0.99] dark:bg-emerald-500 dark:hover:bg-emerald-400"
 						onClick={handleMicrosoftLogin}
 					>
-						<BookOpen className="w-5 h-5" />
+						<BookOpen className="h-5 w-5" />
 						Prihlásiť sa cez Microsoft
 					</Button>
 
-					<div className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 flex items-start gap-3 text-sm text-slate-500">
-						<Shield className="w-4 h-4 mt-0.5 text-emerald-500" />
+					<div className="flex items-start gap-3 rounded-2xl border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+						<Shield className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
 						<p>
 							Prihlásenie je zabezpečené cez Microsoft Entra ID. Prihlásením
 							súhlasíte s použitím školského účtu na správu výpožičiek a

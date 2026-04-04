@@ -11,11 +11,11 @@ export function AdminPageHeader({
 }) {
 	return (
 		<div className={cn("mb-8 space-y-2", className)}>
-			<h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50">
+			<h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
 				{title}
 			</h1>
 			{description ? (
-				<p className="text-slate-600 dark:text-slate-400 max-w-2xl text-base leading-relaxed">
+				<p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
 					{description}
 				</p>
 			) : null}

@@ -10,11 +10,13 @@ export default function AdminCategoriesPage() {
 				description="Žánre a tematické okruhy pre knihy v katalógu."
 			/>
 
-			<div className="grid grid-cols-1 xl:grid-cols-[minmax(0,420px),1fr] gap-8 xl:gap-10 items-start">
-				<div className="relative z-10 bg-slate-50 pb-1 dark:bg-background xl:sticky xl:top-24 xl:max-h-[calc(100dvh-6rem)] xl:shrink-0 xl:overflow-y-auto xl:self-start xl:overscroll-contain">
+			<div className="grid grid-cols-1 items-start gap-8 xl:grid-cols-[minmax(0,420px),1fr] xl:gap-10">
+				<div className="relative z-10 rounded-2xl bg-slate-50 p-1 dark:bg-background xl:sticky xl:top-24 xl:self-start">
 					<CategoryForm />
 				</div>
-				<CategoriesTable />
+				<div className="min-w-0">
+					<CategoriesTable />
+				</div>
 			</div>
 		</div>
 	);

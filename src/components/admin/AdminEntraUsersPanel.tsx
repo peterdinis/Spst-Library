@@ -15,15 +15,15 @@ export function AdminEntraUsersPanel() {
 	const { data, isLoading, error } = trpc.entra.listDirectoryUsers.useQuery();
 
 	if (isLoading) {
-		return (
-			<p className="text-sm text-muted-foreground">
-				Načítavam používateľov z Entra…
-			</p>
-		);
+		return <div className="h-48 animate-pulse rounded-2xl bg-muted" />;
 	}
 
 	if (error) {
-		return <p className="text-sm text-destructive">{error.message}</p>;
+		return (
+			<p className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+				{error.message}
+			</p>
+		);
 	}
 
 	const users = data?.users ?? [];
@@ -42,33 +42,33 @@ export function AdminEntraUsersPanel() {
 			) : null}
 
 			{!users.length && !errMsg ? (
-				<p className="text-sm text-muted-foreground">
+				<p className="rounded-2xl border border-dashed border-border bg-muted/20 px-6 py-12 text-center text-sm text-muted-foreground">
 					Žiadni používatelia (alebo prázdny tenant).
 				</p>
 			) : null}
 
 			{users.length > 0 ? (
-				<div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
+				<div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
 					<Table>
 						<TableHeader>
-							<TableRow className="bg-muted/50 hover:bg-muted/50">
+							<TableRow className="border-b bg-muted/20 hover:bg-muted/20">
 								<TableHead>Meno</TableHead>
 								<TableHead>E-mail</TableHead>
-								<TableHead>UPN</TableHead>
-								<TableHead className="w-[100px]">ID</TableHead>
+								<TableHead className="max-w-[min(100%,18rem)]">UPN</TableHead>
+								<TableHead className="whitespace-nowrap">ID</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{users.map((u) => (
-								<TableRow key={u.id}>
+								<TableRow key={u.id} className="hover:bg-muted/40">
 									<TableCell className="font-medium">{u.displayName}</TableCell>
-									<TableCell className="text-muted-foreground text-sm">
+									<TableCell className="text-sm text-muted-foreground">
 										{u.mail ?? "—"}
 									</TableCell>
-									<TableCell className="text-sm">
+									<TableCell className="break-all text-sm">
 										{u.userPrincipalName}
 									</TableCell>
-									<TableCell className="font-mono text-xs text-muted-foreground truncate max-w-[120px]">
+									<TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
 										{u.id.slice(0, 8)}…
 									</TableCell>
 								</TableRow>

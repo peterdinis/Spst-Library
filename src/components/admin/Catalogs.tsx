@@ -48,30 +48,30 @@ export function AuthorsTable() {
 	});
 
 	if (isLoading)
-		return <div className="animate-pulse h-32 bg-slate-200 rounded-2xl"></div>;
+		return <div className="h-40 animate-pulse rounded-2xl bg-muted" />;
 
 	return (
-		<Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-lg overflow-hidden bg-white dark:bg-slate-900">
-			<CardHeader className="bg-slate-50/80 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
-				<CardTitle className="text-lg">Katalóg autorov</CardTitle>
+		<Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+			<CardHeader className="flex flex-row items-center justify-between border-b border-border bg-muted/30 px-4 py-3">
+				<CardTitle className="text-base font-semibold">Katalóg autorov</CardTitle>
 			</CardHeader>
 			<CardContent className="p-0">
 				<Table>
 					<TableHeader>
-						<TableRow className="bg-slate-50/80 dark:bg-slate-800/50">
-							<TableHead className="pl-6 w-14" />
+						<TableRow className="border-b bg-muted/20 hover:bg-muted/20">
+							<TableHead className="w-14 pl-4" />
 							<TableHead>Meno</TableHead>
-							<TableHead>Životopis</TableHead>
-							<TableHead className="text-right pr-6">Akcie</TableHead>
+							<TableHead className="max-w-[min(100%,24rem)]">Životopis</TableHead>
+							<TableHead className="pr-4 text-right whitespace-nowrap">Akcie</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{authors?.map((a) => (
 							<TableRow
 								key={a.id}
-								className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
+								className="transition-colors hover:bg-muted/40"
 							>
-								<TableCell className="pl-6">
+								<TableCell className="pl-4 align-middle">
 									{a.imageUrl ? (
 										<div className="relative size-9 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
 											<Image
@@ -88,10 +88,10 @@ export function AuthorsTable() {
 									)}
 								</TableCell>
 								<TableCell className="font-medium">{a.name}</TableCell>
-								<TableCell className="max-w-xs truncate text-slate-600 dark:text-slate-400">
-									{a.bio || "Bez popisu"}
+								<TableCell className="max-w-md text-sm text-muted-foreground">
+									<span className="line-clamp-2">{a.bio || "Bez popisu"}</span>
 								</TableCell>
-								<TableCell className="text-right pr-6 space-x-2">
+								<TableCell className="space-x-2 pr-4 text-right align-middle whitespace-nowrap">
 									<Dialog
 										open={isEditDialogOpen && selectedAuthor?.id === a.id}
 										onOpenChange={(open) => {
@@ -134,7 +134,7 @@ export function AuthorsTable() {
 							<TableRow>
 								<TableCell
 									colSpan={4}
-									className="text-center py-12 text-slate-400"
+									className="py-12 text-center text-muted-foreground"
 								>
 									Žiadni autori neboli nájdení.
 								</TableCell>
@@ -163,29 +163,29 @@ export function CategoriesTable() {
 	});
 
 	if (isLoading)
-		return <div className="animate-pulse h-32 bg-slate-200 rounded-2xl"></div>;
+		return <div className="h-40 animate-pulse rounded-2xl bg-muted" />;
 
 	return (
-		<Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-lg overflow-hidden bg-white dark:bg-slate-900">
-			<CardHeader className="bg-slate-50/80 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
-				<CardTitle className="text-lg">Katalóg kategórií</CardTitle>
+		<Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+			<CardHeader className="border-b border-border bg-muted/30 px-4 py-3">
+				<CardTitle className="text-base font-semibold">Katalóg kategórií</CardTitle>
 			</CardHeader>
 			<CardContent className="p-0">
 				<Table>
 					<TableHeader>
-						<TableRow className="bg-slate-50/80 dark:bg-slate-800/50">
-							<TableHead className="pl-6">Názov</TableHead>
-							<TableHead className="text-right pr-6">Akcie</TableHead>
+						<TableRow className="border-b bg-muted/20 hover:bg-muted/20">
+							<TableHead className="pl-4">Názov</TableHead>
+							<TableHead className="pr-4 text-right whitespace-nowrap">Akcie</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{categories?.map((c) => (
 							<TableRow
 								key={c.id}
-								className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors"
+								className="transition-colors hover:bg-muted/40"
 							>
-								<TableCell className="font-medium pl-6">{c.name}</TableCell>
-								<TableCell className="text-right pr-6 space-x-2">
+								<TableCell className="pl-4 font-medium">{c.name}</TableCell>
+								<TableCell className="space-x-2 pr-4 text-right whitespace-nowrap">
 									<Dialog
 										open={isEditDialogOpen && selectedCategory?.id === c.id}
 										onOpenChange={(open) => {
@@ -228,7 +228,7 @@ export function CategoriesTable() {
 							<TableRow>
 								<TableCell
 									colSpan={2}
-									className="text-center py-12 text-slate-400"
+									className="py-12 text-center text-muted-foreground"
 								>
 									Žiadne kategórie neboli nájdené.
 								</TableCell>
@@ -258,36 +258,36 @@ export function BooksTable() {
 	});
 
 	if (isLoading)
-		return <div className="animate-pulse h-64 bg-slate-200 rounded-3xl"></div>;
+		return <div className="h-64 animate-pulse rounded-2xl bg-muted" />;
 
 	return (
-		<Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xl overflow-hidden bg-white dark:bg-slate-900">
-			<CardHeader className="bg-slate-50/80 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
+		<Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+			<CardHeader className="flex flex-row items-center justify-between border-b border-border bg-muted/30 px-4 py-3">
 				<div className="flex items-center gap-3">
-					<div className="p-2 bg-indigo-100 text-indigo-600 rounded-xl">
+					<div className="rounded-xl bg-primary/10 p-2 text-primary">
 						<BookOpen className="h-5 w-5" />
 					</div>
-					<CardTitle className="text-lg">Katalóg kníh</CardTitle>
+					<CardTitle className="text-base font-semibold">Katalóg kníh</CardTitle>
 				</div>
 			</CardHeader>
 			<CardContent className="p-0">
 				<Table>
 					<TableHeader>
-						<TableRow className="bg-slate-50/80 dark:bg-slate-800/50">
-							<TableHead className="pl-6">Obálka</TableHead>
+						<TableRow className="border-b bg-muted/20 hover:bg-muted/20">
+							<TableHead className="pl-4 whitespace-nowrap">Obálka</TableHead>
 							<TableHead>Názov</TableHead>
 							<TableHead>Autor</TableHead>
-							<TableHead>Kusy</TableHead>
-							<TableHead className="text-right pr-6">Akcie</TableHead>
+							<TableHead className="whitespace-nowrap">Kusy</TableHead>
+							<TableHead className="pr-4 text-right whitespace-nowrap">Akcie</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
 						{books?.items?.map((b) => (
 							<TableRow
 								key={b.id}
-								className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors group"
+								className="group transition-colors hover:bg-muted/40"
 							>
-								<TableCell className="pl-6">
+								<TableCell className="pl-4 align-middle whitespace-nowrap">
 									{b.coverUrl ? (
 										<div className="relative h-12 w-9">
 											<Image
@@ -303,15 +303,15 @@ export function BooksTable() {
 										</div>
 									)}
 								</TableCell>
-								<TableCell className="font-medium">
+								<TableCell className="max-w-[min(100%,18rem)] font-medium">
 									<div>
-										<div className="text-slate-900">{b.title}</div>
-										<div className="text-xs text-slate-500 font-normal">
+										<div className="text-foreground">{b.title}</div>
+										<div className="text-xs font-normal text-muted-foreground">
 											{b.isbn || "ISBN chýba"}
 										</div>
 									</div>
 								</TableCell>
-								<TableCell>
+								<TableCell className="whitespace-nowrap">
 									<Badge
 										variant="outline"
 										className="rounded-lg bg-slate-50 font-normal"
@@ -319,14 +319,12 @@ export function BooksTable() {
 										{b.author?.name || "Neznámy autor"}
 									</Badge>
 								</TableCell>
-								<TableCell>
-									<div className="flex items-center gap-2 font-mono text-sm">
-										<span className="text-indigo-600 font-bold">
-											{b.availableCopies}
-										</span>
-									</div>
+								<TableCell className="whitespace-nowrap">
+									<span className="font-mono text-sm font-bold text-primary">
+										{b.availableCopies}
+									</span>
 								</TableCell>
-								<TableCell className="text-right pr-6 space-x-2">
+								<TableCell className="space-x-2 pr-4 text-right align-middle whitespace-nowrap">
 									<Dialog
 										open={isEditDialogOpen && selectedBook?.id === b.id}
 										onOpenChange={(open) => {
@@ -373,10 +371,10 @@ export function BooksTable() {
 							<TableRow>
 								<TableCell
 									colSpan={5}
-									className="text-center py-16 text-slate-400"
+									className="py-16 text-center text-muted-foreground"
 								>
 									<div className="flex flex-col items-center gap-2">
-										<BookOpen className="h-8 w-8 text-slate-200" />
+										<BookOpen className="h-8 w-8 text-muted-foreground/40" />
 										<p>V knižnici nie sú žiadne knihy.</p>
 									</div>
 								</TableCell>
