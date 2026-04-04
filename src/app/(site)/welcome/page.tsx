@@ -41,7 +41,7 @@ export default async function WelcomePage() {
 	return (
 		<div className="relative min-h-[calc(100dvh-4rem)] overflow-x-hidden bg-background px-4 py-10 md:py-14">
 			<div
-				className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-50 [mask-image:radial-gradient(ellipse_65%_55%_at_50%_40%,#000_45%,transparent_100%)] dark:bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] dark:opacity-100"
+				className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] bg-size-[24px_24px] opacity-50 mask-[radial-gradient(ellipse_65%_55%_at_50%_40%,#000_45%,transparent_100%)] dark:bg-[radial-gradient(rgba(255,255,255,0.06)_1px,transparent_1px)] dark:opacity-100"
 				aria-hidden
 			/>
 
