@@ -1,11 +1,9 @@
 "use client";
 
-import Image from "next/image";
-import { toast } from "sonner";
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
 	Card,
 	CardContent,
@@ -22,101 +20,97 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { RichTextEditor } from "./RichTextEditor";
+import { toast } from "sonner";
+import { Loader2, Plus, Info } from "lucide-react";
 
 export type BookFormInitial = {
 	id: string;
 	title: string;
-	description?: string | null;
-	isbn?: string | null;
-	availableCopies?: number | null;
-	authorId?: string | null;
-	categoryId?: string | null;
-	coverUrl?: string | null;
+	description: string | null;
+	isbn: string | null;
+	availableCopies: number;
+	authorId: string | null;
+	categoryId: string | null;
+	coverUrl: string | null;
 };
 
 interface BookFormProps {
 	initialData?: BookFormInitial;
-	onSuccess?: () => void;
+	authors: { id: string; name: string | null }[];
+	categories: { id: string; name: string }[];
 }
 
-export function BookForm({ initialData, onSuccess }: BookFormProps) {
-	const [title, setTitle] = useState(initialData?.title || "");
-	const [description, setDescription] = useState(
-		initialData?.description || "",
-	);
-	const [isbn, setIsbn] = useState(initialData?.isbn || "");
+export function BookForm({ initialData, authors, categories }: BookFormProps) {
+	const router = useRouter();
+
+	const [title, setTitle] = useState(initialData?.title ?? "");
+	const [description, setDescription] = useState(initialData?.description ?? "");
+	const [isbn, setIsbn] = useState(initialData?.isbn ?? "");
 	const [availableCopies, setAvailableCopies] = useState(
 		initialData?.availableCopies ?? 1,
 	);
-	const [authorId, setAuthorId] = useState(initialData?.authorId || "");
-	const [categoryId, setCategoryId] = useState(initialData?.categoryId || "");
-	const [coverUrl, setCoverUrl] = useState(initialData?.coverUrl || "");
+	const [authorId, setAuthorId] = useState(initialData?.authorId ?? "");
+	const [categoryId, setCategoryId] = useState(initialData?.categoryId ?? "");
+	const [coverUrl, setCoverUrl] = useState(initialData?.coverUrl ?? "");
 
-	const { data: authors } = trpc.authors.getAll.useQuery();
-	const { data: categories } = trpc.categories.getAll.useQuery();
-	const utils = trpc.useUtils();
+	const context = trpc.useUtils();
 
-	const createBook = trpc.books.create.useMutation({
+	const createMutation = trpc.books.create.useMutation({
 		onSuccess: () => {
-			toast.success("Kniha úspešne pridaná!");
-			utils.books.getAll.invalidate();
-			onSuccess?.();
-			if (!initialData) resetForm();
+			toast.success("Kniha bola úspešne vytvorená.");
+			router.push("/admin/books");
+			context.books.list.invalidate();
 		},
 		onError: (e) => toast.error(e.message),
 	});
 
-	const updateBook = trpc.books.update.useMutation({
+	const updateMutation = trpc.books.update.useMutation({
 		onSuccess: () => {
-			toast.success("Kniha úspešne upravená!");
-			utils.books.getAll.invalidate();
-			onSuccess?.();
+			toast.success("Kniha bola úspešne upravená.");
+			router.push("/admin/books");
+			context.books.list.invalidate();
 		},
 		onError: (e) => toast.error(e.message),
 	});
-
-	const resetForm = () => {
-		setTitle("");
-		setDescription("");
-		setIsbn("");
-		setAvailableCopies(1);
-		setAuthorId("");
-		setCategoryId("");
-		setCoverUrl("");
-	};
-
-	const isEditing = !!initialData;
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		const data = {
+		const payload = {
 			title,
-			description: description || undefined,
-			isbn: isbn || undefined,
-			availableCopies: Number(availableCopies),
-			authorId,
-			categoryId,
-			coverUrl: coverUrl || undefined,
+			description: description || null,
+			isbn: isbn || null,
+			availableCopies,
+			authorId: authorId || null,
+			categoryId: categoryId || null,
+			coverUrl: coverUrl || null,
 		};
 
-		if (isEditing) {
-			updateBook.mutate({ id: initialData.id, ...data });
+		if (initialData) {
+			updateMutation.mutate({ id: initialData.id, ...payload });
 		} else {
-			createBook.mutate(data);
+			createMutation.mutate(payload);
 		}
 	};
 
-	const pending = createBook.isPending || updateBook.isPending;
+	const isLoading = createMutation.isPending || updateMutation.isPending;
 
 	return (
-		<Card className="shadow-lg border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-slate-900">
-			<CardHeader className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/50">
-				<CardTitle className="text-xl">
-					{isEditing ? "Upraviť knihu" : "Nová kniha"}
-				</CardTitle>
-				<CardDescription>
-					Údaje, autor, kategória a obálka (upload do Azure).
-				</CardDescription>
+		<Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white/80 dark:bg-slate-950/80 backdrop-blur-md ring-1 ring-slate-200 dark:ring-slate-800">
+			<CardHeader className="bg-gradient-to-r from-indigo-600/5 to-purple-600/5 border-b border-slate-100 dark:border-slate-800 pb-8 px-8">
+				<div className="flex items-center gap-4 mb-2">
+					<div className="p-3 bg-primary/10 rounded-2xl">
+						<Plus className="h-6 w-6 text-primary" />
+					</div>
+					<div>
+						<CardTitle className="text-2xl font-bold tracking-tight">
+							{initialData ? "Upraviť knihu" : "Nová kniha"}
+						</CardTitle>
+						<CardDescription>
+							Vyplňte detaily knihy a nahrajte obálku.
+						</CardDescription>
+					</div>
+				</div>
 			</CardHeader>
 			<CardContent className="pt-6">
 				<form
@@ -135,12 +129,16 @@ export function BookForm({ initialData, onSuccess }: BookFormProps) {
 								required
 								className="rounded-xl"
 							/>
-							<Textarea
-								placeholder="Popis"
-								value={description || ""}
-								onChange={(e) => setDescription(e.target.value)}
-								className="rounded-xl min-h-[100px]"
-							/>
+							<div className="space-y-2">
+								<label className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+									<Info className="h-3 w-3" /> Popis knihy
+								</label>
+								<RichTextEditor
+									value={description || ""}
+									onChange={(val: string) => setDescription(val)}
+									placeholder="Podrobný popis obsahu knihy..."
+								/>
+							</div>
 							<Input
 								placeholder="ISBN (voliteľné)"
 								value={isbn || ""}
@@ -160,26 +158,14 @@ export function BookForm({ initialData, onSuccess }: BookFormProps) {
 
 						<div className="space-y-2">
 							<label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-								Autor a kategória
+								Kategorizácia
 							</label>
-							<Select
-								value={authorId}
-								onValueChange={(v) => setAuthorId(v ?? "")}
-								required
-							>
-								<SelectTrigger className="rounded-xl w-full">
-									<SelectValue placeholder="Vyberte autora">
-										{(value) => {
-											const v = value as string | null | undefined;
-											if (v == null || v === "") {
-												return "Vyberte autora";
-											}
-											return authors?.find((a) => a.id === v)?.name ?? v;
-										}}
-									</SelectValue>
+							<Select value={authorId ?? ""} onValueChange={setAuthorId}>
+								<SelectTrigger className="rounded-xl">
+									<SelectValue placeholder="Vyberte autora" />
 								</SelectTrigger>
-								<SelectContent className="rounded-xl">
-									{authors?.map((a) => (
+								<SelectContent>
+									{authors.map((a) => (
 										<SelectItem key={a.id} value={a.id}>
 											{a.name}
 										</SelectItem>
@@ -187,24 +173,12 @@ export function BookForm({ initialData, onSuccess }: BookFormProps) {
 								</SelectContent>
 							</Select>
 
-							<Select
-								value={categoryId}
-								onValueChange={(v) => setCategoryId(v ?? "")}
-								required
-							>
-								<SelectTrigger className="rounded-xl w-full">
-									<SelectValue placeholder="Vyberte kategóriu">
-										{(value) => {
-											const v = value as string | null | undefined;
-											if (v == null || v === "") {
-												return "Vyberte kategóriu";
-											}
-											return categories?.find((c) => c.id === v)?.name ?? v;
-										}}
-									</SelectValue>
+							<Select value={categoryId ?? ""} onValueChange={setCategoryId}>
+								<SelectTrigger className="rounded-xl">
+									<SelectValue placeholder="Vyberte kategóriu" />
 								</SelectTrigger>
-								<SelectContent className="rounded-xl">
-									{categories?.map((c) => (
+								<SelectContent>
+									{categories.map((c) => (
 										<SelectItem key={c.id} value={c.id}>
 											{c.name}
 										</SelectItem>
@@ -214,45 +188,37 @@ export function BookForm({ initialData, onSuccess }: BookFormProps) {
 						</div>
 					</div>
 
-					<div className="space-y-5">
+					<div className="space-y-6">
 						<div className="space-y-2">
 							<label className="text-sm font-medium text-slate-700 dark:text-slate-200">
 								Obálka knihy
 							</label>
 							<FileUpload
-								uploadFolder="books"
-								onUploadComplete={setCoverUrl}
-								defaultValue={coverUrl || undefined}
+								value={coverUrl ?? ""}
+								onChange={setCoverUrl}
+								folder="covers"
 							/>
-							{coverUrl && (
-								<div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3 bg-slate-50 dark:bg-slate-800/50">
-									<p className="text-xs text-slate-500 dark:text-slate-400 truncate mb-2">
-										{coverUrl}
-									</p>
-									<div className="relative h-40 w-28 mx-auto">
-										<Image
-											src={coverUrl}
-											alt="Náhľad obálky"
-											fill
-											className="object-cover rounded-lg shadow-md"
-										/>
-									</div>
-								</div>
-							)}
-							{!coverUrl && (
-								<p className="text-xs text-slate-500 dark:text-slate-400">
-									Obálka je voliteľná — knihu môžete uložiť aj bez obrázka.
-								</p>
-							)}
 						</div>
 
-						<Button
-							disabled={pending}
-							type="submit"
-							className="w-full h-11 rounded-xl text-base font-semibold"
-						>
-							{isEditing ? "Uložiť zmeny" : "Vytvoriť knihu"}
-						</Button>
+						<div className="pt-4">
+							<Button
+								type="submit"
+								size="lg"
+								className="w-full h-14 rounded-2xl text-lg font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-0.5"
+								disabled={isLoading}
+							>
+								{isLoading ? (
+									<>
+										<Loader2 className="mr-2 h-5 w-5 animate-spin" />
+										Ukladám...
+									</>
+								) : initialData ? (
+									"Uložiť zmeny"
+								) : (
+									"Vytvoriť knihu"
+								)}
+							</Button>
+						</div>
 					</div>
 				</form>
 			</CardContent>
