@@ -91,7 +91,7 @@ export function NotificationBell() {
 											{n.message}
 										</p>
 										<p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-											{n.createdAt
+											{n.createdAt && !isNaN(new Date(n.createdAt).getTime())
 												? formatDistanceToNow(new Date(n.createdAt), {
 														addSuffix: true,
 														locale: sk,

@@ -32,7 +32,7 @@ export function AuthorForm({ initialData }: AuthorFormProps) {
 	const router = useRouter();
 	const [name, setName] = useState(initialData?.name ?? "");
 	const [bio, setBio] = useState(initialData?.bio ?? "");
-	const [image, setImage] = useState(initialData?.image ?? "");
+	const [imageUrl, setImageUrl] = useState(initialData?.image ?? "");
 
 	const context = trpc.useUtils();
 
@@ -40,7 +40,7 @@ export function AuthorForm({ initialData }: AuthorFormProps) {
 		onSuccess: () => {
 			toast.success("Autor bol úspešne vytvorený.");
 			router.push("/admin/authors");
-			context.authors.list.invalidate();
+			context.authors.getAll.invalidate();
 		},
 		onError: (e) => toast.error(e.message),
 	});
@@ -49,7 +49,7 @@ export function AuthorForm({ initialData }: AuthorFormProps) {
 		onSuccess: () => {
 			toast.success("Autor bol úspešne upravený.");
 			router.push("/admin/authors");
-			context.authors.list.invalidate();
+			context.authors.getAll.invalidate();
 		},
 		onError: (e) => toast.error(e.message),
 	});
@@ -58,8 +58,8 @@ export function AuthorForm({ initialData }: AuthorFormProps) {
 		e.preventDefault();
 		const payload = {
 			name: name.trim(),
-			bio: bio || null,
-			image: image || null,
+			bio: bio || undefined,
+			imageUrl: imageUrl || undefined,
 		};
 
 		if (initialData) {
@@ -118,7 +118,12 @@ export function AuthorForm({ initialData }: AuthorFormProps) {
 						<label className="text-sm font-medium text-slate-700 dark:text-slate-200">
 							Fotka autora
 						</label>
-						<FileUpload value={image || ""} onChange={setImage} folder="authors" />
+						<FileUpload
+							defaultValue={imageUrl || ""}
+							onUploadComplete={setImageUrl}
+							uploadFolder="authors"
+							aspectRatio={1}
+						/>
 					</div>
 
 					<div className="pt-4">

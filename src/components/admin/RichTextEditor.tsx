@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -135,6 +136,12 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
 			onChange(editor.getHTML());
 		},
 	});
+ 
+	useEffect(() => {
+		if (editor && value !== editor.getHTML()) {
+			editor.commands.setContent(value);
+		}
+	}, [value, editor]);
 
 	return (
 		<div className="w-full rounded-2xl border border-border bg-background focus-within:ring-2 focus-within:ring-primary/20 transition-all overflow-hidden flex flex-col">

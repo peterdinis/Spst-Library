@@ -33,10 +33,10 @@ export async function POST(req: NextRequest) {
 			);
 		}
 
-		const coverUrl = await uploadImageToAzure(coverFile);
+		const coverUrl = await uploadImageToAzure(coverFile, { prefix: "books" });
 		const id = crypto.randomUUID();
 
-		db.insert(books)
+		await db.insert(books)
 			.values({
 				id,
 				title,

@@ -60,7 +60,7 @@ export function BookForm({ initialData, authors, categories }: BookFormProps) {
 		onSuccess: () => {
 			toast.success("Kniha bola úspešne vytvorená.");
 			router.push("/admin/books");
-			context.books.list.invalidate();
+			context.books.getAll.invalidate();
 		},
 		onError: (e) => toast.error(e.message),
 	});
@@ -69,7 +69,7 @@ export function BookForm({ initialData, authors, categories }: BookFormProps) {
 		onSuccess: () => {
 			toast.success("Kniha bola úspešne upravená.");
 			router.push("/admin/books");
-			context.books.list.invalidate();
+			context.books.getAll.invalidate();
 		},
 		onError: (e) => toast.error(e.message),
 	});
@@ -78,12 +78,12 @@ export function BookForm({ initialData, authors, categories }: BookFormProps) {
 		e.preventDefault();
 		const payload = {
 			title,
-			description: description || null,
-			isbn: isbn || null,
+			description: description || undefined,
+			isbn: isbn || undefined,
 			availableCopies,
-			authorId: authorId || null,
-			categoryId: categoryId || null,
-			coverUrl: coverUrl || null,
+			authorId,
+			categoryId,
+			coverUrl: coverUrl || undefined,
 		};
 
 		if (initialData) {
@@ -160,7 +160,7 @@ export function BookForm({ initialData, authors, categories }: BookFormProps) {
 							<label className="text-sm font-medium text-slate-700 dark:text-slate-200">
 								Kategorizácia
 							</label>
-							<Select value={authorId ?? ""} onValueChange={setAuthorId}>
+							<Select value={authorId ?? ""} onValueChange={(val) => setAuthorId(val ?? "")}>
 								<SelectTrigger className="rounded-xl">
 									<SelectValue placeholder="Vyberte autora" />
 								</SelectTrigger>
@@ -173,7 +173,7 @@ export function BookForm({ initialData, authors, categories }: BookFormProps) {
 								</SelectContent>
 							</Select>
 
-							<Select value={categoryId ?? ""} onValueChange={setCategoryId}>
+							<Select value={categoryId ?? ""} onValueChange={(val) => setCategoryId(val ?? "")}>
 								<SelectTrigger className="rounded-xl">
 									<SelectValue placeholder="Vyberte kategóriu" />
 								</SelectTrigger>
@@ -194,9 +194,9 @@ export function BookForm({ initialData, authors, categories }: BookFormProps) {
 								Obálka knihy
 							</label>
 							<FileUpload
-								value={coverUrl ?? ""}
-								onChange={setCoverUrl}
-								folder="covers"
+								defaultValue={coverUrl ?? ""}
+								onUploadComplete={setCoverUrl}
+								uploadFolder="books"
 							/>
 						</div>
 
