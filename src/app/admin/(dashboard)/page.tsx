@@ -37,7 +37,7 @@ export default function AdminDashboardPage() {
 				"bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300",
 		},
 		{
-			title: "Entra",
+			title: "Microsoft Entra",
 			description:
 				"Zoznam používateľov z Microsoft Entra ID (Graph API, app permissions).",
 			href: "/admin/entra-users" as const,
