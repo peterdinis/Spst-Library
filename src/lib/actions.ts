@@ -73,15 +73,38 @@ export const borrowBookAction = protectedActionClient
 	.schema(z.object({ bookId: z.string() }))
 	.action(async ({ parsedInput: { bookId }, ctx: { session } }) => {
 		const userId = session?.user?.id;
-		if (!userId) throw new Error("Unauthorized");
+		if (!userId) throw new Error("Neprihlásený používateľ");
+
+		// Check if book exists and has copies
 		const book = db
-			.select({ availableCopies: books.availableCopies })
+			.select({ availableCopies: books.availableCopies, title: books.title })
 			.from(books)
 			.where(eq(books.id, bookId))
 			.get();
 
-		if (!book || book.availableCopies <= 0) {
-			throw new Error("Book not available");
+		if (!book) {
+			throw new Error("Kniha nebola nájdená");
+		}
+
+		if (book.availableCopies <= 0) {
+			throw new Error("Kniha momentálne nie je dostupná na vypožičanie");
+		}
+
+		// Check if user already has an active borrow for THIS specific book
+		const existingBorrow = db
+			.select()
+			.from(borrowedBooks)
+			.where(
+				and(
+					eq(borrowedBooks.userId, userId),
+					eq(borrowedBooks.bookId, bookId),
+					eq(borrowedBooks.status, "borrowed"),
+				),
+			)
+			.get();
+
+		if (existingBorrow) {
+			throw new Error("Túto knihu už máte momentálne požičanú");
 		}
 
 		const dueDate = new Date();
@@ -108,27 +131,21 @@ export const borrowBookAction = protectedActionClient
 				.values({
 					id: crypto.randomUUID(),
 					userId: userId,
-					message: `Úspešne ste si požičali knihu. Termín vrátenia je ${dueDate.toLocaleDateString("sk-SK")}.`,
+					message: `Úspešne ste si požičali knihu "${book.title}". Termín vrátenia je ${dueDate.toLocaleDateString("sk-SK")}.`,
 					type: "borrow",
 					isRead: false,
 				})
 				.run();
 		});
 
-		// Fetch book title for email
-		const bookDetails = await db.query.books.findFirst({
-			where: eq(books.id, bookId),
-			columns: { title: true },
-		});
-
-		if (session?.user?.email && bookDetails) {
+		if (session?.user?.email) {
 			await sendTransactionalEmail(
 				session.user.email,
 				"Kniha bola úspešne požičaná",
 				`
 				<h1>Požičanie knihy</h1>
 				<p>Dobrý deň, ${session.user.name || "čitateľ"},</p>
-				<p>Úspešne ste si požičali knihu: <strong>${bookDetails.title}</strong>.</p>
+				<p>Úspešne ste si požičali knihu: <strong>${book.title}</strong>.</p>
 				<p>Termín vrátenia je: <strong>${dueDate.toLocaleDateString("sk-SK")}</strong>.</p>
 				<p>Ďakujeme, že využívate našu knižnicu!</p>
 				`,
@@ -136,7 +153,9 @@ export const borrowBookAction = protectedActionClient
 		}
 
 		revalidatePath("/", "page");
-		revalidatePath("/my-books", "page");
+		revalidatePath("/profile", "page");
+		revalidatePath("/books", "page");
+		revalidatePath(`/books/${bookId}`, "page");
 		revalidateTag("borrowed-books", "page" as any);
 		revalidateTag("books", "page" as any);
 		revalidateTag("notifications", "page" as any);
@@ -147,7 +166,7 @@ export const returnBookAction = protectedActionClient
 	.schema(z.object({ borrowId: z.string(), bookId: z.string() }))
 	.action(async ({ parsedInput: { borrowId, bookId }, ctx: { session } }) => {
 		const userId = session?.user?.id;
-		if (!userId) throw new Error("Unauthorized");
+		if (!userId) throw new Error("Neprihlásený používateľ");
 		const record = db
 			.select()
 			.from(borrowedBooks)
@@ -157,11 +176,11 @@ export const returnBookAction = protectedActionClient
 			.get();
 
 		if (!record || record.status !== "borrowed") {
-			throw new Error("Invalid borrow record");
+			throw new Error("Neplatný záznam o výpožičke");
 		}
 
 		const book = db
-			.select({ availableCopies: books.availableCopies })
+			.select({ availableCopies: books.availableCopies, title: books.title })
 			.from(books)
 			.where(eq(books.id, bookId))
 			.get();
@@ -181,27 +200,21 @@ export const returnBookAction = protectedActionClient
 				.values({
 					id: crypto.randomUUID(),
 					userId: userId,
-					message: `Kniha bola úspešne vrátená. Ďakujeme!`,
+					message: `Kniha "${book?.title ?? "Kniha"}" bola úspešne vrátená. Ďakujeme!`,
 					type: "return",
 					isRead: false,
 				})
 				.run();
 		});
 
-		// Fetch book title for email
-		const bookDetails = await db.query.books.findFirst({
-			where: eq(books.id, bookId),
-			columns: { title: true },
-		});
-
-		if (session?.user?.email && bookDetails) {
+		if (session?.user?.email && book) {
 			await sendTransactionalEmail(
 				session.user.email,
 				"Kniha bola úspešne vrátená",
 				`
 				<h1>Vrátenie knihy</h1>
 				<p>Dobrý deň, ${session.user.name || "čitateľ"},</p>
-				<p>Kniha <strong>${bookDetails.title}</strong> bola úspešne vrátená.</p>
+				<p>Kniha <strong>${book.title}</strong> bola úspešne vrátená.</p>
 				<p>Dúfame, že sa vám páčila!</p>
 				<p>Váš tím SPŠT Knižnica</p>
 				`,
@@ -209,7 +222,9 @@ export const returnBookAction = protectedActionClient
 		}
 
 		revalidatePath("/", "page");
-		revalidatePath("/my-books", "page");
+		revalidatePath("/profile", "page");
+		revalidatePath("/books", "page");
+		revalidatePath(`/books/${bookId}`, "page");
 		revalidateTag("borrowed-books", "page" as any);
 		revalidateTag("books", "page" as any);
 		revalidateTag("notifications", "page" as any);

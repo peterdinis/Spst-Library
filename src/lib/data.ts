@@ -109,7 +109,9 @@ export const getBorrowedByUserId = unstable_cache(
 		return db.query.borrowedBooks.findMany({
 			where: eq(borrowedBooks.userId, userId),
 			with: {
-				book: true,
+				book: {
+					with: { author: true },
+				},
 			},
 		});
 	},
@@ -117,6 +119,28 @@ export const getBorrowedByUserId = unstable_cache(
 	{
 		tags: ["borrowed-books"],
 		revalidate: 60, // Shorter revalidation for user-specific data
+	},
+);
+
+export const isBookBorrowedByUser = unstable_cache(
+	async (userId: string, bookId: string) => {
+		const row = await db
+			.select()
+			.from(borrowedBooks)
+			.where(
+				and(
+					eq(borrowedBooks.userId, userId),
+					eq(borrowedBooks.bookId, bookId),
+					eq(borrowedBooks.status, "borrowed"),
+				),
+			)
+			.get();
+		return !!row;
+	},
+	["is-book-borrowed"],
+	{
+		tags: ["borrowed-books"],
+		revalidate: 60,
 	},
 );
 
