@@ -42,10 +42,7 @@ export function MicrosoftEntraSignInButton({
 				}}
 			>
 				{pending ? (
-					<Loader2
-						className="size-5 shrink-0 animate-spin"
-						aria-hidden
-					/>
+					<Loader2 className="size-5 shrink-0 animate-spin" aria-hidden />
 				) : (
 					icon
 				)}

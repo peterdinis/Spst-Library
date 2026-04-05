@@ -66,7 +66,9 @@ export function AdminOrdersPanel() {
 						<TableHead>Kniha</TableHead>
 						<TableHead>Čitateľ</TableHead>
 						<TableHead className="max-w-[min(100%,14rem)]">Poznámka</TableHead>
-						<TableHead className="min-w-[10rem] whitespace-nowrap">Stav</TableHead>
+						<TableHead className="min-w-[10rem] whitespace-nowrap">
+							Stav
+						</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
@@ -117,8 +119,7 @@ export function AdminOrdersPanel() {
 									<SelectTrigger className="h-9 w-full min-w-[10.5rem] rounded-xl">
 										<SelectValue>
 											{(value) =>
-												statusLabels[String(value)] ??
-												String(value ?? "")
+												statusLabels[String(value)] ?? String(value ?? "")
 											}
 										</SelectValue>
 									</SelectTrigger>

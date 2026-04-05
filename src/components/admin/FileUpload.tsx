@@ -42,7 +42,9 @@ export function FileUpload({
 	const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 	const [isCropping, setIsCropping] = useState(false);
 	const [isUploading, setIsUploading] = useState(false);
-	const [previewUrl, setPreviewUrl] = useState<string | null>(defaultValue || null);
+	const [previewUrl, setPreviewUrl] = useState<string | null>(
+		defaultValue || null,
+	);
 
 	const getSasUrl = trpc.upload.getPresignedUrl.useMutation();
 
@@ -124,7 +126,7 @@ export function FileUpload({
 						"relative group cursor-pointer border-2 border-dashed rounded-2xl p-8 transition-all duration-200 text-center",
 						isDragActive
 							? "border-primary bg-primary/5 scale-[1.01]"
-							: "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50"
+							: "border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50",
 					)}
 				>
 					<input {...getInputProps()} />
@@ -134,7 +136,10 @@ export function FileUpload({
 						</div>
 						<div className="space-y-1">
 							<p className="text-sm font-semibold">
-								{label || (uploadFolder === "books" ? "Pridať obálku knihy" : "Pridať fotku autora")}
+								{label ||
+									(uploadFolder === "books"
+										? "Pridať obálku knihy"
+										: "Pridať fotku autora")}
 							</p>
 							<p className="text-xs text-muted-foreground italic">
 								PNG, JPG alebo WebP (max 5MB)
@@ -144,12 +149,7 @@ export function FileUpload({
 				</div>
 			) : (
 				<div className="relative w-full aspect-[3/4] max-w-[240px] mx-auto rounded-2xl overflow-hidden shadow-xl border border-border group">
-					<Image
-						src={previewUrl}
-						alt="Náhľad"
-						fill
-						className="object-cover"
-					/>
+					<Image src={previewUrl} alt="Náhľad" fill className="object-cover" />
 					<div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
 						<Button
 							variant="secondary"
@@ -173,7 +173,10 @@ export function FileUpload({
 				</div>
 			)}
 
-			<Dialog open={isCropping} onOpenChange={(open) => !isUploading && setIsCropping(open)}>
+			<Dialog
+				open={isCropping}
+				onOpenChange={(open) => !isUploading && setIsCropping(open)}
+			>
 				<DialogContent className="max-w-2xl overflow-hidden rounded-2xl p-0 gap-0">
 					<DialogHeader className="p-6 border-b border-border bg-slate-50/50 dark:bg-slate-900/50">
 						<DialogTitle className="flex items-center gap-2">
@@ -201,7 +204,9 @@ export function FileUpload({
 
 					<div className="p-6 bg-slate-50/50 dark:bg-slate-900/50 border-t border-border space-y-4">
 						<div className="flex items-center gap-4">
-							<span className="text-xs font-medium text-muted-foreground w-12">Priblíženie</span>
+							<span className="text-xs font-medium text-muted-foreground w-12">
+								Zoom
+							</span>
 							<input
 								type="range"
 								min={1}

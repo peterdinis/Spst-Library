@@ -18,7 +18,8 @@ export const uploadRouter = router({
 				});
 				return { url, blobName };
 			} catch (e: unknown) {
-				const message = e instanceof Error ? e.message : "Chyba pri generovaní SAS tokenu.";
+				const message =
+					e instanceof Error ? e.message : "Chyba pri generovaní SAS tokenu.";
 				throw new Error(message);
 			}
 		}),

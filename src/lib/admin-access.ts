@@ -27,11 +27,7 @@ export async function userHasAdminAccess(
 
 	const email = session.user.email;
 	if (email) {
-		const byEmail = db
-			.select()
-			.from(users)
-			.where(eq(users.email, email))
-			.get();
+		const byEmail = db.select().from(users).where(eq(users.email, email)).get();
 		if (byEmail?.isAdmin) return true;
 
 		// Check the special permission whitelist

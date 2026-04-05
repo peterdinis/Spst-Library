@@ -36,7 +36,9 @@ export function ScrollToTop() {
 			className={cn(
 				"fixed bottom-6 right-6 z-50 rounded-full h-12 w-12 shadow-xl border border-border/50",
 				"transition-all duration-300 transform",
-				isVisible ? "translate-y-0 opacity-100 scale-100" : "translate-y-10 opacity-0 scale-75 pointer-events-none"
+				isVisible
+					? "translate-y-0 opacity-100 scale-100"
+					: "translate-y-10 opacity-0 scale-75 pointer-events-none",
 			)}
 			aria-label="Posunúť nahor"
 		>

@@ -98,8 +98,11 @@ export function AdminLoggedUsersPanel({ filter = "all" }: AdminLoggedUsersPanelP
 							</TableCell>
 							<TableCell>
 								{u.isAdmin ? (
-									<Badge variant="default" className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20">
-										Administrátor
+									<Badge
+										variant="default"
+										className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20"
+									>
+										Admin
 									</Badge>
 								) : (
 									<Badge variant="secondary" className="font-normal">

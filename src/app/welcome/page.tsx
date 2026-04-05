@@ -59,8 +59,8 @@ export default async function WelcomePage() {
 							Vitaj späť, {name}!
 						</CardTitle>
 						<CardDescription className="text-base leading-relaxed">
-							Môžeš spravovať výpožičky, prehliadať katalóg a upraviť profil — všetko
-							z jedného miesta.
+							Môžeš spravovať výpožičky, prehliadať katalóg a upraviť profil —
+							všetko z jedného miesta.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-6 pb-8 pt-4">
@@ -134,7 +134,8 @@ export default async function WelcomePage() {
 							Pokračuj v čítaní
 						</CardTitle>
 						<CardDescription className="text-base text-primary-foreground/85">
-							V &quot;Moje výpožičky&quot; uvidíš aktuálne knihy a termíny vrátenia.
+							V &quot;Moje výpožičky&quot; uvidíš aktuálne knihy a termíny
+							vrátenia.
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-5 pb-8 pt-2">

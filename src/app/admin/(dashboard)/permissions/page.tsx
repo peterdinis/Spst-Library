@@ -3,7 +3,8 @@ import { AdminWhitelistPanel } from "@/components/admin/AdminWhitelistPanel";
 
 export const metadata = {
 	title: "Špeciálne oprávnenia | Admin Dashboard",
-	description: "Správa automatického admin prístupu pre konkrétne e-mailové adresy.",
+	description:
+		"Správa automatického admin prístupu pre konkrétne e-mailové adresy.",
 };
 
 export default function AdminPermissionsPage() {
