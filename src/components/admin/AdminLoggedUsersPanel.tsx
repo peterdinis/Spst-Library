@@ -43,7 +43,7 @@ export function AdminLoggedUsersPanel() {
 			<Table>
 				<TableHeader>
 					<TableRow className="border-b bg-muted/20 hover:bg-muted/20">
-						<TableHead className="w-[80px]">Avatar</TableHead>
+						<TableHead className="w-[80px]">Profil</TableHead>
 						<TableHead>Meno</TableHead>
 						<TableHead>E-mail</TableHead>
 						<TableHead>Rola</TableHead>
@@ -75,7 +75,7 @@ export function AdminLoggedUsersPanel() {
 							<TableCell>
 								{u.isAdmin ? (
 									<Badge variant="default" className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20">
-										Admin
+										Administrátor
 									</Badge>
 								) : (
 									<Badge variant="secondary" className="font-normal">

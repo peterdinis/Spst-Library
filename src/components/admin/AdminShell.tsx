@@ -31,7 +31,7 @@ const NAV: NavItem[] = [
 	{ href: "/admin/orders", label: "Objednávky", icon: ClipboardList },
 	{ href: "/admin/users", label: "Používatelia", icon: Users },
 	{ href: "/admin/permissions", label: "Práva", icon: ShieldCheck },
-	{ href: "/admin/entra-users", label: "Entra", icon: Cloud },
+	{ href: "/admin/entra-users", label: "Microsoft Entra", icon: Cloud },
 	{ href: "/admin/authors", label: "Autori", icon: Users },
 	{ href: "/admin/categories", label: "Kategórie", icon: Tags },
 ];
@@ -59,7 +59,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 						{!collapsed && (
 							<div className="min-w-0 px-1">
 								<p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-muted-foreground">
-									Admin
+									Správa
 								</p>
 								<p className="truncate text-sm font-bold text-slate-900 dark:text-foreground">
 									Knižnica

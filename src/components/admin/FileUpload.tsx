@@ -201,7 +201,7 @@ export function FileUpload({
 
 					<div className="p-6 bg-slate-50/50 dark:bg-slate-900/50 border-t border-border space-y-4">
 						<div className="flex items-center gap-4">
-							<span className="text-xs font-medium text-muted-foreground w-12">Zoom</span>
+							<span className="text-xs font-medium text-muted-foreground w-12">Priblíženie</span>
 							<input
 								type="range"
 								min={1}
