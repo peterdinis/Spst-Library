@@ -123,9 +123,7 @@ export function AuthorForm({ initialData, onSuccess }: AuthorFormProps) {
 							uploadFolder="authors"
 							onUploadComplete={setImageUrl}
 							defaultValue={imageUrl || undefined}
-							imageCropAspectRatio={1}
-							imageResizeTargetWidth={400}
-							imageResizeTargetHeight={400}
+							aspectRatio={1}
 						/>
 						{imageUrl ? (
 							<div className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 p-3 bg-slate-50 dark:bg-slate-800/50">
