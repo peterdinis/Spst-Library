@@ -8,6 +8,7 @@ import { uploadImageToAzure } from "./azure-storage";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { notifications } from "@/db/schema";
+import { sendTransactionalEmail } from "./mail";
 
 export const createAuthorAction = protectedActionClient
 	.schema(z.object({ name: z.string().min(1), bio: z.string().optional() }))
@@ -114,6 +115,26 @@ export const borrowBookAction = protectedActionClient
 				.run();
 		});
 
+		// Fetch book title for email
+		const bookDetails = await db.query.books.findFirst({
+			where: eq(books.id, bookId),
+			columns: { title: true },
+		});
+
+		if (session?.user?.email && bookDetails) {
+			await sendTransactionalEmail(
+				session.user.email,
+				"Kniha bola úspešne požičaná",
+				`
+				<h1>Požičanie knihy</h1>
+				<p>Dobrý deň, ${session.user.name || "čitateľ"},</p>
+				<p>Úspešne ste si požičali knihu: <strong>${bookDetails.title}</strong>.</p>
+				<p>Termín vrátenia je: <strong>${dueDate.toLocaleDateString("sk-SK")}</strong>.</p>
+				<p>Ďakujeme, že využívate našu knižnicu!</p>
+				`,
+			);
+		}
+
 		revalidatePath("/", "page");
 		revalidatePath("/my-books", "page");
 		revalidateTag("borrowed-books", "page" as any);
@@ -166,6 +187,26 @@ export const returnBookAction = protectedActionClient
 				})
 				.run();
 		});
+
+		// Fetch book title for email
+		const bookDetails = await db.query.books.findFirst({
+			where: eq(books.id, bookId),
+			columns: { title: true },
+		});
+
+		if (session?.user?.email && bookDetails) {
+			await sendTransactionalEmail(
+				session.user.email,
+				"Kniha bola úspešne vrátená",
+				`
+				<h1>Vrátenie knihy</h1>
+				<p>Dobrý deň, ${session.user.name || "čitateľ"},</p>
+				<p>Kniha <strong>${bookDetails.title}</strong> bola úspešne vrátená.</p>
+				<p>Dúfame, že sa vám páčila!</p>
+				<p>Váš tím SPŠT Knižnica</p>
+				`,
+			);
+		}
 
 		revalidatePath("/", "page");
 		revalidatePath("/my-books", "page");

@@ -9,9 +9,7 @@ import { ProfileDropdownMenu } from "@/components/layout/ProfileDropdownMenu";
 
 export async function Navbar() {
 	const session = await auth();
-	const canAccessAdmin = session
-		? await userHasAdminAccess(session)
-		: false;
+	const canAccessAdmin = session ? await userHasAdminAccess(session) : false;
 
 	return (
 		<nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">

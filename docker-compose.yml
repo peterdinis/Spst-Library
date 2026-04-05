@@ -1,0 +1,8 @@
+services:
+  mailcrab:
+    image: marlonb/mailcrab:latest
+    container_name: mailcrab
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+    restart: always

@@ -3,7 +3,8 @@ import { AdminLoggedUsersPanel } from "@/components/admin/AdminLoggedUsersPanel"
 
 export const metadata = {
 	title: "Prihlásení používatelia | Admin Dashboard",
-	description: "Zoznam používateľov, ktorí sa už do aplikácie prihlásili cez Entra ID.",
+	description:
+		"Zoznam používateľov, ktorí sa už do aplikácie prihlásili cez Entra ID.",
 };
 
 export default function AdminUsersPage() {

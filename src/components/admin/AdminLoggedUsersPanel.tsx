@@ -74,7 +74,10 @@ export function AdminLoggedUsersPanel() {
 							</TableCell>
 							<TableCell>
 								{u.isAdmin ? (
-									<Badge variant="default" className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20">
+									<Badge
+										variant="default"
+										className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20"
+									>
 										Admin
 									</Badge>
 								) : (

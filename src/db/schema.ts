@@ -8,7 +8,6 @@ export const users = sqliteTable("users", {
 	isAdmin: integer("is_admin", { mode: "boolean" }).default(false).notNull(),
 });
 
-
 export const authors = sqliteTable("authors", {
 	id: text("id").primaryKey(), // using uuid or similar
 	name: text("name").notNull(),
