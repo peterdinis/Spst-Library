@@ -38,7 +38,7 @@ export function ProfileDropdownMenu({
 							{name}
 						</span>
 						<span className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
-							Používateľ
+							{showAdminLink ? "Administrátor" : "Používateľ"}
 						</span>
 					</div>
 					<div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-indigo-100 shadow-sm group-hover:scale-105 dark:border-slate-700 dark:bg-indigo-500/30">
