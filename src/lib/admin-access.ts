@@ -33,6 +33,15 @@ export async function userHasAdminAccess(
 			.where(eq(users.email, email))
 			.get();
 		if (byEmail?.isAdmin) return true;
+
+		// Check the special permission whitelist
+		const { adminWhitelist } = await import("@/db/schema");
+		const whitelisted = db
+			.select()
+			.from(adminWhitelist)
+			.where(eq(adminWhitelist.email, email))
+			.get();
+		if (whitelisted) return true;
 	}
 
 	return false;

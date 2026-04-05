@@ -122,6 +122,14 @@ export const admins = sqliteTable("admins", {
 	),
 });
 
+export const adminWhitelist = sqliteTable("admin_whitelist", {
+	id: text("id").primaryKey(),
+	email: text("email").unique().notNull(),
+	createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
+		() => new Date(),
+	),
+});
+
 import { relations } from "drizzle-orm";
 
 export const usersRelations = relations(users, ({ many, one }) => ({

@@ -12,6 +12,7 @@ import {
 	PanelLeft,
 	ClipboardList,
 	Cloud,
+	ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ const NAV: NavItem[] = [
 	{ href: "/admin/books", label: "Knihy", icon: BookOpen },
 	{ href: "/admin/orders", label: "Objednávky", icon: ClipboardList },
 	{ href: "/admin/users", label: "Používatelia", icon: Users },
+	{ href: "/admin/permissions", label: "Práva", icon: ShieldCheck },
 	{ href: "/admin/entra-users", label: "Entra", icon: Cloud },
 	{ href: "/admin/authors", label: "Autori", icon: Users },
 	{ href: "/admin/categories", label: "Kategórie", icon: Tags },
