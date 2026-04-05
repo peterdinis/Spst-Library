@@ -85,7 +85,8 @@ export function AdminWhitelistPanel() {
 				</form>
 				<p className="text-xs text-muted-foreground mt-3 flex items-center gap-1.5">
 					<ShieldAlert className="h-3.5 w-3.5 text-amber-500" />
-					Tento e-mail získa admin prístup hneď po prihlásení, aj bez manuálneho nastavenia v DB.
+					Tento e-mail získa admin prístup hneď po prihlásení, aj bez manuálneho
+					nastavenia v DB.
 				</p>
 			</div>
 
@@ -101,16 +102,24 @@ export function AdminWhitelistPanel() {
 					<TableBody>
 						{list.length === 0 ? (
 							<TableRow>
-								<TableCell colSpan={3} className="h-32 text-center text-muted-foreground">
+								<TableCell
+									colSpan={3}
+									className="h-32 text-center text-muted-foreground"
+								>
 									Žiadne špeciálne oprávnenia neboli zatiaľ udelené.
 								</TableCell>
 							</TableRow>
 						) : (
 							list.map((item) => (
-								<TableRow key={item.id} className="hover:bg-muted/40 transition-colors">
+								<TableRow
+									key={item.id}
+									className="hover:bg-muted/40 transition-colors"
+								>
 									<TableCell className="font-medium">{item.email}</TableCell>
 									<TableCell className="text-sm text-muted-foreground">
-										{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : '—'}
+										{item.createdAt
+											? new Date(item.createdAt).toLocaleDateString()
+											: "—"}
 									</TableCell>
 									<TableCell className="text-right">
 										<Button

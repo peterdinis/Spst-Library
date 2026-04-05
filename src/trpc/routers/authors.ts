@@ -6,14 +6,10 @@ import { z } from "zod";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { CACHE_TAGS, CACHE_TTL } from "../cache-config";
 
-const getCachedAuthors = unstable_cache(
-	async () => getAuthors(),
-	["authors"],
-	{
-		tags: [CACHE_TAGS.authors],
-		revalidate: CACHE_TTL.authors,
-	},
-);
+const getCachedAuthors = unstable_cache(async () => getAuthors(), ["authors"], {
+	tags: [CACHE_TAGS.authors],
+	revalidate: CACHE_TTL.authors,
+});
 
 export const authorsRouter = router({
 	getAll: publicProcedure.query(async () => {

@@ -23,7 +23,9 @@ function getStorageCredentials() {
 	return {
 		accountName: parts.AccountName,
 		accountKey: parts.AccountKey,
-		endpoint: parts.BlobEndpoint || `https://${parts.AccountName}.blob.core.windows.net`,
+		endpoint:
+			parts.BlobEndpoint ||
+			`https://${parts.AccountName}.blob.core.windows.net`,
 	};
 }
 

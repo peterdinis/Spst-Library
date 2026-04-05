@@ -48,10 +48,7 @@ export const categoriesRouter = router({
 	delete: adminProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ ctx, input }) => {
-			await ctx.db
-				.delete(categories)
-				.where(eq(categories.id, input.id))
-				.run();
+			await ctx.db.delete(categories).where(eq(categories.id, input.id)).run();
 			revalidateTag(CACHE_TAGS.categories, "default");
 			return { success: true };
 		}),

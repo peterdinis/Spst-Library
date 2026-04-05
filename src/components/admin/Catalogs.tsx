@@ -53,7 +53,9 @@ export function AuthorsTable() {
 	return (
 		<Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
 			<CardHeader className="flex flex-row items-center justify-between border-b border-border bg-muted/30 px-4 py-3">
-				<CardTitle className="text-base font-semibold">Katalóg autorov</CardTitle>
+				<CardTitle className="text-base font-semibold">
+					Katalóg autorov
+				</CardTitle>
 			</CardHeader>
 			<CardContent className="p-0">
 				<Table>
@@ -61,8 +63,12 @@ export function AuthorsTable() {
 						<TableRow className="border-b bg-muted/20 hover:bg-muted/20">
 							<TableHead className="w-14 pl-4" />
 							<TableHead>Meno</TableHead>
-							<TableHead className="max-w-[min(100%,24rem)]">Životopis</TableHead>
-							<TableHead className="pr-4 text-right whitespace-nowrap">Akcie</TableHead>
+							<TableHead className="max-w-[min(100%,24rem)]">
+								Životopis
+							</TableHead>
+							<TableHead className="pr-4 text-right whitespace-nowrap">
+								Akcie
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -168,14 +174,18 @@ export function CategoriesTable() {
 	return (
 		<Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
 			<CardHeader className="border-b border-border bg-muted/30 px-4 py-3">
-				<CardTitle className="text-base font-semibold">Katalóg kategórií</CardTitle>
+				<CardTitle className="text-base font-semibold">
+					Katalóg kategórií
+				</CardTitle>
 			</CardHeader>
 			<CardContent className="p-0">
 				<Table>
 					<TableHeader>
 						<TableRow className="border-b bg-muted/20 hover:bg-muted/20">
 							<TableHead className="pl-4">Názov</TableHead>
-							<TableHead className="pr-4 text-right whitespace-nowrap">Akcie</TableHead>
+							<TableHead className="pr-4 text-right whitespace-nowrap">
+								Akcie
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -267,7 +277,9 @@ export function BooksTable() {
 					<div className="rounded-xl bg-primary/10 p-2 text-primary">
 						<BookOpen className="h-5 w-5" />
 					</div>
-					<CardTitle className="text-base font-semibold">Katalóg kníh</CardTitle>
+					<CardTitle className="text-base font-semibold">
+						Katalóg kníh
+					</CardTitle>
 				</div>
 			</CardHeader>
 			<CardContent className="p-0">
@@ -278,7 +290,9 @@ export function BooksTable() {
 							<TableHead>Názov</TableHead>
 							<TableHead>Autor</TableHead>
 							<TableHead className="whitespace-nowrap">Kusy</TableHead>
-							<TableHead className="pr-4 text-right whitespace-nowrap">Akcie</TableHead>
+							<TableHead className="pr-4 text-right whitespace-nowrap">
+								Akcie
+							</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>

@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
 	reactCompiler: true,
 	reactStrictMode: true,
 	experimental: {
-		typedEnv: true
+		typedEnv: true,
 	},
 	images: {
 		remotePatterns: [

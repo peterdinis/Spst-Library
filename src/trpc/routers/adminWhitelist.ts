@@ -14,7 +14,11 @@ export const adminWhitelistRouter = router({
 				.all();
 			return { list, error: null };
 		} catch (e: unknown) {
-			return { list: [], error: e instanceof Error ? e.message : "Chyba pri načítaní whitelistu." };
+			return {
+				list: [],
+				error:
+					e instanceof Error ? e.message : "Chyba pri načítaní whitelistu.",
+			};
 		}
 	}),
 
@@ -32,7 +36,9 @@ export const adminWhitelistRouter = router({
 					.run();
 				return { success: true };
 			} catch (e: unknown) {
-				throw new Error("Tento e-mail už je na whiteliste alebo nastala chyba.");
+				throw new Error(
+					"Tento e-mail už je na whiteliste alebo nastala chyba.",
+				);
 			}
 		}),
 
