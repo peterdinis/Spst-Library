@@ -17,13 +17,21 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
-const NAV = [
-	{ href: "/admin" as const, label: "Prehľad", icon: LayoutDashboard, exact: true },
-	{ href: "/admin/books" as const, label: "Knihy", icon: BookOpen },
-	{ href: "/admin/orders" as const, label: "Objednávky", icon: ClipboardList },
-	{ href: "/admin/entra-users" as const, label: "Entra", icon: Cloud },
-	{ href: "/admin/authors" as const, label: "Autori", icon: Users },
-	{ href: "/admin/categories" as const, label: "Kategórie", icon: Tags },
+type NavItem = {
+	href: string;
+	label: string;
+	icon: any;
+	exact?: boolean;
+};
+
+const NAV: NavItem[] = [
+	{ href: "/admin", label: "Prehľad", icon: LayoutDashboard, exact: true },
+	{ href: "/admin/books", label: "Knihy", icon: BookOpen },
+	{ href: "/admin/orders", label: "Objednávky", icon: ClipboardList },
+	{ href: "/admin/users", label: "Používatelia", icon: Users },
+	{ href: "/admin/entra-users", label: "Entra", icon: Cloud },
+	{ href: "/admin/authors", label: "Autori", icon: Users },
+	{ href: "/admin/categories", label: "Kategórie", icon: Tags },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
@@ -82,7 +90,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 							return (
 								<Link
 									key={item.href}
-									href={item.href}
+									href={item.href as any}
 									className={cn(
 										"flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
 										active

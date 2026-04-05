@@ -6,6 +6,7 @@ import { notificationsRouter } from "./notifications";
 import { settingsRouter } from "./settings";
 import { ordersRouter } from "./orders";
 import { entraRouter } from "./entra";
+import { usersRouter } from "./users";
 
 export const appRouter = router({
 	healthInfo: publicProcedure.query(() => {
@@ -18,6 +19,7 @@ export const appRouter = router({
 	settings: settingsRouter,
 	orders: ordersRouter,
 	entra: entraRouter,
+	users: usersRouter,
 });
 
 export type AppRouter = typeof appRouter;
