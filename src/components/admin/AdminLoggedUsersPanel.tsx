@@ -11,10 +11,27 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, User } from "lucide-react";
+import { ShieldCheck, User, ShieldX, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
-export function AdminLoggedUsersPanel() {
+interface AdminLoggedUsersPanelProps {
+	filter?: "all" | "regular";
+}
+
+export function AdminLoggedUsersPanel({ filter = "all" }: AdminLoggedUsersPanelProps) {
+	const utils = trpc.useUtils();
 	const { data, isLoading, error } = trpc.users.listLoggedUsers.useQuery();
+
+	const toggleAdmin = trpc.users.toggleAdminStatus.useMutation({
+		onSuccess: () => {
+			toast.success("Práva boli úspešne zmenené.");
+			utils.users.listLoggedUsers.invalidate();
+		},
+		onError: (err) => {
+			toast.error(err.message);
+		},
+	});
 
 	if (isLoading) {
 		return <div className="h-48 animate-pulse rounded-2xl bg-muted" />;
@@ -28,31 +45,38 @@ export function AdminLoggedUsersPanel() {
 		);
 	}
 
-	const users = data?.users ?? [];
+	let users = data?.users ?? [];
+
+	if (filter === "regular") {
+		users = users.filter((u) => !u.isAdmin);
+	}
 
 	if (users.length === 0) {
 		return (
 			<p className="rounded-2xl border border-dashed border-border bg-muted/20 px-6 py-12 text-center text-sm text-muted-foreground">
-				Zatiaľ sa neprihlásili žiadni používatelia cez Entra ID.
+				{filter === "regular"
+					? "Nenašli sa žiadni bežní používatelia."
+					: "Zatiaľ sa neprihlásili žiadni používatelia cez Entra ID."}
 			</p>
 		);
 	}
 
 	return (
 		<div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
-			<Table>
-				<TableHeader>
+			<Table containerClassName="max-h-[600px] overflow-auto">
+				<TableHeader className="sticky top-0 bg-white dark:bg-slate-900 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)] dark:shadow-[0_1px_0_0_rgba(255,255,255,0.1)]">
 					<TableRow className="border-b bg-muted/20 hover:bg-muted/20">
 						<TableHead className="w-[80px]">Profil</TableHead>
 						<TableHead>Meno</TableHead>
 						<TableHead>E-mail</TableHead>
 						<TableHead>Rola</TableHead>
+						<TableHead>Akcie</TableHead>
 						<TableHead className="text-right">ID</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
 					{users.map((u) => (
-						<TableRow key={u.id} className="hover:bg-muted/40">
+						<TableRow key={u.id} className="hover:bg-muted/40 transition-colors">
 							<TableCell>
 								<Avatar className="h-9 w-9 border border-border/50">
 									<AvatarImage src={u.image ?? ""} alt={u.name ?? ""} />
@@ -83,7 +107,41 @@ export function AdminLoggedUsersPanel() {
 									</Badge>
 								)}
 							</TableCell>
-							<TableCell className="text-right font-mono text-[10px] text-muted-foreground">
+							<TableCell>
+								{u.isAdmin && (
+									<Button
+										variant="ghost"
+										size="sm"
+										className="text-destructive hover:bg-destructive/10 hover:text-destructive rounded-xl h-8 px-3 text-xs font-semibold"
+										onClick={() => toggleAdmin.mutate({ id: u.id, isAdmin: false })}
+										disabled={toggleAdmin.isPending}
+									>
+										{toggleAdmin.isPending ? (
+											<Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+										) : (
+											<ShieldX className="h-3.5 w-3.5 mr-1.5" />
+										)}
+										Odobrať práva
+									</Button>
+								)}
+								{!u.isAdmin && (
+									<Button
+										variant="ghost"
+										size="sm"
+										className="text-primary hover:bg-primary/10 hover:text-primary rounded-xl h-8 px-3 text-xs font-semibold"
+										onClick={() => toggleAdmin.mutate({ id: u.id, isAdmin: true })}
+										disabled={toggleAdmin.isPending}
+									>
+										{toggleAdmin.isPending ? (
+											<Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+										) : (
+											<ShieldCheck className="h-3.5 w-3.5 mr-1.5" />
+										)}
+										Pridať admina
+									</Button>
+								)}
+							</TableCell>
+							<TableCell className="text-right font-mono text-[10px] text-muted-foreground whitespace-nowrap">
 								{u.id.slice(0, 8)}...
 							</TableCell>
 						</TableRow>
