@@ -1,7 +1,7 @@
 import type { Session } from "next-auth";
 
 import { db } from "@/db";
-import { admins, users } from "@/db/schema";
+import { admins, users, adminWhitelist } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 /**
@@ -33,6 +33,14 @@ export async function userHasAdminAccess(
 			.where(eq(users.email, email))
 			.get();
 		if (byEmail?.isAdmin) return true;
+
+		// Check the special permission whitelist
+		const whitelisted = db
+			.select()
+			.from(adminWhitelist)
+			.where(eq(adminWhitelist.email, email.toLowerCase()))
+			.get();
+		if (whitelisted) return true;
 	}
 
 	return false;

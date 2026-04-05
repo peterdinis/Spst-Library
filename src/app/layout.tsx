@@ -12,6 +12,7 @@ const ubuntu = Ubuntu({
 });
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 export const metadata: Metadata = {
 	title: "SPST Knižnica",
@@ -32,6 +33,7 @@ export default function RootLayout({
 					<TRPCProvider>
 						<Navbar />
 						{children}
+						<ScrollToTop />
 						<Toaster />
 					</TRPCProvider>
 				</ThemeProvider>

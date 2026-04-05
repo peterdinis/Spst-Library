@@ -32,8 +32,8 @@ export default async function WelcomePage() {
 		redirect("/login");
 	}
 
-	const name = session.user.name?.trim() || "čitateľ";
-	const initial = name.at(0)?.toUpperCase() ?? "?";
+	const name = (session?.user?.name || "").trim() || "čitateľ";
+	const initial = name.charAt(0).toUpperCase() || "?";
 
 	const linkButtonClass =
 		"flex h-12 w-full items-center justify-between gap-2 rounded-2xl px-5 text-base font-semibold";
