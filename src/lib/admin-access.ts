@@ -39,7 +39,7 @@ export async function userHasAdminAccess(
 		const whitelisted = db
 			.select()
 			.from(adminWhitelist)
-			.where(eq(adminWhitelist.email, email))
+			.where(eq(adminWhitelist.email, email.toLowerCase()))
 			.get();
 		if (whitelisted) return true;
 	}
