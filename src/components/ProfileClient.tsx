@@ -140,7 +140,7 @@ export function ProfileClient({ user }: { user: any }) {
 					</TabsTrigger>
 				</TabsList>
 
-				<AnimatePresence mode="wait">
+				<AnimatePresence mode="wait" key={Math.random()}>
 					<TabsContent value="overview" className="space-y-8 outline-none">
 						<motion.div
 							initial={{ opacity: 0, x: -10 }}
