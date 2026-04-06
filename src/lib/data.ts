@@ -23,7 +23,10 @@ export async function getBooks(filters: BookFilters = {}) {
 			.from(authors)
 			.where(like(authors.name, term));
 		const authorIdsForSearch = authorsByName.map((r) => r.id);
-		const searchClauses = [like(books.title, term), like(books.isbn, term)] as const;
+		const searchClauses = [
+			like(books.title, term),
+			like(books.isbn, term),
+		] as const;
 		if (authorIdsForSearch.length > 0) {
 			conditions.push(
 				or(...searchClauses, inArray(books.authorId, authorIdsForSearch)),

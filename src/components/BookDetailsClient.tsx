@@ -304,17 +304,22 @@ export function BookDetailsClient({
 								type="button"
 								size="lg"
 								className={`h-16 px-10 text-lg rounded-2xl font-bold shadow-xl transition-all ${!isPatron ? "bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed" : isAlreadyBorrowed ? "bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed" : book.availableCopies > 0 ? "bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-primary/30 hover:-translate-y-1" : "bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed"}`}
-								disabled={!isPatron || isAlreadyBorrowed || book.availableCopies <= 0 || isExecuting}
+								disabled={
+									!isPatron ||
+									isAlreadyBorrowed ||
+									book.availableCopies <= 0 ||
+									isExecuting
+								}
 								onClick={() => setIsModalOpen(true)}
 							>
 								<BookOpen className="mr-3 h-6 w-6" />
 								{!isPatron
 									? "Len pre čitateľov"
 									: isAlreadyBorrowed
-									? "Knihu už máte vypožičanú"
-									: book.availableCopies > 0
-										? "Ihneď Vypožičať (Zadarmo)"
-										: "Všetky Kusy Vypožičané"}
+										? "Knihu už máte vypožičanú"
+										: book.availableCopies > 0
+											? "Ihneď Vypožičať (Zadarmo)"
+											: "Všetky Kusy Vypožičané"}
 							</Button>
 							<DialogContent className="sm:max-w-[425px] rounded-3xl p-0 overflow-hidden border-0 shadow-2xl">
 								<div className="bg-gradient-to-br from-primary/20 to-transparent p-6 pb-4 border-b border-primary/10">

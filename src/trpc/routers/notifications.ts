@@ -209,7 +209,9 @@ export const notificationsRouter = router({
 			})),
 		]
 			.filter((item) => Boolean(item.createdAt))
-			.sort((a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0))
+			.sort(
+				(a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0),
+			)
 			.slice(0, 60);
 
 		return feed;

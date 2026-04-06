@@ -43,7 +43,8 @@ export default function AdminDashboardPage() {
 				"Audit udalostí v systéme: nové záznamy, požičania, vrátenia aj objednávky.",
 			href: "/admin/notifications" as const,
 			icon: Bell,
-			iconBg: "bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300",
+			iconBg:
+				"bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300",
 		},
 		{
 			title: "Microsoft Entra",

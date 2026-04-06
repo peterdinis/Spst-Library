@@ -32,7 +32,12 @@ const NAV: NavItem[] = [
 	{ href: "/admin/books", label: "Knihy", icon: BookOpen },
 	{ href: "/admin/orders", label: "Objednávky", icon: ClipboardList },
 	{ href: "/admin/notifications", label: "Notifikácie", icon: Bell },
-	{ href: "/admin/users", label: "Všetci používatelia", icon: Users, exact: true },
+	{
+		href: "/admin/users",
+		label: "Všetci používatelia",
+		icon: Users,
+		exact: true,
+	},
 	{ href: "/admin/users/regular", label: "Bežní používatelia", icon: Users },
 	{ href: "/admin/permissions", label: "Práva", icon: ShieldCheck },
 	{ href: "/admin/entra-users", label: "Entra", icon: Cloud },
@@ -91,7 +96,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 							const active = item.exact
 								? pathname === item.href
 								: pathname === item.href ||
-								pathname.startsWith(`${item.href}/`);
+									pathname.startsWith(`${item.href}/`);
 							const Icon = item.icon;
 							return (
 								<Link

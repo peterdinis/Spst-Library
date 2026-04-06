@@ -104,7 +104,11 @@ const Toolbar = ({ editor }: { editor: any }) => {
 	);
 };
 
-export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
+export function RichTextEditor({
+	value,
+	onChange,
+	placeholder,
+}: RichTextEditorProps) {
 	const editor = useEditor({
 		extensions: [
 			StarterKit.configure({
@@ -136,7 +140,7 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
 			onChange(editor.getHTML());
 		},
 	});
- 
+
 	useEffect(() => {
 		if (editor && value !== editor.getHTML()) {
 			editor.commands.setContent(value);

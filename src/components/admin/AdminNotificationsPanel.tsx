@@ -28,8 +28,10 @@ function formatDate(value: Date | string | null | undefined) {
 }
 
 function EventIcon({ type }: { type: string }) {
-	if (type === "book_created") return <BookOpen className="h-4 w-4 text-indigo-600" />;
-	if (type === "author_created") return <Users className="h-4 w-4 text-amber-600" />;
+	if (type === "book_created")
+		return <BookOpen className="h-4 w-4 text-indigo-600" />;
+	if (type === "author_created")
+		return <Users className="h-4 w-4 text-amber-600" />;
 	if (type === "category_created")
 		return <Tags className="h-4 w-4 text-purple-600" />;
 	if (type === "borrowed")
@@ -41,9 +43,11 @@ function EventIcon({ type }: { type: string }) {
 }
 
 export function AdminNotificationsPanel() {
-	const { data, isLoading, error } = trpc.notifications.listAdminFeed.useQuery();
+	const { data, isLoading, error } =
+		trpc.notifications.listAdminFeed.useQuery();
 
-	if (isLoading) return <div className="h-48 animate-pulse rounded-2xl bg-muted" />;
+	if (isLoading)
+		return <div className="h-48 animate-pulse rounded-2xl bg-muted" />;
 	if (error) {
 		return (
 			<p className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">

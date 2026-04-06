@@ -3,7 +3,8 @@ import { AdminLoggedUsersPanel } from "@/components/admin/AdminLoggedUsersPanel"
 
 export const metadata = {
 	title: "Bežní používatelia | Admin Dashboard",
-	description: "Zoznam registrovaných používateľov bez administrátorských práv.",
+	description:
+		"Zoznam registrovaných používateľov bez administrátorských práv.",
 };
 
 export default function RegularUsersPage() {

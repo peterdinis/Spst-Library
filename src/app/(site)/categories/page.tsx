@@ -3,7 +3,13 @@
 import { useState, useMemo } from "react";
 import { trpc } from "@/trpc/client";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Library, Search, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import {
+	Library,
+	Search,
+	ChevronLeft,
+	ChevronRight,
+	Loader2,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";

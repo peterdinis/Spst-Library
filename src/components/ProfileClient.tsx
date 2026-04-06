@@ -253,7 +253,9 @@ export function ProfileClient({ user }: { user: any }) {
 									{activeBorrows.map((borrow) => {
 										const borrowedDate = new Date(borrow.borrowDate);
 										// Realná zmluva by mala používať dueDate z databázy
-										const deadlineDate = new Date(borrow.dueDate || borrowedDate);
+										const deadlineDate = new Date(
+											borrow.dueDate || borrowedDate,
+										);
 										const isLate = deadlineDate.getTime() < Date.now();
 
 										return (
@@ -262,18 +264,18 @@ export function ProfileClient({ user }: { user: any }) {
 												className="flex flex-col sm:flex-row overflow-hidden rounded-3xl group border-slate-200/50 dark:border-slate-800/50 hover:shadow-xl hover:border-primary/30 transition-all bg-card/60 backdrop-blur-md"
 											>
 												<div className="w-full sm:w-1/3 aspect-[3/4] sm:aspect-auto bg-slate-100 dark:bg-slate-900 relative overflow-hidden shrink-0">
-                                                                                                        {borrow.book?.coverUrl ? (
-													<Image
-														src={borrow.book.coverUrl}
-														alt={borrow.book?.title || "Kniha"}
-														fill
-														className="object-cover group-hover:scale-105 transition-transform duration-500"
-													/>
-                                                                                                        ) : (
-                                                                                                           <div className="w-full h-full flex items-center justify-center text-slate-400">
-                                                                                                                <BookMarked className="w-12 h-12 opacity-50" />
-                                                                                                           </div>
-                                                                                                        )}
+													{borrow.book?.coverUrl ? (
+														<Image
+															src={borrow.book.coverUrl}
+															alt={borrow.book?.title || "Kniha"}
+															fill
+															className="object-cover group-hover:scale-105 transition-transform duration-500"
+														/>
+													) : (
+														<div className="w-full h-full flex items-center justify-center text-slate-400">
+															<BookMarked className="w-12 h-12 opacity-50" />
+														</div>
+													)}
 													{isLate && (
 														<div className="absolute top-0 left-0 w-full bg-destructive text-destructive-foreground text-xs font-bold text-center py-1.5 uppercase tracking-widest shadow-md">
 															Po Termíne
@@ -312,23 +314,31 @@ export function ProfileClient({ user }: { user: any }) {
 																</span>
 															</div>
 														</div>
-                                                                                                                <div className="flex flex-col xl:flex-row gap-2">
-														    <Link
-															href={`/books/${borrow.bookId}`}
-															className="block flex-1"
-														    >
-															<Button variant="outline" className="w-full rounded-xl font-bold">
-																Detail
+														<div className="flex flex-col xl:flex-row gap-2">
+															<Link
+																href={`/books/${borrow.bookId}`}
+																className="block flex-1"
+															>
+																<Button
+																	variant="outline"
+																	className="w-full rounded-xl font-bold"
+																>
+																	Detail
+																</Button>
+															</Link>
+															<Button
+																className="flex-1 rounded-xl font-bold shadow-md"
+																disabled={isReturning}
+																onClick={() =>
+																	executeReturn({
+																		borrowId: borrow.id,
+																		bookId: borrow.bookId,
+																	})
+																}
+															>
+																Vrátiť
 															</Button>
-														    </Link>
-                                                                                                                    <Button
-                                                                                                                            className="flex-1 rounded-xl font-bold shadow-md"
-                                                                                                                            disabled={isReturning}
-                                                                                                                            onClick={() => executeReturn({ borrowId: borrow.id, bookId: borrow.bookId })}
-                                                                                                                    >
-                                                                                                                            Vrátiť
-                                                                                                                    </Button>
-                                                                                                                </div>
+														</div>
 													</div>
 												</div>
 											</Card>

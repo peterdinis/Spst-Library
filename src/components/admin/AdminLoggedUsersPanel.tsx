@@ -19,7 +19,9 @@ interface AdminLoggedUsersPanelProps {
 	filter?: "all" | "regular";
 }
 
-export function AdminLoggedUsersPanel({ filter = "all" }: AdminLoggedUsersPanelProps) {
+export function AdminLoggedUsersPanel({
+	filter = "all",
+}: AdminLoggedUsersPanelProps) {
 	const utils = trpc.useUtils();
 	const { data, isLoading, error } = trpc.users.listLoggedUsers.useQuery();
 
@@ -76,7 +78,10 @@ export function AdminLoggedUsersPanel({ filter = "all" }: AdminLoggedUsersPanelP
 				</TableHeader>
 				<TableBody>
 					{users.map((u) => (
-						<TableRow key={u.id} className="hover:bg-muted/40 transition-colors">
+						<TableRow
+							key={u.id}
+							className="hover:bg-muted/40 transition-colors"
+						>
 							<TableCell>
 								<Avatar className="h-9 w-9 border border-border/50">
 									<AvatarImage src={u.image ?? ""} alt={u.name ?? ""} />
@@ -116,7 +121,9 @@ export function AdminLoggedUsersPanel({ filter = "all" }: AdminLoggedUsersPanelP
 										variant="ghost"
 										size="sm"
 										className="text-destructive hover:bg-destructive/10 hover:text-destructive rounded-xl h-8 px-3 text-xs font-semibold"
-										onClick={() => toggleAdmin.mutate({ id: u.id, isAdmin: false })}
+										onClick={() =>
+											toggleAdmin.mutate({ id: u.id, isAdmin: false })
+										}
 										disabled={toggleAdmin.isPending}
 									>
 										{toggleAdmin.isPending ? (
@@ -132,7 +139,9 @@ export function AdminLoggedUsersPanel({ filter = "all" }: AdminLoggedUsersPanelP
 										variant="ghost"
 										size="sm"
 										className="text-primary hover:bg-primary/10 hover:text-primary rounded-xl h-8 px-3 text-xs font-semibold"
-										onClick={() => toggleAdmin.mutate({ id: u.id, isAdmin: true })}
+										onClick={() =>
+											toggleAdmin.mutate({ id: u.id, isAdmin: true })
+										}
 										disabled={toggleAdmin.isPending}
 									>
 										{toggleAdmin.isPending ? (
