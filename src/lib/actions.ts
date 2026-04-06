@@ -9,6 +9,7 @@ import { eq, and } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { notifications } from "@/db/schema";
 import { sendTransactionalEmail } from "./mail";
+import { userHasAdminAccess } from "./admin-access";
 
 export const createAuthorAction = protectedActionClient
 	.schema(z.object({ name: z.string().min(1), bio: z.string().optional() }))
@@ -72,6 +73,12 @@ export const createBookAction = protectedActionClient
 export const borrowBookAction = protectedActionClient
 	.schema(z.object({ bookId: z.string() }))
 	.action(async ({ parsedInput: { bookId }, ctx: { session } }) => {
+		if (await userHasAdminAccess(session)) {
+			throw new Error(
+				"Účty so správcovským oprávnením nemôžu požičiavať knihy ako čitatelia.",
+			);
+		}
+
 		const userId = session?.user?.id;
 		if (!userId) throw new Error("Neprihlásený používateľ");
 

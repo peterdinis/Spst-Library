@@ -31,11 +31,26 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useAction } from "next-safe-action/hooks";
 import { returnBookAction } from "@/lib/actions";
+import { useEffect, useState } from "react";
 
 export function ProfileClient({ user }: { user: any }) {
 	const { data: settings, isLoading: settingsLoading } =
 		trpc.settings.getSettings.useQuery();
 	const utils = trpc.useUtils();
+	const [localSettings, setLocalSettings] = useState({
+		emailNotifications: true,
+		dueReminders: true,
+		systemUpdates: false,
+	});
+
+	useEffect(() => {
+		if (!settings) return;
+		setLocalSettings({
+			emailNotifications: settings.emailNotifications,
+			dueReminders: settings.dueReminders,
+			systemUpdates: settings.systemUpdates,
+		});
+	}, [settings]);
 
 	const updateSetting = trpc.settings.updateSettings.useMutation({
 		onSuccess: () => {
@@ -44,6 +59,14 @@ export function ProfileClient({ user }: { user: any }) {
 		},
 		onError: () => toast.error("Chyba pri ukladaní"),
 	});
+
+	const toggleSetting = (
+		key: "emailNotifications" | "dueReminders" | "systemUpdates",
+		value: boolean,
+	) => {
+		setLocalSettings((prev) => ({ ...prev, [key]: value }));
+		updateSetting.mutate({ [key]: value });
+	};
 
 	const { execute: executeReturn, isExecuting: isReturning } = useAction(
 		returnBookAction,
@@ -360,11 +383,11 @@ export function ProfileClient({ user }: { user: any }) {
 												</p>
 											</div>
 											<Switch
-												checked={settings?.emailNotifications}
+												checked={localSettings.emailNotifications}
 												onCheckedChange={(val) =>
-													updateSetting.mutate({ emailNotifications: val })
+													toggleSetting("emailNotifications", val)
 												}
-												disabled={settingsLoading || updateSetting.isPending}
+												disabled={settingsLoading}
 											/>
 										</div>
 
@@ -380,11 +403,11 @@ export function ProfileClient({ user }: { user: any }) {
 												</p>
 											</div>
 											<Switch
-												checked={settings?.dueReminders}
+												checked={localSettings.dueReminders}
 												onCheckedChange={(val) =>
-													updateSetting.mutate({ dueReminders: val })
+													toggleSetting("dueReminders", val)
 												}
-												disabled={settingsLoading || updateSetting.isPending}
+												disabled={settingsLoading}
 											/>
 										</div>
 
@@ -393,38 +416,25 @@ export function ProfileClient({ user }: { user: any }) {
 										<div className="flex items-center justify-between gap-4">
 											<div className="space-y-1">
 												<h4 className="text-lg font-bold leading-none">
-													Systémové Aktualizácie
+													Systémové Novinky
 												</h4>
 												<p className="text-sm text-slate-500 font-medium">
-													Informácie o nových funkciách a vylepšeniach
-													platformy.
+													Budeme vám posielať novinky o nových funkciách a
+													zmenách v aplikácii.
 												</p>
 											</div>
 											<Switch
-												checked={settings?.systemUpdates}
+												checked={localSettings.systemUpdates}
 												onCheckedChange={(val) =>
-													updateSetting.mutate({ systemUpdates: val })
+													toggleSetting("systemUpdates", val)
 												}
-												disabled={settingsLoading || updateSetting.isPending}
+												disabled={settingsLoading}
 											/>
 										</div>
+
+										<div className="h-px bg-slate-100 dark:bg-slate-800" />
 									</div>
 								</Card>
-
-								<div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/30 p-6 rounded-3xl">
-									<div className="flex gap-4">
-										<Star className="h-6 w-6 text-amber-500 shrink-0" />
-										<div>
-											<p className="font-bold text-amber-900 dark:text-amber-200">
-												Beta Funkcie
-											</p>
-											<p className="text-sm text-amber-700/80 dark:text-amber-400/80 leading-relaxed">
-												Niektoré nastavenia sú momentálne v beta testovaní a po
-												uložení sa prejavia do 24 hodín.
-											</p>
-										</div>
-									</div>
-								</div>
 							</div>
 						</motion.div>
 					</TabsContent>
