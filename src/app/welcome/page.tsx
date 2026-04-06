@@ -8,8 +8,6 @@ import {
 	CardDescription,
 	CardContent,
 } from "@/components/ui/card";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
 	BookOpen,
 	Library,
@@ -35,8 +33,12 @@ export default async function WelcomePage() {
 	const name = (session?.user?.name || "").trim() || "čitateľ";
 	const initial = name.charAt(0).toUpperCase() || "?";
 
-	const linkButtonClass =
-		"flex h-12 w-full items-center justify-between gap-2 rounded-2xl px-5 text-base font-semibold";
+	const primaryLinkClass =
+		"inline-flex h-12 w-full items-center justify-between gap-2 rounded-2xl bg-primary px-5 text-base font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90";
+	const outlineLinkClass =
+		"inline-flex h-12 w-full items-center justify-between gap-2 rounded-2xl border border-border bg-background px-5 text-base font-semibold text-foreground transition-colors hover:bg-muted";
+	const profileLinkClass =
+		"inline-flex h-7 items-center gap-1.5 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] font-medium transition-colors hover:bg-muted hover:text-foreground";
 
 	return (
 		<div className="relative min-h-[calc(100dvh-4rem)] overflow-x-hidden bg-background px-4 py-10 md:py-14">
@@ -67,10 +69,7 @@ export default async function WelcomePage() {
 						<div className="grid gap-3 sm:grid-cols-2">
 							<Link
 								href="/my-books"
-								className={cn(
-									buttonVariants({ variant: "default" }),
-									linkButtonClass,
-								)}
+								className={primaryLinkClass}
 							>
 								<span className="flex items-center gap-2">
 									<BookOpen className="size-4 shrink-0" />
@@ -80,10 +79,7 @@ export default async function WelcomePage() {
 							</Link>
 							<Link
 								href="/books"
-								className={cn(
-									buttonVariants({ variant: "outline" }),
-									linkButtonClass,
-								)}
+								className={outlineLinkClass}
 							>
 								<span className="flex items-center gap-2">
 									<Library className="size-4 shrink-0" />
@@ -112,10 +108,7 @@ export default async function WelcomePage() {
 							</div>
 							<Link
 								href="/profile"
-								className={cn(
-									buttonVariants({ variant: "ghost", size: "sm" }),
-									"shrink-0 gap-1.5 self-start sm:self-center",
-								)}
+								className={`${profileLinkClass} shrink-0 self-start sm:self-center`}
 							>
 								<User className="size-4 shrink-0" />
 								Otvoriť profil

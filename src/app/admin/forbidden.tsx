@@ -1,7 +1,5 @@
 import Link from "next/link";
 
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { ShieldOff } from "lucide-react";
 
 export default function AdminForbidden() {
@@ -22,19 +20,13 @@ export default function AdminForbidden() {
 				<div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
 					<Link
 						href="/"
-						className={cn(
-							buttonVariants({ variant: "default" }),
-							"w-full sm:w-auto",
-						)}
+						className="inline-flex h-8 w-full items-center justify-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 sm:w-auto"
 					>
 						Späť na úvod
 					</Link>
 					<Link
 						href="/books"
-						className={cn(
-							buttonVariants({ variant: "outline" }),
-							"w-full sm:w-auto",
-						)}
+						className="inline-flex h-8 w-full items-center justify-center rounded-lg border border-border bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted sm:w-auto"
 					>
 						Katalóg kníh
 					</Link>

@@ -17,6 +17,7 @@ import {
 	ChevronLeft,
 	ChevronRight,
 	ArrowRight,
+	Loader2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -47,6 +48,8 @@ export default function AuthorsPage() {
 		(currentPage - 1) * ITEMS_PER_PAGE,
 		currentPage * ITEMS_PER_PAGE,
 	);
+
+	if (isLoading) return <Loader2 className="size-10 animate-spin" />;
 
 	if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages);
 
