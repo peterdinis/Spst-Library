@@ -4,7 +4,6 @@ import { protectedActionClient } from "./safe-action";
 import { z } from "zod";
 import { db } from "@/db";
 import { authors, categories, books, borrowedBooks } from "@/db/schema";
-import { uploadImageToAzure } from "./azure-storage";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { notifications } from "@/db/schema";
@@ -12,7 +11,7 @@ import { sendTransactionalEmail } from "./mail";
 import { userHasAdminAccess } from "./admin-access";
 
 export const createAuthorAction = protectedActionClient
-	.schema(z.object({ name: z.string().min(1), bio: z.string().optional() }))
+	.inputSchema(z.object({ name: z.string().min(1), bio: z.string().optional() }))
 	.action(async ({ parsedInput: { name, bio } }) => {
 		const id = crypto.randomUUID();
 		db.insert(authors).values({ id, name, bio }).run();
@@ -21,7 +20,7 @@ export const createAuthorAction = protectedActionClient
 	});
 
 export const createCategoryAction = protectedActionClient
-	.schema(z.object({ name: z.string().min(1) }))
+	.inputSchema(z.object({ name: z.string().min(1) }))
 	.action(async ({ parsedInput: { name } }) => {
 		const id = crypto.randomUUID();
 		db.insert(categories).values({ id, name }).run();
@@ -30,7 +29,7 @@ export const createCategoryAction = protectedActionClient
 	});
 
 export const createBookAction = protectedActionClient
-	.schema(
+	.inputSchema(
 		z.object({
 			title: z.string().min(1),
 			description: z.string().optional(),
@@ -71,7 +70,7 @@ export const createBookAction = protectedActionClient
 	);
 
 export const borrowBookAction = protectedActionClient
-	.schema(z.object({ bookId: z.string() }))
+	.inputSchema(z.object({ bookId: z.string() }))
 	.action(async ({ parsedInput: { bookId }, ctx: { session } }) => {
 		if (await userHasAdminAccess(session)) {
 			throw new Error(
@@ -170,7 +169,7 @@ export const borrowBookAction = protectedActionClient
 	});
 
 export const returnBookAction = protectedActionClient
-	.schema(z.object({ borrowId: z.string(), bookId: z.string() }))
+	.inputSchema(z.object({ borrowId: z.string(), bookId: z.string() }))
 	.action(async ({ parsedInput: { borrowId, bookId }, ctx: { session } }) => {
 		const userId = session?.user?.id;
 		if (!userId) throw new Error("Neprihlásený používateľ");
