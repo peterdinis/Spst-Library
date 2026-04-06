@@ -68,7 +68,7 @@ export const booksRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const id = crypto.randomUUID();
-			ctx.db
+			await ctx.db
 				.insert(books)
 				.values({ id, ...input })
 				.run();

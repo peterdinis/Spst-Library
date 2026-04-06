@@ -12,75 +12,65 @@ export interface BookFilters {
 	offset?: number;
 }
 
-export const getBooks = unstable_cache(
-	async (filters: BookFilters = {}) => {
-		const { search, authorName, categoryId, limit = 20, offset = 0 } = filters;
+export async function getBooks(filters: BookFilters = {}) {
+	const { search, authorName, categoryId, limit = 20, offset = 0 } = filters;
 
-		const conditions = [];
-		if (search?.trim()) {
-			const term = `%${search.trim()}%`;
-			const authorsByName = await db
-				.select({ id: authors.id })
-				.from(authors)
-				.where(like(authors.name, term));
-			const authorIdsForSearch = authorsByName.map((r) => r.id);
-			const searchClauses = [
-				like(books.title, term),
-				like(books.isbn, term),
-			] as const;
-			if (authorIdsForSearch.length > 0) {
-				conditions.push(
-					or(...searchClauses, inArray(books.authorId, authorIdsForSearch)),
-				);
-			} else {
-				conditions.push(or(...searchClauses));
-			}
+	const conditions = [];
+	if (search?.trim()) {
+		const term = `%${search.trim()}%`;
+		const authorsByName = await db
+			.select({ id: authors.id })
+			.from(authors)
+			.where(like(authors.name, term));
+		const authorIdsForSearch = authorsByName.map((r) => r.id);
+		const searchClauses = [like(books.title, term), like(books.isbn, term)] as const;
+		if (authorIdsForSearch.length > 0) {
+			conditions.push(
+				or(...searchClauses, inArray(books.authorId, authorIdsForSearch)),
+			);
+		} else {
+			conditions.push(or(...searchClauses));
 		}
-		if (authorName?.trim()) {
-			const name = authorName.trim();
-			const rows = await db
-				.select({ id: authors.id })
-				.from(authors)
-				.where(eq(authors.name, name));
-			const ids = rows.map((r) => r.id);
-			if (ids.length === 0) {
-				conditions.push(sql`1 = 0`);
-			} else {
-				conditions.push(inArray(books.authorId, ids));
-			}
+	}
+	if (authorName?.trim()) {
+		const name = authorName.trim();
+		const rows = await db
+			.select({ id: authors.id })
+			.from(authors)
+			.where(eq(authors.name, name));
+		const ids = rows.map((r) => r.id);
+		if (ids.length === 0) {
+			conditions.push(sql`1 = 0`);
+		} else {
+			conditions.push(inArray(books.authorId, ids));
 		}
-		if (categoryId) {
-			conditions.push(eq(books.categoryId, categoryId));
-		}
+	}
+	if (categoryId) {
+		conditions.push(eq(books.categoryId, categoryId));
+	}
 
-		const where = conditions.length > 0 ? and(...conditions) : undefined;
+	const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-		const [items, totalCount] = await Promise.all([
-			db.query.books.findMany({
-				where,
-				limit,
-				offset,
-				with: {
-					author: true,
-					category: true,
-				},
-				orderBy: (books, { desc }) => [desc(books.createdAt)],
-			}),
-			db
-				.select({ value: count() })
-				.from(books)
-				.where(where)
-				.then((res) => res[0].value),
-		]);
+	const [items, totalCount] = await Promise.all([
+		db.query.books.findMany({
+			where,
+			limit,
+			offset,
+			with: {
+				author: true,
+				category: true,
+			},
+			orderBy: (books, { desc }) => [desc(books.createdAt)],
+		}),
+		db
+			.select({ value: count() })
+			.from(books)
+			.where(where)
+			.then((res) => res[0].value),
+	]);
 
-		return { items, total: totalCount };
-	},
-	["books-list"],
-	{
-		tags: ["books"],
-		revalidate: 3600,
-	},
-);
+	return { items, total: totalCount };
+}
 
 export const getAuthors = unstable_cache(
 	async () => {
@@ -109,7 +99,9 @@ export const getBorrowedByUserId = unstable_cache(
 		return db.query.borrowedBooks.findMany({
 			where: eq(borrowedBooks.userId, userId),
 			with: {
-				book: true,
+				book: {
+					with: { author: true },
+				},
 			},
 		});
 	},
@@ -120,36 +112,46 @@ export const getBorrowedByUserId = unstable_cache(
 	},
 );
 
-export const getBookById = unstable_cache(
-	async (id: string) => {
-		return db.query.books.findFirst({
-			where: eq(books.id, id),
-			with: {
-				author: true,
-				category: true,
-			},
-		});
+export const isBookBorrowedByUser = unstable_cache(
+	async (userId: string, bookId: string) => {
+		const row = await db
+			.select()
+			.from(borrowedBooks)
+			.where(
+				and(
+					eq(borrowedBooks.userId, userId),
+					eq(borrowedBooks.bookId, bookId),
+					eq(borrowedBooks.status, "borrowed"),
+				),
+			)
+			.get();
+		return !!row;
 	},
-	["book-detail"],
+	["is-book-borrowed"],
 	{
-		tags: ["books"],
+		tags: ["borrowed-books"],
+		revalidate: 60,
 	},
 );
 
-export const getAuthorById = unstable_cache(
-	async (id: string) => {
-		return db.query.authors.findFirst({
-			where: eq(authors.id, id),
-			with: {
-				books: {
-					with: { category: true },
-					orderBy: (b, { desc }) => [desc(b.createdAt)],
-				},
+export async function getBookById(id: string) {
+	return db.query.books.findFirst({
+		where: eq(books.id, id),
+		with: {
+			author: true,
+			category: true,
+		},
+	});
+}
+
+export async function getAuthorById(id: string) {
+	return db.query.authors.findFirst({
+		where: eq(authors.id, id),
+		with: {
+			books: {
+				with: { category: true },
+				orderBy: (b, { desc }) => [desc(b.createdAt)],
 			},
-		});
-	},
-	["author-detail"],
-	{
-		tags: ["authors", "books"],
-	},
-);
+		},
+	});
+}

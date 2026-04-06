@@ -12,7 +12,9 @@ import {
 	PanelLeft,
 	ClipboardList,
 	Cloud,
+	Bell,
 	ShieldCheck,
+	LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,7 +23,7 @@ import { useState } from "react";
 type NavItem = {
 	href: string;
 	label: string;
-	icon: any;
+	icon: LucideIcon;
 	exact?: boolean;
 };
 
@@ -29,7 +31,9 @@ const NAV: NavItem[] = [
 	{ href: "/admin", label: "Prehľad", icon: LayoutDashboard, exact: true },
 	{ href: "/admin/books", label: "Knihy", icon: BookOpen },
 	{ href: "/admin/orders", label: "Objednávky", icon: ClipboardList },
-	{ href: "/admin/users", label: "Používatelia", icon: Users },
+	{ href: "/admin/notifications", label: "Notifikácie", icon: Bell },
+	{ href: "/admin/users", label: "Všetci používatelia", icon: Users, exact: true },
+	{ href: "/admin/users/regular", label: "Bežní používatelia", icon: Users },
 	{ href: "/admin/permissions", label: "Práva", icon: ShieldCheck },
 	{ href: "/admin/entra-users", label: "Entra", icon: Cloud },
 	{ href: "/admin/authors", label: "Autori", icon: Users },
@@ -87,7 +91,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 							const active = item.exact
 								? pathname === item.href
 								: pathname === item.href ||
-									pathname.startsWith(`${item.href}/`);
+								pathname.startsWith(`${item.href}/`);
 							const Icon = item.icon;
 							return (
 								<Link

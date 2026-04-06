@@ -94,7 +94,7 @@ export function AdminWhitelistPanel() {
 				<Table>
 					<TableHeader>
 						<TableRow className="border-b bg-muted/20 hover:bg-muted/20">
-							<TableHead>Whitelisted E-mail</TableHead>
+							<TableHead>Povolený e-mail</TableHead>
 							<TableHead>Pridané dňa</TableHead>
 							<TableHead className="text-right">Akcia</TableHead>
 						</TableRow>

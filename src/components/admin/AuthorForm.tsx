@@ -1,12 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
-import Image from "next/image";
-import { trpc } from "@/trpc/client";
-import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
 	Card,
 	CardContent,
@@ -14,104 +11,112 @@ import {
 	CardTitle,
 	CardDescription,
 } from "@/components/ui/card";
+import { trpc } from "@/trpc/client";
 import { FileUpload } from "./FileUpload";
-import { User } from "lucide-react";
+import { toast } from "sonner";
+import { Loader2, UserPlus, Info } from "lucide-react";
+import { RichTextEditor } from "./RichTextEditor";
+
+export type AuthorFormInitial = {
+	id: string;
+	name: string | null;
+	bio: string | null;
+	imageUrl?: string | null;
+	image?: string | null;
+};
 
 interface AuthorFormProps {
-	initialData?: {
-		id: string;
-		name: string;
-		bio?: string | null;
-		imageUrl?: string | null;
-	};
+	initialData?: AuthorFormInitial;
 	onSuccess?: () => void;
 }
 
 export function AuthorForm({ initialData, onSuccess }: AuthorFormProps) {
-	const [name, setName] = useState(initialData?.name || "");
-	const [bio, setBio] = useState(initialData?.bio || "");
-	const [imageUrl, setImageUrl] = useState(initialData?.imageUrl || "");
-	const utils = trpc.useUtils();
+	const router = useRouter();
+	const [name, setName] = useState(initialData?.name ?? "");
+	const [bio, setBio] = useState(initialData?.bio ?? "");
+	const [imageUrl, setImageUrl] = useState(
+		initialData?.imageUrl ?? initialData?.image ?? "",
+	);
 
-	const createAuthor = trpc.authors.create.useMutation({
+	const context = trpc.useUtils();
+
+	const createMutation = trpc.authors.create.useMutation({
 		onSuccess: () => {
-			toast.success("Autor úspešne vytvorený!");
-			setName("");
-			setBio("");
-			setImageUrl("");
-			utils.authors.getAll.invalidate();
+			toast.success("Autor bol úspešne vytvorený.");
+			router.push("/admin/authors");
+			context.authors.getAll.invalidate();
 			onSuccess?.();
 		},
 		onError: (e) => toast.error(e.message),
 	});
 
-	const updateAuthor = trpc.authors.update.useMutation({
+	const updateMutation = trpc.authors.update.useMutation({
 		onSuccess: () => {
-			toast.success("Autor úspešne upravený!");
-			utils.authors.getAll.invalidate();
+			toast.success("Autor bol úspešne upravený.");
+			router.push("/admin/authors");
+			context.authors.getAll.invalidate();
 			onSuccess?.();
 		},
 		onError: (e) => toast.error(e.message),
 	});
-
-	const isEditing = !!initialData;
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		if (isEditing) {
-			updateAuthor.mutate({
-				id: initialData.id,
-				name,
-				bio: bio || undefined,
-				imageUrl: imageUrl || null,
-			});
+		const payload = {
+			name: name.trim(),
+			bio: bio || undefined,
+			imageUrl: imageUrl || undefined,
+		};
+
+		if (initialData) {
+			updateMutation.mutate({ id: initialData.id, ...payload });
 		} else {
-			createAuthor.mutate({
-				name,
-				bio: bio || undefined,
-				imageUrl: imageUrl || undefined,
-			});
+			createMutation.mutate(payload);
 		}
 	};
 
+	const isLoading = createMutation.isPending || updateMutation.isPending;
+
 	return (
-		<Card className="shadow-lg border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-slate-900">
-			<CardHeader className="border-b border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/50">
-				<CardTitle className="text-xl">
-					{isEditing ? "Upraviť autora" : "Nový autor"}
-				</CardTitle>
-				<CardDescription>
-					Meno, životopis a voliteľná fotka (Azure Blob).
-				</CardDescription>
+		<Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white/80 dark:bg-slate-950/80 backdrop-blur-md ring-1 ring-slate-200 dark:ring-slate-800">
+			<CardHeader className="bg-gradient-to-r from-indigo-600/5 to-purple-600/5 border-b border-slate-100 dark:border-slate-800 pb-8 px-8">
+				<div className="flex items-center gap-4 mb-2">
+					<div className="p-3 bg-primary/10 rounded-2xl">
+						<UserPlus className="h-6 w-6 text-primary" />
+					</div>
+					<div>
+						<CardTitle className="text-2xl font-bold tracking-tight">
+							{initialData ? "Upraviť autora" : "Nový autor"}
+						</CardTitle>
+						<CardDescription>
+							Správa profilu autora a jeho životopisu.
+						</CardDescription>
+					</div>
+				</div>
 			</CardHeader>
-			<CardContent className="pt-6 space-y-6">
-				<form onSubmit={handleSubmit} className="space-y-5">
+			<CardContent className="pt-8 px-8">
+				<form onSubmit={handleSubmit} className="space-y-8">
 					<div className="space-y-2">
 						<label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-							Meno
+							Celé meno
 						</label>
 						<Input
 							placeholder="Meno autora"
 							value={name}
-							onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-								setName(e.target.value)
-							}
+							onChange={(e) => setName(e.target.value)}
 							required
 							className="rounded-xl"
 						/>
 					</div>
 
 					<div className="space-y-2">
-						<label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-							Životopis
+						<label className="text-sm font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2">
+							<Info className="h-4 w-4 text-primary" /> Životopis
 						</label>
-						<Textarea
-							placeholder="Krátky životopis (voliteľné)"
+						<RichTextEditor
 							value={bio || ""}
-							onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-								setBio(e.target.value)
-							}
-							className="rounded-xl min-h-[100px]"
+							onChange={(val: string) => setBio(val)}
+							placeholder="Krátky životopis autora..."
 						/>
 					</div>
 
@@ -120,44 +125,32 @@ export function AuthorForm({ initialData, onSuccess }: AuthorFormProps) {
 							Fotka autora
 						</label>
 						<FileUpload
-							uploadFolder="authors"
+							defaultValue={imageUrl || ""}
 							onUploadComplete={setImageUrl}
-							defaultValue={imageUrl || undefined}
+							uploadFolder="authors"
 							aspectRatio={1}
 						/>
-						{imageUrl ? (
-							<div className="flex items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-700 p-3 bg-slate-50 dark:bg-slate-800/50">
-								<div className="relative size-14 rounded-full overflow-hidden border border-slate-200 dark:border-slate-600 shrink-0">
-									<Image src={imageUrl} alt="" fill className="object-cover" />
-								</div>
-								<p className="text-xs text-slate-500 dark:text-slate-400 truncate flex-1">
-									{imageUrl}
-								</p>
-								<Button
-									type="button"
-									variant="ghost"
-									size="sm"
-									className="shrink-0"
-									onClick={() => setImageUrl("")}
-								>
-									Odstrániť
-								</Button>
-							</div>
-						) : (
-							<p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
-								<User className="size-3.5" />
-								Bez fotky — v katalógu sa zobrazí predvolená ikona.
-							</p>
-						)}
 					</div>
 
-					<Button
-						disabled={createAuthor.isPending || updateAuthor.isPending}
-						type="submit"
-						className="w-full rounded-xl h-11 font-semibold"
-					>
-						{isEditing ? "Uložiť zmeny" : "Vytvoriť autora"}
-					</Button>
+					<div className="pt-4">
+						<Button
+							type="submit"
+							size="lg"
+							className="w-full h-14 rounded-2xl text-lg font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all hover:-translate-y-0.5"
+							disabled={isLoading}
+						>
+							{isLoading ? (
+								<>
+									<Loader2 className="mr-2 h-5 w-5 animate-spin" />
+									Ukladám...
+								</>
+							) : initialData ? (
+								"Uložiť zmeny"
+							) : (
+								"Pridať autora"
+							)}
+						</Button>
+					</div>
 				</form>
 			</CardContent>
 		</Card>

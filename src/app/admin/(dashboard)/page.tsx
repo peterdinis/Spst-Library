@@ -13,6 +13,7 @@ import {
 	ArrowRight,
 	ClipboardList,
 	Cloud,
+	Bell,
 } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
@@ -37,7 +38,15 @@ export default function AdminDashboardPage() {
 				"bg-emerald-100 text-emerald-700 dark:bg-emerald-950/80 dark:text-emerald-300",
 		},
 		{
-			title: "Entra",
+			title: "Notifikácie",
+			description:
+				"Audit udalostí v systéme: nové záznamy, požičania, vrátenia aj objednávky.",
+			href: "/admin/notifications" as const,
+			icon: Bell,
+			iconBg: "bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300",
+		},
+		{
+			title: "Microsoft Entra",
 			description:
 				"Zoznam používateľov z Microsoft Entra ID (Graph API, app permissions).",
 			href: "/admin/entra-users" as const,
