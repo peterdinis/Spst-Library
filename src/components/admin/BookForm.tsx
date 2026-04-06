@@ -37,12 +37,26 @@ export type BookFormInitial = {
 
 interface BookFormProps {
 	initialData?: BookFormInitial;
-	authors: { id: string; name: string | null }[];
-	categories: { id: string; name: string }[];
+	authors?: { id: string; name: string | null }[];
+	categories?: { id: string; name: string }[];
+	onSuccess?: () => void;
 }
 
-export function BookForm({ initialData, authors, categories }: BookFormProps) {
+export function BookForm({
+	initialData,
+	authors,
+	categories,
+	onSuccess,
+}: BookFormProps) {
 	const router = useRouter();
+	const { data: allAuthors = [] } = trpc.authors.getAll.useQuery(undefined, {
+		enabled: !authors,
+	});
+	const { data: allCategories = [] } = trpc.categories.getAll.useQuery(undefined, {
+		enabled: !categories,
+	});
+	const resolvedAuthors = authors ?? allAuthors;
+	const resolvedCategories = categories ?? allCategories;
 
 	const [title, setTitle] = useState(initialData?.title ?? "");
 	const [description, setDescription] = useState(initialData?.description ?? "");
@@ -61,6 +75,7 @@ export function BookForm({ initialData, authors, categories }: BookFormProps) {
 			toast.success("Kniha bola úspešne vytvorená.");
 			router.push("/admin/books");
 			context.books.getAll.invalidate();
+			onSuccess?.();
 		},
 		onError: (e) => toast.error(e.message),
 	});
@@ -70,6 +85,7 @@ export function BookForm({ initialData, authors, categories }: BookFormProps) {
 			toast.success("Kniha bola úspešne upravená.");
 			router.push("/admin/books");
 			context.books.getAll.invalidate();
+			onSuccess?.();
 		},
 		onError: (e) => toast.error(e.message),
 	});
@@ -165,7 +181,7 @@ export function BookForm({ initialData, authors, categories }: BookFormProps) {
 									<SelectValue placeholder="Vyberte autora" />
 								</SelectTrigger>
 								<SelectContent>
-									{authors.map((a) => (
+									{resolvedAuthors.map((a) => (
 										<SelectItem key={a.id} value={a.id}>
 											{a.name}
 										</SelectItem>
@@ -178,7 +194,7 @@ export function BookForm({ initialData, authors, categories }: BookFormProps) {
 									<SelectValue placeholder="Vyberte kategóriu" />
 								</SelectTrigger>
 								<SelectContent>
-									{categories.map((c) => (
+									{resolvedCategories.map((c) => (
 										<SelectItem key={c.id} value={c.id}>
 											{c.name}
 										</SelectItem>

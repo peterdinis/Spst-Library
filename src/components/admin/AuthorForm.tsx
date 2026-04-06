@@ -21,18 +21,22 @@ export type AuthorFormInitial = {
 	id: string;
 	name: string | null;
 	bio: string | null;
-	image: string | null;
+	imageUrl?: string | null;
+	image?: string | null;
 };
 
 interface AuthorFormProps {
 	initialData?: AuthorFormInitial;
+	onSuccess?: () => void;
 }
 
-export function AuthorForm({ initialData }: AuthorFormProps) {
+export function AuthorForm({ initialData, onSuccess }: AuthorFormProps) {
 	const router = useRouter();
 	const [name, setName] = useState(initialData?.name ?? "");
 	const [bio, setBio] = useState(initialData?.bio ?? "");
-	const [imageUrl, setImageUrl] = useState(initialData?.image ?? "");
+	const [imageUrl, setImageUrl] = useState(
+		initialData?.imageUrl ?? initialData?.image ?? "",
+	);
 
 	const context = trpc.useUtils();
 
@@ -41,6 +45,7 @@ export function AuthorForm({ initialData }: AuthorFormProps) {
 			toast.success("Autor bol úspešne vytvorený.");
 			router.push("/admin/authors");
 			context.authors.getAll.invalidate();
+			onSuccess?.();
 		},
 		onError: (e) => toast.error(e.message),
 	});
@@ -50,6 +55,7 @@ export function AuthorForm({ initialData }: AuthorFormProps) {
 			toast.success("Autor bol úspešne upravený.");
 			router.push("/admin/authors");
 			context.authors.getAll.invalidate();
+			onSuccess?.();
 		},
 		onError: (e) => toast.error(e.message),
 	});

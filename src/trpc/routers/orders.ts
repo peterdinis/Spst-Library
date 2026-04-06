@@ -6,6 +6,7 @@ import { z } from "zod";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { TRPCError } from "@trpc/server";
 import { CACHE_TAGS, CACHE_TTL } from "../cache-config";
+import { sendTransactionalEmail } from "@/lib/mail";
 
 const orderStatusSchema = z.enum([
 	"pending",
@@ -64,6 +65,21 @@ export const ordersRouter = router({
 					updatedAt: now,
 				})
 				.run();
+
+			if (ctx.session.user.email) {
+				await sendTransactionalEmail(
+					ctx.session.user.email,
+					"Objednávka knihy bola prijatá",
+					`
+					<h1>Objednávka prijatá</h1>
+					<p>Dobrý deň, ${ctx.session.user.name || "čitateľ"},</p>
+					<p>Vaša objednávka na knihu <strong>${bookRow.title}</strong> bola úspešne odoslaná.</p>
+					<p>Stav objednávky: <strong>Čaká na spracovanie</strong>.</p>
+					<p>Keď knižnica objednávku schváli alebo vybaví, pošleme vám ďalšie oznámenie.</p>
+					`,
+				);
+			}
+
 			revalidateTag(CACHE_TAGS.orders, "default");
 			return { success: true, id };
 		}),
@@ -123,11 +139,49 @@ export const ordersRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
+			const current = await ctx.db.query.bookOrders.findFirst({
+				where: eq(bookOrders.id, input.id),
+				with: {
+					user: true,
+					book: true,
+				},
+			});
+			if (!current) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Objednávka neexistuje.",
+				});
+			}
+
 			ctx.db
 				.update(bookOrders)
 				.set({ status: input.status, updatedAt: new Date() })
 				.where(eq(bookOrders.id, input.id))
 				.run();
+
+			const statusLabel: Record<
+				"pending" | "approved" | "fulfilled" | "cancelled",
+				string
+			> = {
+				pending: "Čaká",
+				approved: "Schválená",
+				fulfilled: "Vydaná",
+				cancelled: "Zrušená",
+			};
+
+			if (current.user?.email) {
+				await sendTransactionalEmail(
+					current.user.email,
+					`Aktualizácia objednávky: ${statusLabel[input.status]}`,
+					`
+					<h1>Objednávka aktualizovaná</h1>
+					<p>Dobrý deň, ${current.user.name || "čitateľ"},</p>
+					<p>Objednávka na knihu <strong>${current.book?.title ?? "Kniha"}</strong> bola aktualizovaná.</p>
+					<p>Nový stav: <strong>${statusLabel[input.status]}</strong>.</p>
+					`,
+				);
+			}
+
 			revalidateTag(CACHE_TAGS.orders, "default");
 			return { success: true };
 		}),

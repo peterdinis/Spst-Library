@@ -12,6 +12,7 @@ import {
 	PanelLeft,
 	ClipboardList,
 	Cloud,
+	Bell,
 	ShieldCheck,
 	LucideIcon,
 } from "lucide-react";
@@ -30,9 +31,11 @@ const NAV: NavItem[] = [
 	{ href: "/admin", label: "Prehľad", icon: LayoutDashboard, exact: true },
 	{ href: "/admin/books", label: "Knihy", icon: BookOpen },
 	{ href: "/admin/orders", label: "Objednávky", icon: ClipboardList },
+	{ href: "/admin/notifications", label: "Notifikácie", icon: Bell },
 	{ href: "/admin/users", label: "Všetci používatelia", icon: Users, exact: true },
 	{ href: "/admin/users/regular", label: "Bežní používatelia", icon: Users },
 	{ href: "/admin/permissions", label: "Práva", icon: ShieldCheck },
+	{ href: "/admin/entra-users", label: "Entra", icon: Cloud },
 	{ href: "/admin/authors", label: "Autori", icon: Users },
 	{ href: "/admin/categories", label: "Kategórie", icon: Tags },
 ];
@@ -60,7 +63,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 						{!collapsed && (
 							<div className="min-w-0 px-1">
 								<p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-muted-foreground">
-									Správa
+									Admin
 								</p>
 								<p className="truncate text-sm font-bold text-slate-900 dark:text-foreground">
 									Knižnica

@@ -49,12 +49,14 @@ type BookDetailsClientProps = {
 	user: { name?: string | null; email?: string | null } | null;
 	/** Môže objednať / vypožičať ako čitateľ (nie správca z DB). */
 	isPatron: boolean;
+	isAlreadyBorrowed?: boolean;
 };
 
 export function BookDetailsClient({
 	book,
 	user,
 	isPatron,
+	isAlreadyBorrowed = false,
 }: BookDetailsClientProps) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [isOrderOpen, setIsOrderOpen] = useState(false);
@@ -301,14 +303,16 @@ export function BookDetailsClient({
 							<Button
 								type="button"
 								size="lg"
-								className={`h-16 px-10 text-lg rounded-2xl font-bold shadow-xl transition-all ${book.availableCopies > 0 ? "bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-primary/30 hover:-translate-y-1" : "bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed"}`}
-								disabled={book.availableCopies <= 0 || isExecuting}
+								className={`h-16 px-10 text-lg rounded-2xl font-bold shadow-xl transition-all ${isAlreadyBorrowed ? "bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed" : book.availableCopies > 0 ? "bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-primary/30 hover:-translate-y-1" : "bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed"}`}
+								disabled={isAlreadyBorrowed || book.availableCopies <= 0 || isExecuting}
 								onClick={() => setIsModalOpen(true)}
 							>
 								<BookOpen className="mr-3 h-6 w-6" />
-								{book.availableCopies > 0
-									? "Ihneď Vypožičať (Zadarmo)"
-									: "Všetky Kusy Vypožičané"}
+								{isAlreadyBorrowed
+									? "Knihu už máte vypožičanú"
+									: book.availableCopies > 0
+										? "Ihneď Vypožičať (Zadarmo)"
+										: "Všetky Kusy Vypožičané"}
 							</Button>
 							<DialogContent className="sm:max-w-[425px] rounded-3xl p-0 overflow-hidden border-0 shadow-2xl">
 								<div className="bg-gradient-to-br from-primary/20 to-transparent p-6 pb-4 border-b border-primary/10">

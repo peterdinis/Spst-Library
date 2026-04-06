@@ -23,12 +23,14 @@ import {
 	Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { mockBorrowedBooks, mockUser } from "@/lib/mockData";
+import { mockUser } from "@/lib/mockData";
 import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 import { trpc } from "@/trpc/client";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { useAction } from "next-safe-action/hooks";
+import { returnBookAction } from "@/lib/actions";
 
 export function ProfileClient({ user }: { user: any }) {
 	const { data: settings, isLoading: settingsLoading } =
@@ -42,6 +44,23 @@ export function ProfileClient({ user }: { user: any }) {
 		},
 		onError: () => toast.error("Chyba pri ukladaní"),
 	});
+
+	const { execute: executeReturn, isExecuting: isReturning } = useAction(
+		returnBookAction,
+		{
+			onSuccess: () => {
+				toast.success("Kniha bola úspešne vrátená!");
+				utils.books.getBorrowedByUser.invalidate();
+			},
+			onError: (error) => {
+				toast.error(error.error.serverError || "Chyba pri vracaní knihy");
+			},
+		},
+	);
+
+	const { data: userBorrows, isLoading: borrowsLoading } =
+		trpc.books.getBorrowedByUser.useQuery();
+
 	// Merge session user with mock stats for visual richness
 	const displayUser = {
 		name: user?.name || mockUser.name,
@@ -50,9 +69,8 @@ export function ProfileClient({ user }: { user: any }) {
 		joinDate: mockUser.joinDate,
 	};
 
-	const activeBorrows = mockBorrowedBooks.filter(
-		(b) => b.status === "borrowed",
-	);
+	const activeBorrows =
+		userBorrows?.filter((b) => b.status === "borrowed") || [];
 	const readingGoal = 12; // Example goal
 	const booksRead = 4; // Example historic data
 
@@ -211,23 +229,28 @@ export function ProfileClient({ user }: { user: any }) {
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 									{activeBorrows.map((borrow) => {
 										const borrowedDate = new Date(borrow.borrowDate);
-										// Odhadneme deadline na vrátenie +30 dní
-										const deadlineDate = new Date(borrowedDate);
-										deadlineDate.setDate(deadlineDate.getDate() + 30);
+										// Realná zmluva by mala používať dueDate z databázy
+										const deadlineDate = new Date(borrow.dueDate || borrowedDate);
 										const isLate = deadlineDate.getTime() < Date.now();
 
 										return (
 											<Card
-												key={borrow.borrowId}
+												key={borrow.id}
 												className="flex flex-col sm:flex-row overflow-hidden rounded-3xl group border-slate-200/50 dark:border-slate-800/50 hover:shadow-xl hover:border-primary/30 transition-all bg-card/60 backdrop-blur-md"
 											>
 												<div className="w-full sm:w-1/3 aspect-[3/4] sm:aspect-auto bg-slate-100 dark:bg-slate-900 relative overflow-hidden shrink-0">
+                                                                                                        {borrow.book?.coverUrl ? (
 													<Image
-														src={borrow.coverUrl}
-														alt={borrow.title}
+														src={borrow.book.coverUrl}
+														alt={borrow.book?.title || "Kniha"}
 														fill
 														className="object-cover group-hover:scale-105 transition-transform duration-500"
 													/>
+                                                                                                        ) : (
+                                                                                                           <div className="w-full h-full flex items-center justify-center text-slate-400">
+                                                                                                                <BookMarked className="w-12 h-12 opacity-50" />
+                                                                                                           </div>
+                                                                                                        )}
 													{isLate && (
 														<div className="absolute top-0 left-0 w-full bg-destructive text-destructive-foreground text-xs font-bold text-center py-1.5 uppercase tracking-widest shadow-md">
 															Po Termíne
@@ -237,10 +260,10 @@ export function ProfileClient({ user }: { user: any }) {
 												<div className="flex-1 flex flex-col p-5 sm:p-6 justify-between">
 													<div>
 														<CardTitle className="text-xl font-bold leading-tight group-hover:text-primary transition-colors line-clamp-2 mb-1">
-															{borrow.title}
+															{borrow.book?.title || "Neznáma kniha"}
 														</CardTitle>
 														<CardDescription className="text-sm font-medium">
-															{borrow.author}
+															{borrow.book?.author?.name || "Neznámy autor"}
 														</CardDescription>
 													</div>
 
@@ -266,15 +289,23 @@ export function ProfileClient({ user }: { user: any }) {
 																</span>
 															</div>
 														</div>
-
-														<Link
+                                                                                                                <div className="flex flex-col xl:flex-row gap-2">
+														    <Link
 															href={`/books/${borrow.bookId}`}
-															className="block"
-														>
-															<Button className="w-full rounded-xl font-bold transition-all hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/20">
-																Prejsť na detail
+															className="block flex-1"
+														    >
+															<Button variant="outline" className="w-full rounded-xl font-bold">
+																Detail
 															</Button>
-														</Link>
+														    </Link>
+                                                                                                                    <Button
+                                                                                                                            className="flex-1 rounded-xl font-bold shadow-md"
+                                                                                                                            disabled={isReturning}
+                                                                                                                            onClick={() => executeReturn({ borrowId: borrow.id, bookId: borrow.bookId })}
+                                                                                                                    >
+                                                                                                                            Vrátiť
+                                                                                                                    </Button>
+                                                                                                                </div>
 													</div>
 												</div>
 											</Card>
