@@ -4,6 +4,7 @@ import "./globals.css";
 import { TRPCProvider } from "@/trpc/Provider";
 import { Toaster } from "@/components/ui/sonner";
 import { Navbar } from "@/components/layout/Navbar";
+import { getSiteUrl, siteConfig } from "@/lib/site-config";
 
 const ubuntu = Ubuntu({
 	variable: "--font-ubuntu",
@@ -15,8 +16,27 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ScrollToTop } from "@/components/ScrollToTop";
 
 export const metadata: Metadata = {
-	title: "SPST Knižnica",
-	description: "Spravujte a vypožičiavajte si knihy zo školskej knižnice SPST.",
+	metadataBase: getSiteUrl(),
+	title: {
+		default: `${siteConfig.name} – školská knižnica`,
+		template: `%s | ${siteConfig.name}`,
+	},
+	description: siteConfig.description,
+	keywords: [...siteConfig.keywords],
+	applicationName: siteConfig.shortName,
+	openGraph: {
+		type: "website",
+		locale: "sk_SK",
+		siteName: siteConfig.name,
+		title: siteConfig.name,
+		description: siteConfig.description,
+	},
+	twitter: {
+		card: "summary_large_image",
+		title: siteConfig.name,
+		description: siteConfig.description,
+	},
+	robots: { index: true, follow: true },
 };
 
 export default function RootLayout({

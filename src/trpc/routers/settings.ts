@@ -53,6 +53,12 @@ export const settingsRouter = router({
 				emailNotifications: z.boolean().optional(),
 				dueReminders: z.boolean().optional(),
 				systemUpdates: z.boolean().optional(),
+				readingGoal: z
+					.union([
+						z.number().int().min(1).max(1000),
+						z.null(),
+					])
+					.optional(),
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {

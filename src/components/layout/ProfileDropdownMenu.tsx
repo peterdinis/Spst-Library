@@ -90,6 +90,18 @@ export function ProfileDropdownMenu({
 					</span>
 				</DropdownMenuItem>
 
+				<DropdownMenuItem
+					className="cursor-pointer gap-3 rounded-lg py-2 focus:bg-slate-100 dark:focus:bg-slate-800/80"
+					onClick={() => router.push("/settings")}
+				>
+					<div className="rounded-md bg-slate-200/80 p-1.5 text-slate-700 dark:bg-slate-600/40 dark:text-slate-200">
+						<Settings className="h-3.5 w-3.5" />
+					</div>
+					<span className="font-medium text-slate-700 dark:text-slate-100">
+						Nastavenia
+					</span>
+				</DropdownMenuItem>
+
 				{showAdminLink ? (
 					<DropdownMenuItem
 						className="cursor-pointer gap-3 rounded-lg py-2 focus:bg-amber-50 dark:focus:bg-amber-950/60"

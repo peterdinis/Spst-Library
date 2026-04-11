@@ -108,6 +108,8 @@ export const userSettings = sqliteTable("user_settings", {
 	systemUpdates: integer("system_updates", { mode: "boolean" })
 		.default(false)
 		.notNull(),
+	/** Ročný cieľ počtu prečítaných (vrátených) kníh; null = ešte nenastavené */
+	readingGoal: integer("reading_goal", { mode: "number" }),
 });
 
 export const admins = sqliteTable("admins", {
