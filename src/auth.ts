@@ -46,6 +46,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
 				if (!isPasswordValid || !isAdminCodeValid) return null;
 
+				// Zabezpečíme, že lokálny admin má záznam v tabuľke `users`,
+				// aby nepadal Foreign Key Constraint pri požičiavaní kníh a notifikáciách.
+				const existingAdminInUsers = db
+					.select()
+					.from(users)
+					.where(eq(users.id, admin.id))
+					.get();
+					
+				if (!existingAdminInUsers) {
+					try {
+						db.insert(users)
+							.values({
+								id: admin.id,
+								name: admin.name || admin.username,
+								email: `admin-${admin.username}@local.spst`,
+								isAdmin: true,
+							})
+							.run();
+					} catch (e) {
+						console.error("Failed to sync admin to users table", e);
+					}
+				}
+
 				return {
 					id: admin.id,
 					name: admin.name || admin.username,

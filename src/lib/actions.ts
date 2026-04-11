@@ -3,12 +3,11 @@
 import { protectedActionClient } from "./safe-action";
 import { z } from "zod";
 import { db } from "@/db";
-import { authors, categories, books, borrowedBooks } from "@/db/schema";
+import { users, authors, categories, books, borrowedBooks } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { notifications } from "@/db/schema";
 import { sendTransactionalEmail } from "./mail";
-import { userHasAdminAccess } from "./admin-access";
 
 export const createAuthorAction = protectedActionClient
 	.inputSchema(z.object({ name: z.string().min(1), bio: z.string().optional() }))
@@ -72,8 +71,24 @@ export const createBookAction = protectedActionClient
 export const borrowBookAction = protectedActionClient
 	.inputSchema(z.object({ bookId: z.string() }))
 	.action(async ({ parsedInput: { bookId }, ctx: { session } }) => {
-		const userId = session?.user?.id;
-		if (!userId) throw new Error("Neprihlásený používateľ");
+		if (!session?.user?.id) throw new Error("Neprihlásený používateľ");
+		const userId = session.user.id;
+
+		// Zaistíme, že používateľ naozaj existuje v tabuľke users (kvôli Foreign Key pre admins)
+		const existingUser = db
+			.select()
+			.from(users)
+			.where(eq(users.id, userId))
+			.get();
+
+		if (!existingUser) {
+			db.insert(users).values({
+				id: userId,
+				name: session.user.name || "Neznámy",
+				email: session.user.email || `user-${userId}@local.spst`,
+				isAdmin: (session.user as any).role === "admin",
+			}).run();
+		}
 
 		// Check if book exists and has copies
 		const book = db
