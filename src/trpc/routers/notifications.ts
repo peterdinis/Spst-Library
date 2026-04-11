@@ -7,7 +7,7 @@ import {
 	borrowedBooks,
 	bookOrders,
 } from "@/db/schema";
-import { eq, desc, isNotNull } from "drizzle-orm";
+import { eq, desc, isNotNull, and } from "drizzle-orm";
 import { z } from "zod";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { CACHE_TAGS, CACHE_TTL } from "../cache-config";
@@ -76,10 +76,18 @@ export const notificationsRouter = router({
 	markAsRead: protectedProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ ctx, input }) => {
+			const userId = ctx.session?.user?.id;
+			if (!userId) return { success: false };
+
 			await ctx.db
 				.update(notifications)
 				.set({ isRead: true })
-				.where(eq(notifications.id, input.id))
+				.where(
+					and(
+						eq(notifications.id, input.id),
+						eq(notifications.userId, userId),
+					),
+				)
 				.run();
 
 			revalidateTag(CACHE_TAGS.notifications, "default");
@@ -93,6 +101,39 @@ export const notificationsRouter = router({
 		await ctx.db
 			.update(notifications)
 			.set({ isRead: true })
+			.where(eq(notifications.userId, userId))
+			.run();
+
+		revalidateTag(CACHE_TAGS.notifications, "default");
+		return { success: true };
+	}),
+
+	delete: protectedProcedure
+		.input(z.object({ id: z.string() }))
+		.mutation(async ({ ctx, input }) => {
+			const userId = ctx.session?.user?.id;
+			if (!userId) return { success: false };
+
+			await ctx.db
+				.delete(notifications)
+				.where(
+					and(
+						eq(notifications.id, input.id),
+						eq(notifications.userId, userId),
+					),
+				)
+				.run();
+
+			revalidateTag(CACHE_TAGS.notifications, "default");
+			return { success: true };
+		}),
+
+	deleteAll: protectedProcedure.mutation(async ({ ctx }) => {
+		const userId = ctx.session?.user?.id;
+		if (!userId) return { success: false };
+
+		await ctx.db
+			.delete(notifications)
 			.where(eq(notifications.userId, userId))
 			.run();
 

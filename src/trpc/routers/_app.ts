@@ -9,6 +9,7 @@ import { entraRouter } from "./entra";
 import { usersRouter } from "./users";
 import { adminWhitelistRouter } from "./adminWhitelist";
 import { uploadRouter } from "./upload";
+import { profileRouter } from "./profile";
 
 export const appRouter = router({
 	healthInfo: publicProcedure.query(() => {
@@ -24,6 +25,7 @@ export const appRouter = router({
 	users: usersRouter,
 	adminWhitelist: adminWhitelistRouter,
 	upload: uploadRouter,
+	profile: profileRouter,
 });
 
 export type AppRouter = typeof appRouter;

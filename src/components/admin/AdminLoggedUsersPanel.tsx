@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+
 import { trpc } from "@/trpc/client";
 import {
 	Table,
@@ -22,6 +25,8 @@ interface AdminLoggedUsersPanelProps {
 export function AdminLoggedUsersPanel({
 	filter = "all",
 }: AdminLoggedUsersPanelProps) {
+	const [currentPage, setCurrentPage] = useState(1);
+	const ITEMS_PER_PAGE = 10;
 	const utils = trpc.useUtils();
 	const { data, isLoading, error } = trpc.users.listLoggedUsers.useQuery();
 
@@ -77,7 +82,9 @@ export function AdminLoggedUsersPanel({
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{users.map((u) => (
+					{(users || [])
+						.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+						.map((u) => (
 						<TableRow
 							key={u.id}
 							className="hover:bg-muted/40 transition-colors"
@@ -160,6 +167,11 @@ export function AdminLoggedUsersPanel({
 					))}
 				</TableBody>
 			</Table>
+			<PaginationControls
+				currentPage={currentPage}
+				totalPages={Math.ceil((users?.length || 0) / ITEMS_PER_PAGE)}
+				onPageChange={setCurrentPage}
+			/>
 		</div>
 	);
 }

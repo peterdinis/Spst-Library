@@ -4,6 +4,7 @@ import Credentials from "next-auth/providers/credentials";
 import { db } from "@/db";
 import { users, admins } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { resolveUserIdFromDb } from "@/lib/resolve-user-id";
 import bcrypt from "bcryptjs";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -131,7 +132,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 		},
 		async session({ session, token }) {
 			if (session.user) {
-				session.user.id = token.sub as string;
+				const sub = token.sub as string | undefined;
+				const resolved = resolveUserIdFromDb(session.user.email, sub) ?? sub;
+				if (!resolved) {
+					console.error("NextAuth session: chýba token.sub aj DB používateľ", {
+						email: session.user.email,
+					});
+				}
+				session.user.id = resolved ?? "";
 				(session.user as any).role = token.role ?? null;
 			}
 			return session;

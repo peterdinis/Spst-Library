@@ -8,13 +8,14 @@ import { eq, and } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { notifications } from "@/db/schema";
 import { sendTransactionalEmail } from "./mail";
+import { resolveUserIdFromDb } from "./resolve-user-id";
 
 export const createAuthorAction = protectedActionClient
 	.inputSchema(z.object({ name: z.string().min(1), bio: z.string().optional() }))
 	.action(async ({ parsedInput: { name, bio } }) => {
 		const id = crypto.randomUUID();
 		db.insert(authors).values({ id, name, bio }).run();
-		revalidateTag("authors", "page" as any);
+		revalidateTag("authors", "default");
 		return { success: true, id };
 	});
 
@@ -23,7 +24,7 @@ export const createCategoryAction = protectedActionClient
 	.action(async ({ parsedInput: { name } }) => {
 		const id = crypto.randomUUID();
 		db.insert(categories).values({ id, name }).run();
-		revalidateTag("categories", "page" as any);
+		revalidateTag("categories", "default");
 		return { success: true, id };
 	});
 
@@ -63,7 +64,7 @@ export const createBookAction = protectedActionClient
 				.run();
 			revalidatePath("/admin/books", "page");
 			revalidatePath("/", "page");
-			revalidateTag("books", "page" as any);
+			revalidateTag("books", "default");
 			return { success: true, id };
 		},
 	);
@@ -72,23 +73,48 @@ export const borrowBookAction = protectedActionClient
 	.inputSchema(z.object({ bookId: z.string() }))
 	.action(async ({ parsedInput: { bookId }, ctx: { session } }) => {
 		try {
-			if (!session?.user?.id) throw new Error("Neprihlásený používateľ");
-			const userId = session.user.id;
+			const u = session.user;
+			if (!u) {
+				throw new Error("Neprihlásený používateľ alebo chýbajúce ID používateľa");
+			}
+
+			let userId = resolveUserIdFromDb(u.email, u.id);
+			if (!userId) {
+				throw new Error("Neprihlásený používateľ alebo chýbajúce ID používateľa");
+			}
 
 			// Zaistíme, že používateľ naozaj existuje v tabuľke users (kvôli Foreign Key pre admins)
-			const existingUser = db
+			let existingUser = db
 				.select()
 				.from(users)
 				.where(eq(users.id, userId))
 				.get();
 
 			if (!existingUser) {
-				db.insert(users).values({
-					id: userId,
-					name: session.user.name || "Neznámy",
-					email: session.user.email || `user-${userId}@local.spst`,
-					isAdmin: (session.user as any).role === "admin",
-				}).run();
+				try {
+					db.insert(users).values({
+						id: userId,
+						name: u.name || "Neznámy",
+						email: u.email || `user-${userId}@local.spst`,
+						isAdmin: (u as { role?: string }).role === "admin",
+					}).run();
+				} catch {
+					const byEmail = u.email
+						? db
+								.select()
+								.from(users)
+								.where(eq(users.email, u.email))
+								.get()
+						: undefined;
+					if (byEmail?.id) {
+						userId = byEmail.id;
+						existingUser = byEmail;
+					} else {
+						throw new Error(
+							"Nepodarilo sa uložiť používateľa do databázy (konflikt ID/email).",
+						);
+					}
+				}
 			}
 
 			// Check if book exists and has copies
@@ -137,28 +163,32 @@ export const borrowBookAction = protectedActionClient
 					.run();
 			});
 
-			if (session?.user?.email) {
-				await sendTransactionalEmail(
-					session.user.email,
-					"Kniha bola úspešne požičaná",
-					`
+			if (u.email) {
+				try {
+					await sendTransactionalEmail(
+						u.email,
+						"Kniha bola úspešne požičaná",
+						`
 					<h1>Požičanie knihy</h1>
-					<p>Dobrý deň, ${session.user.name || "čitateľ"},</p>
+					<p>Dobrý deň, ${u.name || "čitateľ"},</p>
 					<p>Úspešne ste si požičali knihu: <strong>${book.title}</strong>.</p>
 					<p>Termín vrátenia je: <strong>${dueDate.toLocaleDateString("sk-SK")}</strong>.</p>
 					<p>Ďakujeme, že využívate našu knižnicu!</p>
 					`,
-				);
+					);
+				} catch (mailErr) {
+					console.error("borrowBookAction: email send failed", mailErr);
+				}
 			}
 
 			revalidatePath("/", "page");
 			revalidatePath("/profile", "page");
 			revalidatePath("/books", "page");
 			revalidatePath(`/books/${bookId}`, "page");
-			revalidateTag("borrowed-books", "page" as any);
-			revalidateTag("books", "page" as any);
-			revalidateTag("notifications", "page" as any);
-			return { success: true };
+			revalidateTag("borrowed-books", "default");
+			revalidateTag("books", "default");
+			revalidateTag("notifications", "default");
+			return { success: true, userId };
 		} catch (e: any) {
 			console.error("borrowBookAction ERROR:", e);
 			throw new Error("DETAIL CHYBY: " + (e.message || String(e)));
@@ -168,7 +198,10 @@ export const borrowBookAction = protectedActionClient
 export const returnBookAction = protectedActionClient
 	.inputSchema(z.object({ borrowId: z.string(), bookId: z.string() }))
 	.action(async ({ parsedInput: { borrowId, bookId }, ctx: { session } }) => {
-		const userId = session?.user?.id;
+		const userId = resolveUserIdFromDb(
+			session?.user?.email,
+			session?.user?.id,
+		);
 		if (!userId) throw new Error("Neprihlásený používateľ");
 		const record = db
 			.select()
@@ -228,8 +261,8 @@ export const returnBookAction = protectedActionClient
 		revalidatePath("/profile", "page");
 		revalidatePath("/books", "page");
 		revalidatePath(`/books/${bookId}`, "page");
-		revalidateTag("borrowed-books", "page" as any);
-		revalidateTag("books", "page" as any);
-		revalidateTag("notifications", "page" as any);
+		revalidateTag("borrowed-books", "default");
+		revalidateTag("books", "default");
+		revalidateTag("notifications", "default");
 		return { success: true };
 	});

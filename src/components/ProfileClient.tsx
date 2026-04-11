@@ -31,17 +31,26 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useAction } from "next-safe-action/hooks";
 import { returnBookAction } from "@/lib/actions";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { CLIENT_STALE_TIME } from "@/trpc/cache-config";
 
 export function ProfileClient({ user }: { user: any }) {
-	const { data: settings, isLoading: settingsLoading } =
-		trpc.settings.getSettings.useQuery();
+	const isAuthed = Boolean(user?.id);
 	const utils = trpc.useUtils();
+
+	const { data: dashboard, isLoading: dashboardLoading } =
+		trpc.profile.getDashboard.useQuery(undefined, {
+			enabled: isAuthed,
+			staleTime: CLIENT_STALE_TIME.profile,
+		});
+
 	const [localSettings, setLocalSettings] = useState({
 		emailNotifications: true,
 		dueReminders: true,
 		systemUpdates: false,
 	});
+
+	const settings = dashboard?.settings;
 
 	useEffect(() => {
 		if (!settings) return;
@@ -55,6 +64,7 @@ export function ProfileClient({ user }: { user: any }) {
 	const updateSetting = trpc.settings.updateSettings.useMutation({
 		onSuccess: () => {
 			utils.settings.getSettings.invalidate();
+			utils.profile.getDashboard.invalidate();
 			toast.success("Nastavenia uložené");
 		},
 		onError: () => toast.error("Chyba pri ukladaní"),
@@ -74,6 +84,7 @@ export function ProfileClient({ user }: { user: any }) {
 			onSuccess: () => {
 				toast.success("Kniha bola úspešne vrátená!");
 				utils.books.getBorrowedByUser.invalidate();
+				utils.profile.getDashboard.invalidate();
 			},
 			onError: (error) => {
 				toast.error(error.error.serverError || "Chyba pri vracaní knihy");
@@ -81,21 +92,42 @@ export function ProfileClient({ user }: { user: any }) {
 		},
 	);
 
-	const { data: userBorrows, isLoading: borrowsLoading } =
-		trpc.books.getBorrowedByUser.useQuery();
+	const userBorrows = dashboard?.borrows;
+	const borrowsLoading = isAuthed && dashboardLoading;
 
-	// Merge session user with mock stats for visual richness
-	const displayUser = {
-		name: user?.name || mockUser.name,
-		email: user?.email || mockUser.email,
-		role: mockUser.role,
-		joinDate: mockUser.joinDate,
-	};
+	const [activeTab, setActiveTab] = useState("overview");
 
-	const activeBorrows =
-		userBorrows?.filter((b) => b.status === "borrowed") || [];
-	const readingGoal = 12; // Example goal
-	const booksRead = 4; // Example historic data
+	const displayUser = useMemo(() => {
+		const dbUser = dashboard?.user;
+		const roleLabel =
+			(user as { role?: string })?.role === "admin" ? "Správca" : "Čitateľ";
+		return {
+			name: dbUser?.name || user?.name || mockUser.name,
+			email: dbUser?.email || user?.email || mockUser.email,
+			image: dbUser?.image ?? (user as { image?: string | null })?.image ?? null,
+			role: isAuthed ? roleLabel : mockUser.role,
+		};
+	}, [user, isAuthed, dashboard?.user]);
+
+	const activeBorrows = useMemo(
+		() => userBorrows?.filter((b) => b.status === "borrowed") ?? [],
+		[userBorrows],
+	);
+	const returnedCount = useMemo(
+		() => userBorrows?.filter((b) => b.status === "returned").length ?? 0,
+		[userBorrows],
+	);
+
+	const readingGoal = 12;
+	const booksRead = returnedCount;
+
+	const firstActivityDate = useMemo(() => {
+		if (!userBorrows?.length) return null;
+		const t = Math.min(
+			...userBorrows.map((b) => new Date(b.borrowDate).getTime()),
+		);
+		return new Date(t);
+	}, [userBorrows]);
 
 	return (
 		<div className="max-w-6xl mx-auto space-y-8 pb-16">
@@ -109,8 +141,18 @@ export function ProfileClient({ user }: { user: any }) {
 				<div className="relative z-10 flex flex-col sm:flex-row items-center gap-8 text-center sm:text-left">
 					<div className="relative group">
 						<div className="absolute -inset-1 bg-gradient-to-r from-primary to-emerald-400 rounded-full blur opacity-40 group-hover:opacity-70 transition duration-500" />
-						<div className="relative w-32 h-32 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-4 border-background">
-							<User className="w-12 h-12 text-slate-400" />
+						<div className="relative w-32 h-32 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-4 border-background overflow-hidden">
+							{displayUser.image ? (
+								<Image
+									src={displayUser.image}
+									alt=""
+									width={128}
+									height={128}
+									className="object-cover w-full h-full"
+								/>
+							) : (
+								<User className="w-12 h-12 text-slate-400" />
+							)}
 						</div>
 						<Badge className="absolute bottom-2 right-0 bg-primary shadow-lg border-2 border-background">
 							{displayUser.role}
@@ -124,16 +166,20 @@ export function ProfileClient({ user }: { user: any }) {
 						<p className="text-lg text-slate-500 font-medium flex items-center justify-center sm:justify-start gap-2">
 							<Mail className="w-4 h-4" /> {displayUser.email}
 						</p>
-						<p className="text-sm text-slate-400 flex items-center justify-center sm:justify-start gap-2 pt-2">
-							<Calendar className="w-4 h-4" /> Členom od:{" "}
-							{new Date(displayUser.joinDate).toLocaleDateString("sk-SK")}
-						</p>
+						{firstActivityDate && (
+							<p className="text-sm text-slate-400 flex items-center justify-center sm:justify-start gap-2 pt-2">
+								<Calendar className="w-4 h-4" /> Prvá výpožička:{" "}
+								{firstActivityDate.toLocaleDateString("sk-SK")}
+							</p>
+						)}
 					</div>
 
 					<div className="flex flex-col gap-3 w-full sm:w-auto mt-6 sm:mt-0">
 						<Button
 							variant="outline"
 							className="rounded-full shadow-sm hover:border-primary/50"
+							type="button"
+							onClick={() => setActiveTab("settings")}
 						>
 							<Settings className="w-4 h-4 mr-2" /> Nastavenia
 						</Button>
@@ -141,7 +187,11 @@ export function ProfileClient({ user }: { user: any }) {
 				</div>
 			</motion.div>
 
-			<Tabs defaultValue="overview" className="w-full">
+			<Tabs
+				value={activeTab}
+				onValueChange={setActiveTab}
+				className="w-full"
+			>
 				<TabsList className="grid w-full grid-cols-3 md:w-[600px] h-12 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 mb-8 transition-all">
 					<TabsTrigger
 						value="overview"
@@ -163,7 +213,7 @@ export function ProfileClient({ user }: { user: any }) {
 					</TabsTrigger>
 				</TabsList>
 
-				<AnimatePresence mode="wait" key={Math.random()}>
+				<AnimatePresence mode="wait">
 					<TabsContent value="overview" className="space-y-8 outline-none">
 						<motion.div
 							initial={{ opacity: 0, x: -10 }}
@@ -200,7 +250,7 @@ export function ProfileClient({ user }: { user: any }) {
 										{booksRead}
 									</div>
 									<p className="text-sm text-slate-500 mt-1">
-										Gratulujeme k tvojmu tempu!
+										Vrátených kníh v histórii.
 									</p>
 								</CardContent>
 							</Card>
@@ -248,7 +298,11 @@ export function ProfileClient({ user }: { user: any }) {
 								</Badge>
 							</div>
 
-							{activeBorrows.length > 0 ? (
+							{borrowsLoading ? (
+								<div className="py-20 text-center text-slate-500 rounded-[3rem] border border-dashed border-slate-200 dark:border-slate-800">
+									Načítavam výpožičky…
+								</div>
+							) : activeBorrows.length > 0 ? (
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 									{activeBorrows.map((borrow) => {
 										const borrowedDate = new Date(borrow.borrowDate);
@@ -397,7 +451,7 @@ export function ProfileClient({ user }: { user: any }) {
 												onCheckedChange={(val) =>
 													toggleSetting("emailNotifications", val)
 												}
-												disabled={settingsLoading}
+												disabled={dashboardLoading || updateSetting.isPending}
 											/>
 										</div>
 
@@ -417,7 +471,7 @@ export function ProfileClient({ user }: { user: any }) {
 												onCheckedChange={(val) =>
 													toggleSetting("dueReminders", val)
 												}
-												disabled={settingsLoading}
+												disabled={dashboardLoading || updateSetting.isPending}
 											/>
 										</div>
 
@@ -438,7 +492,7 @@ export function ProfileClient({ user }: { user: any }) {
 												onCheckedChange={(val) =>
 													toggleSetting("systemUpdates", val)
 												}
-												disabled={settingsLoading}
+												disabled={dashboardLoading || updateSetting.isPending}
 											/>
 										</div>
 

@@ -37,5 +37,7 @@ export const CLIENT_STALE_TIME = {
 	notifications: 30 * 1000,
 	orders: 60 * 1000,
 	settings: 2 * 60 * 1000,
+	/** Profil: výpožičky + nastavenia v jednom requeste */
+	profile: 60 * 1000,
 	entra: 10 * 60 * 1000,
 } as const;

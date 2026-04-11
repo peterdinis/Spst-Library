@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { PaginationControls } from "@/components/ui/pagination-controls";
+
 import { trpc } from "@/trpc/client";
 import {
 	Table,
@@ -26,6 +29,8 @@ const statusLabels: Record<string, string> = {
 };
 
 export function AdminOrdersPanel() {
+	const [currentPage, setCurrentPage] = useState(1);
+	const ITEMS_PER_PAGE = 10;
 	const utils = trpc.useUtils();
 	const { data: orders, isLoading, error } = trpc.orders.listAll.useQuery();
 
@@ -72,7 +77,9 @@ export function AdminOrdersPanel() {
 					</TableRow>
 				</TableHeader>
 				<TableBody>
-					{orders.map((row) => (
+					{(orders || [])
+						.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+						.map((row) => (
 						<TableRow key={row.id} className="hover:bg-muted/40">
 							<TableCell className="whitespace-nowrap text-muted-foreground text-sm">
 								{row.createdAt
@@ -136,6 +143,11 @@ export function AdminOrdersPanel() {
 					))}
 				</TableBody>
 			</Table>
+			<PaginationControls
+				currentPage={currentPage}
+				totalPages={Math.ceil((orders?.length || 0) / ITEMS_PER_PAGE)}
+				onPageChange={setCurrentPage}
+			/>
 		</div>
 	);
 }
