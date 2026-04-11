@@ -67,20 +67,14 @@ export default async function WelcomePage() {
 					</CardHeader>
 					<CardContent className="space-y-6 pb-8 pt-4">
 						<div className="grid gap-3 sm:grid-cols-2">
-							<Link
-								href="/my-books"
-								className={primaryLinkClass}
-							>
+							<Link href="/my-books" className={primaryLinkClass}>
 								<span className="flex items-center gap-2">
 									<BookOpen className="size-4 shrink-0" />
 									Moje výpožičky
 								</span>
 								<ArrowRight className="size-4 shrink-0 opacity-80" />
 							</Link>
-							<Link
-								href="/books"
-								className={outlineLinkClass}
-							>
+							<Link href="/books" className={outlineLinkClass}>
 								<span className="flex items-center gap-2">
 									<Library className="size-4 shrink-0" />
 									Katalóg kníh

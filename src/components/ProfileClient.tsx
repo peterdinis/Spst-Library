@@ -31,19 +31,52 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useAction } from "next-safe-action/hooks";
 import { returnBookAction } from "@/lib/actions";
+import { useEffect, useMemo, useState } from "react";
+import { CLIENT_STALE_TIME } from "@/trpc/cache-config";
 
 export function ProfileClient({ user }: { user: any }) {
-	const { data: settings, isLoading: settingsLoading } =
-		trpc.settings.getSettings.useQuery();
+	const isAuthed = Boolean(user?.id);
 	const utils = trpc.useUtils();
+
+	const { data: dashboard, isLoading: dashboardLoading } =
+		trpc.profile.getDashboard.useQuery(undefined, {
+			enabled: isAuthed,
+			staleTime: CLIENT_STALE_TIME.profile,
+		});
+
+	const [localSettings, setLocalSettings] = useState({
+		emailNotifications: true,
+		dueReminders: true,
+		systemUpdates: false,
+	});
+
+	const settings = dashboard?.settings;
+
+	useEffect(() => {
+		if (!settings) return;
+		setLocalSettings({
+			emailNotifications: settings.emailNotifications,
+			dueReminders: settings.dueReminders,
+			systemUpdates: settings.systemUpdates,
+		});
+	}, [settings]);
 
 	const updateSetting = trpc.settings.updateSettings.useMutation({
 		onSuccess: () => {
 			utils.settings.getSettings.invalidate();
+			utils.profile.getDashboard.invalidate();
 			toast.success("Nastavenia uložené");
 		},
 		onError: () => toast.error("Chyba pri ukladaní"),
 	});
+
+	const toggleSetting = (
+		key: "emailNotifications" | "dueReminders" | "systemUpdates",
+		value: boolean,
+	) => {
+		setLocalSettings((prev) => ({ ...prev, [key]: value }));
+		updateSetting.mutate({ [key]: value });
+	};
 
 	const { execute: executeReturn, isExecuting: isReturning } = useAction(
 		returnBookAction,
@@ -51,6 +84,7 @@ export function ProfileClient({ user }: { user: any }) {
 			onSuccess: () => {
 				toast.success("Kniha bola úspešne vrátená!");
 				utils.books.getBorrowedByUser.invalidate();
+				utils.profile.getDashboard.invalidate();
 			},
 			onError: (error) => {
 				toast.error(error.error.serverError || "Chyba pri vracaní knihy");
@@ -58,21 +92,42 @@ export function ProfileClient({ user }: { user: any }) {
 		},
 	);
 
-	const { data: userBorrows, isLoading: borrowsLoading } =
-		trpc.books.getBorrowedByUser.useQuery();
+	const userBorrows = dashboard?.borrows;
+	const borrowsLoading = isAuthed && dashboardLoading;
 
-	// Merge session user with mock stats for visual richness
-	const displayUser = {
-		name: user?.name || mockUser.name,
-		email: user?.email || mockUser.email,
-		role: mockUser.role,
-		joinDate: mockUser.joinDate,
-	};
+	const [activeTab, setActiveTab] = useState("overview");
 
-	const activeBorrows =
-		userBorrows?.filter((b) => b.status === "borrowed") || [];
-	const readingGoal = 12; // Example goal
-	const booksRead = 4; // Example historic data
+	const displayUser = useMemo(() => {
+		const dbUser = dashboard?.user;
+		const roleLabel =
+			(user as { role?: string })?.role === "admin" ? "Správca" : "Čitateľ";
+		return {
+			name: dbUser?.name || user?.name || mockUser.name,
+			email: dbUser?.email || user?.email || mockUser.email,
+			image: dbUser?.image ?? (user as { image?: string | null })?.image ?? null,
+			role: isAuthed ? roleLabel : mockUser.role,
+		};
+	}, [user, isAuthed, dashboard?.user]);
+
+	const activeBorrows = useMemo(
+		() => userBorrows?.filter((b) => b.status === "borrowed") ?? [],
+		[userBorrows],
+	);
+	const returnedCount = useMemo(
+		() => userBorrows?.filter((b) => b.status === "returned").length ?? 0,
+		[userBorrows],
+	);
+
+	const readingGoal = 12;
+	const booksRead = returnedCount;
+
+	const firstActivityDate = useMemo(() => {
+		if (!userBorrows?.length) return null;
+		const t = Math.min(
+			...userBorrows.map((b) => new Date(b.borrowDate).getTime()),
+		);
+		return new Date(t);
+	}, [userBorrows]);
 
 	return (
 		<div className="max-w-6xl mx-auto space-y-8 pb-16">
@@ -86,8 +141,18 @@ export function ProfileClient({ user }: { user: any }) {
 				<div className="relative z-10 flex flex-col sm:flex-row items-center gap-8 text-center sm:text-left">
 					<div className="relative group">
 						<div className="absolute -inset-1 bg-gradient-to-r from-primary to-emerald-400 rounded-full blur opacity-40 group-hover:opacity-70 transition duration-500" />
-						<div className="relative w-32 h-32 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-4 border-background">
-							<User className="w-12 h-12 text-slate-400" />
+						<div className="relative w-32 h-32 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-4 border-background overflow-hidden">
+							{displayUser.image ? (
+								<Image
+									src={displayUser.image}
+									alt=""
+									width={128}
+									height={128}
+									className="object-cover w-full h-full"
+								/>
+							) : (
+								<User className="w-12 h-12 text-slate-400" />
+							)}
 						</div>
 						<Badge className="absolute bottom-2 right-0 bg-primary shadow-lg border-2 border-background">
 							{displayUser.role}
@@ -101,16 +166,20 @@ export function ProfileClient({ user }: { user: any }) {
 						<p className="text-lg text-slate-500 font-medium flex items-center justify-center sm:justify-start gap-2">
 							<Mail className="w-4 h-4" /> {displayUser.email}
 						</p>
-						<p className="text-sm text-slate-400 flex items-center justify-center sm:justify-start gap-2 pt-2">
-							<Calendar className="w-4 h-4" /> Členom od:{" "}
-							{new Date(displayUser.joinDate).toLocaleDateString("sk-SK")}
-						</p>
+						{firstActivityDate && (
+							<p className="text-sm text-slate-400 flex items-center justify-center sm:justify-start gap-2 pt-2">
+								<Calendar className="w-4 h-4" /> Prvá výpožička:{" "}
+								{firstActivityDate.toLocaleDateString("sk-SK")}
+							</p>
+						)}
 					</div>
 
 					<div className="flex flex-col gap-3 w-full sm:w-auto mt-6 sm:mt-0">
 						<Button
 							variant="outline"
 							className="rounded-full shadow-sm hover:border-primary/50"
+							type="button"
+							onClick={() => setActiveTab("settings")}
 						>
 							<Settings className="w-4 h-4 mr-2" /> Nastavenia
 						</Button>
@@ -118,7 +187,11 @@ export function ProfileClient({ user }: { user: any }) {
 				</div>
 			</motion.div>
 
-			<Tabs defaultValue="overview" className="w-full">
+			<Tabs
+				value={activeTab}
+				onValueChange={setActiveTab}
+				className="w-full"
+			>
 				<TabsList className="grid w-full grid-cols-3 md:w-[600px] h-12 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 mb-8 transition-all">
 					<TabsTrigger
 						value="overview"
@@ -140,7 +213,7 @@ export function ProfileClient({ user }: { user: any }) {
 					</TabsTrigger>
 				</TabsList>
 
-				<AnimatePresence mode="wait" key={Math.random()}>
+				<AnimatePresence mode="wait">
 					<TabsContent value="overview" className="space-y-8 outline-none">
 						<motion.div
 							initial={{ opacity: 0, x: -10 }}
@@ -177,7 +250,7 @@ export function ProfileClient({ user }: { user: any }) {
 										{booksRead}
 									</div>
 									<p className="text-sm text-slate-500 mt-1">
-										Gratulujeme k tvojmu tempu!
+										Vrátených kníh v histórii.
 									</p>
 								</CardContent>
 							</Card>
@@ -225,12 +298,18 @@ export function ProfileClient({ user }: { user: any }) {
 								</Badge>
 							</div>
 
-							{activeBorrows.length > 0 ? (
+							{borrowsLoading ? (
+								<div className="py-20 text-center text-slate-500 rounded-[3rem] border border-dashed border-slate-200 dark:border-slate-800">
+									Načítavam výpožičky…
+								</div>
+							) : activeBorrows.length > 0 ? (
 								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 									{activeBorrows.map((borrow) => {
 										const borrowedDate = new Date(borrow.borrowDate);
 										// Realná zmluva by mala používať dueDate z databázy
-										const deadlineDate = new Date(borrow.dueDate || borrowedDate);
+										const deadlineDate = new Date(
+											borrow.dueDate || borrowedDate,
+										);
 										const isLate = deadlineDate.getTime() < Date.now();
 
 										return (
@@ -239,18 +318,18 @@ export function ProfileClient({ user }: { user: any }) {
 												className="flex flex-col sm:flex-row overflow-hidden rounded-3xl group border-slate-200/50 dark:border-slate-800/50 hover:shadow-xl hover:border-primary/30 transition-all bg-card/60 backdrop-blur-md"
 											>
 												<div className="w-full sm:w-1/3 aspect-[3/4] sm:aspect-auto bg-slate-100 dark:bg-slate-900 relative overflow-hidden shrink-0">
-                                                                                                        {borrow.book?.coverUrl ? (
-													<Image
-														src={borrow.book.coverUrl}
-														alt={borrow.book?.title || "Kniha"}
-														fill
-														className="object-cover group-hover:scale-105 transition-transform duration-500"
-													/>
-                                                                                                        ) : (
-                                                                                                           <div className="w-full h-full flex items-center justify-center text-slate-400">
-                                                                                                                <BookMarked className="w-12 h-12 opacity-50" />
-                                                                                                           </div>
-                                                                                                        )}
+													{borrow.book?.coverUrl ? (
+														<Image
+															src={borrow.book.coverUrl}
+															alt={borrow.book?.title || "Kniha"}
+															fill
+															className="object-cover group-hover:scale-105 transition-transform duration-500"
+														/>
+													) : (
+														<div className="w-full h-full flex items-center justify-center text-slate-400">
+															<BookMarked className="w-12 h-12 opacity-50" />
+														</div>
+													)}
 													{isLate && (
 														<div className="absolute top-0 left-0 w-full bg-destructive text-destructive-foreground text-xs font-bold text-center py-1.5 uppercase tracking-widest shadow-md">
 															Po Termíne
@@ -289,23 +368,31 @@ export function ProfileClient({ user }: { user: any }) {
 																</span>
 															</div>
 														</div>
-                                                                                                                <div className="flex flex-col xl:flex-row gap-2">
-														    <Link
-															href={`/books/${borrow.bookId}`}
-															className="block flex-1"
-														    >
-															<Button variant="outline" className="w-full rounded-xl font-bold">
-																Detail
+														<div className="flex flex-col xl:flex-row gap-2">
+															<Link
+																href={`/books/${borrow.bookId}`}
+																className="block flex-1"
+															>
+																<Button
+																	variant="outline"
+																	className="w-full rounded-xl font-bold"
+																>
+																	Detail
+																</Button>
+															</Link>
+															<Button
+																className="flex-1 rounded-xl font-bold shadow-md"
+																disabled={isReturning}
+																onClick={() =>
+																	executeReturn({
+																		borrowId: borrow.id,
+																		bookId: borrow.bookId,
+																	})
+																}
+															>
+																Vrátiť
 															</Button>
-														    </Link>
-                                                                                                                    <Button
-                                                                                                                            className="flex-1 rounded-xl font-bold shadow-md"
-                                                                                                                            disabled={isReturning}
-                                                                                                                            onClick={() => executeReturn({ borrowId: borrow.id, bookId: borrow.bookId })}
-                                                                                                                    >
-                                                                                                                            Vrátiť
-                                                                                                                    </Button>
-                                                                                                                </div>
+														</div>
 													</div>
 												</div>
 											</Card>
@@ -360,11 +447,11 @@ export function ProfileClient({ user }: { user: any }) {
 												</p>
 											</div>
 											<Switch
-												checked={settings?.emailNotifications}
+												checked={localSettings.emailNotifications}
 												onCheckedChange={(val) =>
-													updateSetting.mutate({ emailNotifications: val })
+													toggleSetting("emailNotifications", val)
 												}
-												disabled={settingsLoading || updateSetting.isPending}
+												disabled={dashboardLoading || updateSetting.isPending}
 											/>
 										</div>
 
@@ -380,11 +467,11 @@ export function ProfileClient({ user }: { user: any }) {
 												</p>
 											</div>
 											<Switch
-												checked={settings?.dueReminders}
+												checked={localSettings.dueReminders}
 												onCheckedChange={(val) =>
-													updateSetting.mutate({ dueReminders: val })
+													toggleSetting("dueReminders", val)
 												}
-												disabled={settingsLoading || updateSetting.isPending}
+												disabled={dashboardLoading || updateSetting.isPending}
 											/>
 										</div>
 
@@ -393,38 +480,25 @@ export function ProfileClient({ user }: { user: any }) {
 										<div className="flex items-center justify-between gap-4">
 											<div className="space-y-1">
 												<h4 className="text-lg font-bold leading-none">
-													Systémové Aktualizácie
+													Systémové Novinky
 												</h4>
 												<p className="text-sm text-slate-500 font-medium">
-													Informácie o nových funkciách a vylepšeniach
-													platformy.
+													Budeme vám posielať novinky o nových funkciách a
+													zmenách v aplikácii.
 												</p>
 											</div>
 											<Switch
-												checked={settings?.systemUpdates}
+												checked={localSettings.systemUpdates}
 												onCheckedChange={(val) =>
-													updateSetting.mutate({ systemUpdates: val })
+													toggleSetting("systemUpdates", val)
 												}
-												disabled={settingsLoading || updateSetting.isPending}
+												disabled={dashboardLoading || updateSetting.isPending}
 											/>
 										</div>
+
+										<div className="h-px bg-slate-100 dark:bg-slate-800" />
 									</div>
 								</Card>
-
-								<div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-100 dark:border-amber-800/30 p-6 rounded-3xl">
-									<div className="flex gap-4">
-										<Star className="h-6 w-6 text-amber-500 shrink-0" />
-										<div>
-											<p className="font-bold text-amber-900 dark:text-amber-200">
-												Beta Funkcie
-											</p>
-											<p className="text-sm text-amber-700/80 dark:text-amber-400/80 leading-relaxed">
-												Niektoré nastavenia sú momentálne v beta testovaní a po
-												uložení sa prejavia do 24 hodín.
-											</p>
-										</div>
-									</div>
-								</div>
 							</div>
 						</motion.div>
 					</TabsContent>

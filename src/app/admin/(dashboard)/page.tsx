@@ -26,7 +26,7 @@ export default function AdminDashboardPage() {
 			href: "/admin/books" as const,
 			icon: BookOpen,
 			iconBg:
-				"bg-indigo-100 text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-300",
+				"bg-violet-100 text-violet-600 dark:bg-violet-950/80 dark:text-violet-300",
 		},
 		{
 			title: "Objednávky",
@@ -43,15 +43,8 @@ export default function AdminDashboardPage() {
 				"Audit udalostí v systéme: nové záznamy, požičania, vrátenia aj objednávky.",
 			href: "/admin/notifications" as const,
 			icon: Bell,
-			iconBg: "bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300",
-		},
-		{
-			title: "Microsoft Entra",
-			description:
-				"Zoznam používateľov z Microsoft Entra ID (Graph API, app permissions).",
-			href: "/admin/entra-users" as const,
-			icon: Cloud,
-			iconBg: "bg-sky-100 text-sky-700 dark:bg-sky-950/80 dark:text-sky-300",
+			iconBg:
+				"bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300",
 		},
 		{
 			title: "Autori",

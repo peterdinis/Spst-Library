@@ -12,7 +12,6 @@ import {
 	Calendar,
 	CheckCircle2,
 	AlertCircle,
-	Package,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -20,8 +19,6 @@ import { useAction } from "next-safe-action/hooks";
 import { borrowBookAction } from "@/lib/actions";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { trpc } from "@/trpc/client";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Dialog,
 	DialogContent,
@@ -47,31 +44,13 @@ type BookForDetails = {
 type BookDetailsClientProps = {
 	book: BookForDetails;
 	user: { name?: string | null; email?: string | null } | null;
-	/** Môže objednať / vypožičať ako čitateľ (nie správca z DB). */
-	isPatron: boolean;
-	isAlreadyBorrowed?: boolean;
 };
 
 export function BookDetailsClient({
 	book,
 	user,
-	isPatron,
-	isAlreadyBorrowed = false,
 }: BookDetailsClientProps) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [isOrderOpen, setIsOrderOpen] = useState(false);
-	const [orderNote, setOrderNote] = useState("");
-
-	const createOrder = trpc.orders.create.useMutation({
-		onSuccess: () => {
-			toast.success("Objednávka bola odoslaná. Knižnica ju čoskoro spracuje.");
-			setIsOrderOpen(false);
-			setOrderNote("");
-		},
-		onError: (e) => {
-			toast.error(e.message || "Objednávku sa nepodarilo vytvoriť.");
-		},
-	});
 
 	const { execute, isExecuting } = useAction(borrowBookAction, {
 		onSuccess: () => {
@@ -85,13 +64,6 @@ export function BookDetailsClient({
 
 	const handleConfirmBorrow = () => {
 		execute({ bookId: book.id });
-	};
-
-	const handleSubmitOrder = () => {
-		createOrder.mutate({
-			bookId: book.id,
-			note: orderNote.trim() || undefined,
-		});
 	};
 
 	return (
@@ -224,92 +196,22 @@ export function BookDetailsClient({
 						transition={{ delay: 0.4, duration: 0.5 }}
 						className="pt-4 flex flex-col sm:flex-row flex-wrap gap-4"
 					>
-						{/* Objednávka na prevzatie */}
-						<Dialog open={isOrderOpen} onOpenChange={setIsOrderOpen}>
-							<Button
-								type="button"
-								size="lg"
-								variant="secondary"
-								className="h-16 px-8 rounded-2xl text-lg font-bold border-2 border-border shadow-md"
-								onClick={() => setIsOrderOpen(true)}
-							>
-								<Package className="mr-3 h-6 w-6" />
-								Objednať na prevzatie
-							</Button>
-							<DialogContent className="sm:max-w-[440px] rounded-3xl">
-								<DialogHeader>
-									<DialogTitle className="text-xl">
-										Objednávka knihy
-									</DialogTitle>
-									<DialogDescription>
-										Pošlite žiadosť knižnici. Upozornenie: ide o
-										rezerváciu/prevzatie v budove, nie o okamžitú výpožičku.
-									</DialogDescription>
-								</DialogHeader>
-								<div className="space-y-3 py-2">
-									<p className="text-sm font-medium text-foreground">
-										{book.title}
-										<span className="block text-muted-foreground font-normal">
-											{book.author ?? "Neznámy autor"}
-										</span>
-									</p>
-									{!isPatron ? (
-										<div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive flex gap-2">
-											<AlertCircle className="h-5 w-5 shrink-0" />
-											<span>
-												{user
-													? "Účty so správcovským oprávnením nemôžu vytvárať čitateľské objednávky."
-													: "Objednávku môžeš vytvoriť po prihlásení cez Microsoft účet."}
-											</span>
-										</div>
-									) : (
-										<>
-											<label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-												Poznámka (voliteľné)
-											</label>
-											<Textarea
-												value={orderNote}
-												onChange={(e) => setOrderNote(e.target.value)}
-												placeholder="Napr. termín vyzdvihnutia, trieda…"
-												className="min-h-[100px] rounded-xl"
-												maxLength={500}
-											/>
-										</>
-									)}
-								</div>
-								<DialogFooter className="gap-2 sm:gap-0">
-									<Button
-										type="button"
-										variant="ghost"
-										onClick={() => setIsOrderOpen(false)}
-									>
-										Zrušiť
-									</Button>
-									<Button
-										type="button"
-										onClick={handleSubmitOrder}
-										disabled={!isPatron || createOrder.isPending}
-									>
-										{createOrder.isPending
-											? "Odosielam…"
-											: "Odoslať objednávku"}
-									</Button>
-								</DialogFooter>
-							</DialogContent>
-						</Dialog>
-
 						{/* Vypožičanie Modal */}
 						<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
 							<Button
 								type="button"
 								size="lg"
-								className={`h-16 px-10 text-lg rounded-2xl font-bold shadow-xl transition-all ${isAlreadyBorrowed ? "bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed" : book.availableCopies > 0 ? "bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-primary/30 hover:-translate-y-1" : "bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed"}`}
-								disabled={isAlreadyBorrowed || book.availableCopies <= 0 || isExecuting}
+								className={`h-16 px-10 text-lg rounded-2xl font-bold shadow-xl transition-all ${!user ? "bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed" : book.availableCopies > 0 ? "bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-primary/30 hover:-translate-y-1" : "bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed"}`}
+								disabled={
+									!user ||
+									book.availableCopies <= 0 ||
+									isExecuting
+								}
 								onClick={() => setIsModalOpen(true)}
 							>
 								<BookOpen className="mr-3 h-6 w-6" />
-								{isAlreadyBorrowed
-									? "Knihu už máte vypožičanú"
+								{!user
+									? "Potrebné prihlásenie"
 									: book.availableCopies > 0
 										? "Ihneď Vypožičať (Zadarmo)"
 										: "Všetky Kusy Vypožičané"}

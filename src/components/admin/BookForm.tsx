@@ -52,14 +52,19 @@ export function BookForm({
 	const { data: allAuthors = [] } = trpc.authors.getAll.useQuery(undefined, {
 		enabled: !authors,
 	});
-	const { data: allCategories = [] } = trpc.categories.getAll.useQuery(undefined, {
-		enabled: !categories,
-	});
+	const { data: allCategories = [] } = trpc.categories.getAll.useQuery(
+		undefined,
+		{
+			enabled: !categories,
+		},
+	);
 	const resolvedAuthors = authors ?? allAuthors;
 	const resolvedCategories = categories ?? allCategories;
 
 	const [title, setTitle] = useState(initialData?.title ?? "");
-	const [description, setDescription] = useState(initialData?.description ?? "");
+	const [description, setDescription] = useState(
+		initialData?.description ?? "",
+	);
 	const [isbn, setIsbn] = useState(initialData?.isbn ?? "");
 	const [availableCopies, setAvailableCopies] = useState(
 		initialData?.availableCopies ?? 1,
@@ -113,7 +118,7 @@ export function BookForm({
 
 	return (
 		<Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white/80 dark:bg-slate-950/80 backdrop-blur-md ring-1 ring-slate-200 dark:ring-slate-800">
-			<CardHeader className="bg-gradient-to-r from-indigo-600/5 to-purple-600/5 border-b border-slate-100 dark:border-slate-800 pb-8 px-8">
+			<CardHeader className="bg-gradient-to-r from-violet-600/5 to-purple-600/5 border-b border-slate-100 dark:border-slate-800 pb-8 px-8">
 				<div className="flex items-center gap-4 mb-2">
 					<div className="p-3 bg-primary/10 rounded-2xl">
 						<Plus className="h-6 w-6 text-primary" />
@@ -176,7 +181,10 @@ export function BookForm({
 							<label className="text-sm font-medium text-slate-700 dark:text-slate-200">
 								Kategorizácia
 							</label>
-							<Select value={authorId ?? ""} onValueChange={(val) => setAuthorId(val ?? "")}>
+							<Select
+								value={authorId ?? ""}
+								onValueChange={(val) => setAuthorId(val ?? "")}
+							>
 								<SelectTrigger className="rounded-xl">
 									<SelectValue placeholder="Vyberte autora" />
 								</SelectTrigger>
@@ -189,7 +197,10 @@ export function BookForm({
 								</SelectContent>
 							</Select>
 
-							<Select value={categoryId ?? ""} onValueChange={(val) => setCategoryId(val ?? "")}>
+							<Select
+								value={categoryId ?? ""}
+								onValueChange={(val) => setCategoryId(val ?? "")}
+							>
 								<SelectTrigger className="rounded-xl">
 									<SelectValue placeholder="Vyberte kategóriu" />
 								</SelectTrigger>

@@ -4,6 +4,7 @@ import Credentials from "next-auth/providers/credentials";
 import { db } from "@/db";
 import { users, admins } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { resolveUserIdFromDb } from "@/lib/resolve-user-id";
 import bcrypt from "bcryptjs";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -45,6 +46,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 				const isAdminCodeValid = credentials.adminCode === admin.adminCode;
 
 				if (!isPasswordValid || !isAdminCodeValid) return null;
+
+				// Zabezpečíme, že lokálny admin má záznam v tabuľke `users`,
+				// aby nepadal Foreign Key Constraint pri požičiavaní kníh a notifikáciách.
+				const existingAdminInUsers = db
+					.select()
+					.from(users)
+					.where(eq(users.id, admin.id))
+					.get();
+					
+				if (!existingAdminInUsers) {
+					try {
+						db.insert(users)
+							.values({
+								id: admin.id,
+								name: admin.name || admin.username,
+								email: `admin-${admin.username}@local.spst`,
+								isAdmin: true,
+							})
+							.run();
+					} catch (e) {
+						console.error("Failed to sync admin to users table", e);
+					}
+				}
 
 				return {
 					id: admin.id,
@@ -108,7 +132,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 		},
 		async session({ session, token }) {
 			if (session.user) {
-				session.user.id = token.sub as string;
+				const sub = token.sub as string | undefined;
+				const resolved = resolveUserIdFromDb(session.user.email, sub) ?? sub;
+				if (!resolved) {
+					console.error("NextAuth session: chýba token.sub aj DB používateľ", {
+						email: session.user.email,
+					});
+				}
+				session.user.id = resolved ?? "";
 				(session.user as any).role = token.role ?? null;
 			}
 			return session;

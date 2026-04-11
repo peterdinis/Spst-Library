@@ -30,7 +30,7 @@ export function AdminLoginClient() {
 					<MicrosoftEntraSignInButton
 						callbackUrl="/admin"
 						pendingHint="Presmerovanie na Microsoft…"
-						className="h-12 w-full rounded-2xl bg-indigo-600 text-base font-semibold text-white shadow-md transition-all hover:scale-[1.02] hover:bg-indigo-700 active:scale-[0.98] disabled:opacity-90 dark:bg-indigo-500 dark:hover:bg-indigo-400"
+						className="h-12 w-full rounded-2xl bg-violet-600 text-base font-semibold text-white shadow-md transition-all hover:scale-[1.02] hover:bg-violet-700 active:scale-[0.98] disabled:opacity-90 dark:bg-violet-500 dark:hover:bg-violet-400"
 					>
 						Prihlásiť sa ako admin
 					</MicrosoftEntraSignInButton>
