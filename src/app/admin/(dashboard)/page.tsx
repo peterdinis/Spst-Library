@@ -47,14 +47,6 @@ export default function AdminDashboardPage() {
 				"bg-rose-100 text-rose-700 dark:bg-rose-950/80 dark:text-rose-300",
 		},
 		{
-			title: "Microsoft Entra",
-			description:
-				"Zoznam používateľov z Microsoft Entra ID (Graph API, app permissions).",
-			href: "/admin/entra-users" as const,
-			icon: Cloud,
-			iconBg: "bg-sky-100 text-sky-700 dark:bg-sky-950/80 dark:text-sky-300",
-		},
-		{
 			title: "Autori",
 			description: "Spravujte autorov, životopisy a fotky nahrané do úložiska.",
 			href: "/admin/authors" as const,

@@ -44,13 +44,11 @@ type BookForDetails = {
 type BookDetailsClientProps = {
 	book: BookForDetails;
 	user: { name?: string | null; email?: string | null } | null;
-	isAlreadyBorrowed?: boolean;
 };
 
 export function BookDetailsClient({
 	book,
 	user,
-	isAlreadyBorrowed = false,
 }: BookDetailsClientProps) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -203,10 +201,9 @@ export function BookDetailsClient({
 							<Button
 								type="button"
 								size="lg"
-								className={`h-16 px-10 text-lg rounded-2xl font-bold shadow-xl transition-all ${!user ? "bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed" : isAlreadyBorrowed ? "bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed" : book.availableCopies > 0 ? "bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-primary/30 hover:-translate-y-1" : "bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed"}`}
+								className={`h-16 px-10 text-lg rounded-2xl font-bold shadow-xl transition-all ${!user ? "bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed" : book.availableCopies > 0 ? "bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-primary/30 hover:-translate-y-1" : "bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed"}`}
 								disabled={
 									!user ||
-									isAlreadyBorrowed ||
 									book.availableCopies <= 0 ||
 									isExecuting
 								}
@@ -215,11 +212,9 @@ export function BookDetailsClient({
 								<BookOpen className="mr-3 h-6 w-6" />
 								{!user
 									? "Potrebné prihlásenie"
-									: isAlreadyBorrowed
-										? "Knihu už máte vypožičanú"
-										: book.availableCopies > 0
-											? "Ihneď Vypožičať (Zadarmo)"
-											: "Všetky Kusy Vypožičané"}
+									: book.availableCopies > 0
+										? "Ihneď Vypožičať (Zadarmo)"
+										: "Všetky Kusy Vypožičané"}
 							</Button>
 							<DialogContent className="sm:max-w-[425px] rounded-3xl p-0 overflow-hidden border-0 shadow-2xl">
 								<div className="bg-gradient-to-br from-primary/20 to-transparent p-6 pb-4 border-b border-primary/10">

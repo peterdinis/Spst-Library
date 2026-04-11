@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { BookDetailsClient } from "@/components/BookDetailsClient";
-import { getBookById, isBookBorrowedByUser } from "@/lib/data";
+import { getBookById } from "@/lib/data";
 
 export default async function BookDetailsPage({
 	params,
@@ -29,16 +29,11 @@ export default async function BookDetailsPage({
 	};
 
 	const session = await auth();
-	const userId = session?.user?.id;
-
-	const isAlreadyBorrowed =
-		userId ? await isBookBorrowedByUser(userId, id) : false;
 
 	return (
 		<BookDetailsClient
 			book={book}
 			user={session?.user ?? null}
-			isAlreadyBorrowed={!!isAlreadyBorrowed}
 		/>
 	);
 }

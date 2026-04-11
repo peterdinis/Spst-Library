@@ -105,23 +105,6 @@ export const borrowBookAction = protectedActionClient
 			throw new Error("Kniha momentálne nie je dostupná na vypožičanie");
 		}
 
-		// Check if user already has an active borrow for THIS specific book
-		const existingBorrow = db
-			.select()
-			.from(borrowedBooks)
-			.where(
-				and(
-					eq(borrowedBooks.userId, userId),
-					eq(borrowedBooks.bookId, bookId),
-					eq(borrowedBooks.status, "borrowed"),
-				),
-			)
-			.get();
-
-		if (existingBorrow) {
-			throw new Error("Túto knihu už máte momentálne požičanú");
-		}
-
 		const dueDate = new Date();
 		dueDate.setDate(dueDate.getDate() + 14);
 
