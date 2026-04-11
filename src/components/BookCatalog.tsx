@@ -85,9 +85,9 @@ export function BookCatalog() {
 			{/* Filtre a Vyhľadávanie */}
 			<div className="space-y-8">
 				<div className="relative max-w-4xl mx-auto group">
-					<div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-indigo-500/20 rounded-[2.5rem] blur-2xl opacity-20 group-hover:opacity-100 transition duration-1000" />
+					<div className="absolute -inset-1 bg-gradient-to-r from-violet-500/20 via-purple-500/20 to-violet-500/20 rounded-[2.5rem] blur-2xl opacity-20 group-hover:opacity-100 transition duration-1000" />
 					<div className="relative flex items-center bg-white/80 dark:bg-slate-950/80 backdrop-blur-2xl rounded-[2rem] border border-slate-200/50 dark:border-slate-800/50 shadow-2xl pl-8 pr-3 py-3">
-						<Search className="h-6 w-6 text-indigo-500 mr-4" />
+						<Search className="h-6 w-6 text-violet-500 mr-4" />
 						<Input
 							value={searchQuery}
 							onChange={(e) => {
@@ -97,7 +97,7 @@ export function BookCatalog() {
 							placeholder="Hľadať v tisíckach príbehov..."
 							className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-xl shadow-none flex-1 font-medium placeholder:text-slate-400"
 						/>
-						<div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 rounded-2xl border border-indigo-100/50 dark:border-indigo-800/30">
+						<div className="hidden sm:flex items-center gap-2 px-4 py-2 bg-violet-50 dark:bg-violet-900/30 text-violet-600 rounded-2xl border border-violet-100/50 dark:border-violet-800/30">
 							<span className="text-xs font-black uppercase tracking-widest">
 								Katalóg
 							</span>
@@ -177,7 +177,7 @@ export function BookCatalog() {
 								tempAuthor === selectedAuthor &&
 								tempCategory === selectedCategory
 							}
-							className="rounded-2xl h-12 px-8 bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all shadow-lg hover:shadow-indigo-500/25 border-none"
+							className="rounded-2xl h-12 px-8 bg-violet-600 hover:bg-violet-700 text-white font-bold transition-all shadow-lg hover:shadow-violet-500/25 border-none"
 						>
 							Použiť filtre
 						</Button>
@@ -197,7 +197,7 @@ export function BookCatalog() {
 								{searchQuery && (
 									<Badge
 										variant="secondary"
-										className="pl-3 pr-1 py-1 gap-1 rounded-full bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100 transition-colors"
+										className="pl-3 pr-1 py-1 gap-1 rounded-full bg-violet-50 border-violet-100 text-violet-600 hover:bg-violet-100 transition-colors"
 									>
 										<span className="text-[10px] font-bold uppercase tracking-tight opacity-50">
 											Hľadať:
@@ -205,7 +205,7 @@ export function BookCatalog() {
 										{searchQuery}
 										<button
 											onClick={() => setSearchQuery("")}
-											className="hover:bg-indigo-200 rounded-full p-0.5 ml-1"
+											className="hover:bg-violet-200 rounded-full p-0.5 ml-1"
 										>
 											<ChevronRight className="h-3 w-3 rotate-45 transform" />
 										</button>
@@ -290,8 +290,8 @@ export function BookCatalog() {
 								className="h-full"
 							>
 								<Link href={`/books/${book.id}`} className="block h-full group">
-									<Card className="flex flex-col h-full bg-white dark:bg-slate-950 border-slate-200/50 dark:border-slate-800/50 overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 hover:border-indigo-500/50 relative rounded-[2rem]">
-										<div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
+									<Card className="flex flex-col h-full bg-white dark:bg-slate-950 border-slate-200/50 dark:border-slate-800/50 overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 hover:border-violet-500/50 relative rounded-[2rem]">
+										<div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
 
 										<CardHeader className="p-0 z-10 w-full relative">
 											{book.coverUrl ? (
@@ -311,7 +311,7 @@ export function BookCatalog() {
 											)}
 
 											<div className="absolute top-6 right-6 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-xl z-20">
-												<span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">
+												<span className="text-[10px] font-black uppercase tracking-widest text-violet-600">
 													{(book as any).category?.name || "Kniha"}
 												</span>
 											</div>
@@ -319,7 +319,7 @@ export function BookCatalog() {
 
 										<CardContent className="flex-1 p-8 z-10">
 											<div className="space-y-2 mb-4">
-												<CardTitle className="leading-tight text-2xl font-black text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors line-clamp-2">
+												<CardTitle className="leading-tight text-2xl font-black text-slate-900 dark:text-white group-hover:text-violet-600 transition-colors line-clamp-2">
 													{book.title}
 												</CardTitle>
 												<CardDescription className="text-sm font-bold text-slate-400 uppercase tracking-tight">
@@ -346,7 +346,7 @@ export function BookCatalog() {
 											</div>
 											<Button
 												size="lg"
-												className="w-full rounded-2xl font-bold h-12 bg-slate-900 hover:bg-indigo-600 text-white transition-all shadow-xl hover:shadow-indigo-500/25 border-none"
+												className="w-full rounded-2xl font-bold h-12 bg-slate-900 hover:bg-violet-600 text-white transition-all shadow-xl hover:shadow-violet-500/25 border-none"
 											>
 												Detail knihy
 												<ExternalLink className="ml-2 h-4 w-4" />

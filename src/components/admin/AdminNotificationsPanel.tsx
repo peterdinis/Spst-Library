@@ -29,7 +29,7 @@ function formatDate(value: Date | string | null | undefined) {
 
 function EventIcon({ type }: { type: string }) {
 	if (type === "book_created")
-		return <BookOpen className="h-4 w-4 text-indigo-600" />;
+		return <BookOpen className="h-4 w-4 text-violet-600" />;
 	if (type === "author_created")
 		return <Users className="h-4 w-4 text-amber-600" />;
 	if (type === "category_created")

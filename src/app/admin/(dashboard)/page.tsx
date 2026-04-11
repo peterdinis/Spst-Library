@@ -26,7 +26,7 @@ export default function AdminDashboardPage() {
 			href: "/admin/books" as const,
 			icon: BookOpen,
 			iconBg:
-				"bg-indigo-100 text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-300",
+				"bg-violet-100 text-violet-600 dark:bg-violet-950/80 dark:text-violet-300",
 		},
 		{
 			title: "Objednávky",

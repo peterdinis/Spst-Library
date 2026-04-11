@@ -33,7 +33,7 @@ export function NotificationBell() {
 		<DropdownMenu>
 			{/* Nie vnorené <Button> — Trigger už renderuje <button> (Base UI). */}
 			<DropdownMenuTrigger className="group relative inline-flex size-9 items-center justify-center rounded-full transition-colors hover:bg-slate-100 dark:hover:bg-slate-800">
-				<Bell className="h-6 w-6 text-slate-600 transition-colors group-hover:text-indigo-600 dark:text-slate-400" />
+				<Bell className="h-6 w-6 text-slate-600 transition-colors group-hover:text-violet-600 dark:text-slate-400" />
 				<AnimatePresence>
 					{unreadCount > 0 && (
 						<motion.div
@@ -60,7 +60,7 @@ export function NotificationBell() {
 							variant="ghost"
 							size="sm"
 							onClick={() => markAllAsRead.mutate()}
-							className="text-xs font-bold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-xl px-3"
+							className="text-xs font-bold text-violet-600 hover:text-violet-700 hover:bg-violet-50 rounded-xl px-3"
 						>
 							Označiť všetko
 						</Button>
@@ -78,11 +78,11 @@ export function NotificationBell() {
 								key={n.id}
 								initial={{ opacity: 0, x: 20 }}
 								animate={{ opacity: 1, x: 0 }}
-								className={`group relative p-4 rounded-2xl transition-all border ${n.isRead ? "bg-transparent border-transparent grayscale-[0.5] opacity-60" : "bg-indigo-50/50 border-indigo-100/50 dark:bg-indigo-900/10 dark:border-indigo-800/30"}`}
+								className={`group relative p-4 rounded-2xl transition-all border ${n.isRead ? "bg-transparent border-transparent grayscale-[0.5] opacity-60" : "bg-violet-50/50 border-violet-100/50 dark:bg-violet-900/10 dark:border-violet-800/30"}`}
 							>
 								<div className="flex gap-4">
 									<div
-										className={`h-2 w-2 rounded-full mt-2 shrink-0 ${n.isRead ? "bg-slate-300" : "bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"}`}
+										className={`h-2 w-2 rounded-full mt-2 shrink-0 ${n.isRead ? "bg-slate-300" : "bg-violet-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]"}`}
 									/>
 									<div className="space-y-1 pr-6">
 										<p
@@ -103,7 +103,7 @@ export function NotificationBell() {
 								{!n.isRead && (
 									<button
 										onClick={() => markAsRead.mutate({ id: n.id })}
-										className="absolute top-4 right-4 h-6 w-6 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-300 transition-all opacity-0 group-hover:opacity-100"
+										className="absolute top-4 right-4 h-6 w-6 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 hover:text-violet-600 hover:border-violet-300 transition-all opacity-0 group-hover:opacity-100"
 									>
 										<Check className="h-3 w-3" />
 									</button>

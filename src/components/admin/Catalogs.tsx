@@ -350,7 +350,7 @@ export function BooksTable() {
 											<Button
 												variant="ghost"
 												size="icon"
-												className="h-9 w-9 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 border border-transparent hover:border-indigo-100"
+												className="h-9 w-9 rounded-xl hover:bg-violet-50 hover:text-violet-600 border border-transparent hover:border-violet-100"
 											>
 												<Edit className="h-4 w-4" />
 											</Button>
