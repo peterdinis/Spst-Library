@@ -72,12 +72,6 @@ export const createBookAction = protectedActionClient
 export const borrowBookAction = protectedActionClient
 	.inputSchema(z.object({ bookId: z.string() }))
 	.action(async ({ parsedInput: { bookId }, ctx: { session } }) => {
-		if (await userHasAdminAccess(session)) {
-			throw new Error(
-				"Účty so správcovským oprávnením nemôžu požičiavať knihy ako čitatelia.",
-			);
-		}
-
 		const userId = session?.user?.id;
 		if (!userId) throw new Error("Neprihlásený používateľ");
 

@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { BookDetailsClient } from "@/components/BookDetailsClient";
 import { getBookById, isBookBorrowedByUser } from "@/lib/data";
-import { userHasAdminAccess } from "@/lib/admin-access";
 
 export default async function BookDetailsPage({
 	params,
@@ -31,17 +30,14 @@ export default async function BookDetailsPage({
 
 	const session = await auth();
 	const userId = session?.user?.id;
-	const isPatron =
-		Boolean(session?.user) && !(await userHasAdminAccess(session));
 
 	const isAlreadyBorrowed =
-		userId && isPatron ? await isBookBorrowedByUser(userId, id) : false;
+		userId ? await isBookBorrowedByUser(userId, id) : false;
 
 	return (
 		<BookDetailsClient
 			book={book}
 			user={session?.user ?? null}
-			isPatron={isPatron}
 			isAlreadyBorrowed={!!isAlreadyBorrowed}
 		/>
 	);
