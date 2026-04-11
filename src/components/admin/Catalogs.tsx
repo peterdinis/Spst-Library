@@ -21,6 +21,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen } from "lucide-react";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 type AdminAuthorRow = {
 	id: string;
@@ -33,9 +34,9 @@ type AdminCategoryRow = { id: string; name: string };
 
 export function AuthorsTable() {
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-	const [selectedAuthor, setSelectedAuthor] = useState<AdminAuthorRow | null>(
-		null,
-	);
+	const [selectedAuthor, setSelectedAuthor] = useState<AdminAuthorRow | null>(null);
+	const [currentPage, setCurrentPage] = useState(1);
+	const ITEMS_PER_PAGE = 8;
 	const { data: authors, isLoading } = trpc.authors.getAll.useQuery();
 	const utils = trpc.useUtils();
 
@@ -72,7 +73,9 @@ export function AuthorsTable() {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{authors?.map((a) => (
+						{(authors || [])
+							.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+							.map((a) => (
 							<TableRow
 								key={a.id}
 								className="transition-colors hover:bg-muted/40"
@@ -136,7 +139,7 @@ export function AuthorsTable() {
 								</TableCell>
 							</TableRow>
 						))}
-						{!authors?.length && (
+						{(!authors || authors.length === 0) && (
 							<TableRow>
 								<TableCell
 									colSpan={4}
@@ -148,6 +151,11 @@ export function AuthorsTable() {
 						)}
 					</TableBody>
 				</Table>
+				<PaginationControls
+					currentPage={currentPage}
+					totalPages={Math.ceil((authors?.length || 0) / ITEMS_PER_PAGE)}
+					onPageChange={setCurrentPage}
+				/>
 			</CardContent>
 		</Card>
 	);
@@ -155,8 +163,9 @@ export function AuthorsTable() {
 
 export function CategoriesTable() {
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-	const [selectedCategory, setSelectedCategory] =
-		useState<AdminCategoryRow | null>(null);
+	const [selectedCategory, setSelectedCategory] = useState<AdminCategoryRow | null>(null);
+	const [currentPage, setCurrentPage] = useState(1);
+	const ITEMS_PER_PAGE = 10;
 	const { data: categories, isLoading } = trpc.categories.getAll.useQuery();
 	const utils = trpc.useUtils();
 
@@ -189,7 +198,9 @@ export function CategoriesTable() {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{categories?.map((c) => (
+						{(categories || [])
+							.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+							.map((c) => (
 							<TableRow
 								key={c.id}
 								className="transition-colors hover:bg-muted/40"
@@ -234,7 +245,7 @@ export function CategoriesTable() {
 								</TableCell>
 							</TableRow>
 						))}
-						{!categories?.length && (
+						{(!categories || categories.length === 0) && (
 							<TableRow>
 								<TableCell
 									colSpan={2}
@@ -246,6 +257,11 @@ export function CategoriesTable() {
 						)}
 					</TableBody>
 				</Table>
+				<PaginationControls
+					currentPage={currentPage}
+					totalPages={Math.ceil((categories?.length || 0) / ITEMS_PER_PAGE)}
+					onPageChange={setCurrentPage}
+				/>
 			</CardContent>
 		</Card>
 	);
@@ -253,9 +269,9 @@ export function CategoriesTable() {
 
 export function BooksTable() {
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-	const [selectedBook, setSelectedBook] = useState<BookFormInitial | null>(
-		null,
-	);
+	const [selectedBook, setSelectedBook] = useState<BookFormInitial | null>(null);
+	const [currentPage, setCurrentPage] = useState(1);
+	const ITEMS_PER_PAGE = 8;
 	const { data: books, isLoading } = trpc.books.getAll.useQuery();
 	const utils = trpc.useUtils();
 
@@ -296,7 +312,9 @@ export function BooksTable() {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{books?.items?.map((b) => (
+						{(books?.items || [])
+							.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+							.map((b) => (
 							<TableRow
 								key={b.id}
 								className="group transition-colors hover:bg-muted/40"
@@ -381,7 +399,7 @@ export function BooksTable() {
 								</TableCell>
 							</TableRow>
 						))}
-						{!books?.items?.length && (
+						{(!books?.items || books.items.length === 0) && (
 							<TableRow>
 								<TableCell
 									colSpan={5}
@@ -396,6 +414,11 @@ export function BooksTable() {
 						)}
 					</TableBody>
 				</Table>
+				<PaginationControls
+					currentPage={currentPage}
+					totalPages={Math.ceil((books?.items?.length || 0) / ITEMS_PER_PAGE)}
+					onPageChange={setCurrentPage}
+				/>
 			</CardContent>
 		</Card>
 	);

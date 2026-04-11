@@ -79,7 +79,7 @@ const Toolbar = ({ editor }: { editor: any }) => {
 					<item.icon className="h-4 w-4" />
 				</Button>
 			))}
-			<div className="w-[1px] h-4 bg-border mx-1" />
+			<div className="w-px h-4 bg-border mx-1" />
 			<Button
 				type="button"
 				variant="ghost"

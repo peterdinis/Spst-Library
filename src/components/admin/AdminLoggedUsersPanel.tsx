@@ -68,7 +68,7 @@ export function AdminLoggedUsersPanel({
 			<Table containerClassName="max-h-[600px] overflow-auto">
 				<TableHeader className="sticky top-0 bg-white dark:bg-slate-900 z-10 shadow-[0_1px_0_0_rgba(0,0,0,0.1)] dark:shadow-[0_1px_0_0_rgba(255,255,255,0.1)]">
 					<TableRow className="border-b bg-muted/20 hover:bg-muted/20">
-						<TableHead className="w-[80px]">Profil</TableHead>
+						<TableHead className="w-20">Profil</TableHead>
 						<TableHead>Meno</TableHead>
 						<TableHead>E-mail</TableHead>
 						<TableHead>Rola</TableHead>
