@@ -108,7 +108,7 @@ export const notificationsRouter = router({
 		return { success: true };
 	}),
 
-	delete: protectedProcedure
+	remove: protectedProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ ctx, input }) => {
 			const userId = ctx.session?.user?.id;
@@ -128,7 +128,7 @@ export const notificationsRouter = router({
 			return { success: true };
 		}),
 
-	deleteAll: protectedProcedure.mutation(async ({ ctx }) => {
+	removeAll: protectedProcedure.mutation(async ({ ctx }) => {
 		const userId = ctx.session?.user?.id;
 		if (!userId) return { success: false };
 
