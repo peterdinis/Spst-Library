@@ -7,6 +7,7 @@ import {
 import { getBooks, getBorrowedByUserId } from "@/lib/data";
 import { books } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { resolveUserIdFromDb } from "@/lib/resolve-user-id";
 import { z } from "zod";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { CACHE_TAGS, CACHE_TTL } from "../cache-config";
@@ -40,7 +41,10 @@ export const booksRouter = router({
 		}),
 
 	getBorrowedByUser: protectedProcedure.query(async ({ ctx }) => {
-		const userId = ctx.session?.user?.id;
+		const userId = resolveUserIdFromDb(
+			ctx.session?.user?.email,
+			ctx.session?.user?.id,
+		);
 		if (!userId) return [];
 		// User-scoped cache: key includes userId so each user gets their own cache entry
 		const cached = unstable_cache(

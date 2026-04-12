@@ -54,7 +54,10 @@ export function ProfileClient({ user }: { user: any }) {
 				utils.profile.getDashboard.invalidate();
 			},
 			onError: (error) => {
-				toast.error(error.error.serverError || "Chyba pri vracaní knihy");
+				toast.error(
+					error.error.serverError ||
+						"Nepodarilo sa vrátiť knihu. Skúste to znova.",
+				);
 			},
 		},
 	);
@@ -355,8 +358,8 @@ export function ProfileClient({ user }: { user: any }) {
 																className={`flex items-center justify-between font-bold ${isLate ? "text-destructive" : "text-emerald-500"}`}
 															>
 																<span className="flex items-center gap-1.5">
-																	<Calendar className="h-3.5 w-3.5" /> Vrátiť
-																	do
+																	<Calendar className="h-3.5 w-3.5" />
+																	Termín vrátenia
 																</span>
 																<span>
 																	{deadlineDate.toLocaleDateString("sk-SK")}

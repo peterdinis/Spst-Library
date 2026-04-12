@@ -7,7 +7,7 @@ export const protectedActionClient = actionClient.use(async ({ next }) => {
 	const session = await auth();
 
 	if (!session?.user) {
-		throw new Error("Session not found!");
+		throw new Error("Relácia nebola nájdená. Prihláste sa znova.");
 	}
 
 	return next({ ctx: { session } });

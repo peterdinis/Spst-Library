@@ -4,7 +4,7 @@ import { protectedActionClient } from "./safe-action";
 import { z } from "zod";
 import { db } from "@/db";
 import { users, authors, categories, books, borrowedBooks } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { notifications } from "@/db/schema";
 import { sendTransactionalEmail } from "./mail";
@@ -197,72 +197,100 @@ export const borrowBookAction = protectedActionClient
 
 export const returnBookAction = protectedActionClient
 	.inputSchema(z.object({ borrowId: z.string(), bookId: z.string() }))
-	.action(async ({ parsedInput: { borrowId, bookId }, ctx: { session } }) => {
-		const userId = resolveUserIdFromDb(
-			session?.user?.email,
-			session?.user?.id,
-		);
-		if (!userId) throw new Error("Neprihlásený používateľ");
-		const record = db
-			.select()
-			.from(borrowedBooks)
-			.where(
-				and(eq(borrowedBooks.id, borrowId), eq(borrowedBooks.userId, userId)),
-			)
-			.get();
+	.action(
+		async ({
+			parsedInput: { borrowId, bookId: inputBookId },
+			ctx: { session },
+		}) => {
+			const sessionUserId = session.user?.id;
+			if (!sessionUserId) {
+				throw new Error("Nie ste prihlásený.");
+			}
 
-		if (!record || record.status !== "borrowed") {
-			throw new Error("Neplatný záznam o výpožičke");
-		}
+			const resolvedUserId = resolveUserIdFromDb(
+				session.user?.email,
+				sessionUserId,
+			);
 
-		const book = db
-			.select({ availableCopies: books.availableCopies, title: books.title })
-			.from(books)
-			.where(eq(books.id, bookId))
-			.get();
-
-		db.transaction((tx) => {
-			tx.update(borrowedBooks)
-				.set({ status: "returned", returnDate: new Date() })
+			const record = db
+				.select()
+				.from(borrowedBooks)
 				.where(eq(borrowedBooks.id, borrowId))
-				.run();
+				.get();
 
-			tx.update(books)
-				.set({ availableCopies: (book?.availableCopies ?? 0) + 1 })
+			if (!record || record.status !== "borrowed") {
+				throw new Error(
+					"Výpožička sa nenašla alebo už bola vrátená.",
+				);
+			}
+
+			const ownerOk =
+				record.userId === sessionUserId ||
+				(resolvedUserId != null && record.userId === resolvedUserId);
+			if (!ownerOk) {
+				throw new Error("Túto výpožičku nemôžete vrátiť.");
+			}
+
+			if (record.bookId !== inputBookId) {
+				throw new Error("Neplatné údaje o knihe.");
+			}
+
+			const bookId = record.bookId;
+
+			const book = db
+				.select({ availableCopies: books.availableCopies, title: books.title })
+				.from(books)
 				.where(eq(books.id, bookId))
-				.run();
+				.get();
 
-			tx.insert(notifications)
-				.values({
-					id: crypto.randomUUID(),
-					userId: userId,
-					message: `Kniha "${book?.title ?? "Kniha"}" bola úspešne vrátená. Ďakujeme!`,
-					type: "return",
-					isRead: false,
-				})
-				.run();
-		});
+			db.transaction((tx) => {
+				tx.update(borrowedBooks)
+					.set({ status: "returned", returnDate: new Date() })
+					.where(eq(borrowedBooks.id, borrowId))
+					.run();
 
-		if (session?.user?.email && book) {
-			await sendTransactionalEmail(
-				session.user.email,
-				"Kniha bola úspešne vrátená",
-				`
+				tx.update(books)
+					.set({ availableCopies: (book?.availableCopies ?? 0) + 1 })
+					.where(eq(books.id, bookId))
+					.run();
+
+				tx.insert(notifications)
+					.values({
+						id: crypto.randomUUID(),
+						userId: record.userId,
+						message: `Kniha "${book?.title ?? "Kniha"}" bola úspešne vrátená. Ďakujeme!`,
+						type: "return",
+						isRead: false,
+					})
+					.run();
+			});
+
+			if (session.user?.email && book) {
+				try {
+					await sendTransactionalEmail(
+						session.user.email,
+						"Kniha bola úspešne vrátená",
+						`
 				<h1>Vrátenie knihy</h1>
 				<p>Dobrý deň, ${session.user.name || "čitateľ"},</p>
 				<p>Kniha <strong>${book.title}</strong> bola úspešne vrátená.</p>
-				<p>Dúfame, že sa vám páčila!</p>
-				<p>Váš tím SPŠT Knižnica</p>
+				<p>Ďakujeme, že knihu používate zodpovedne.</p>
+				<p>SPŠT knižnica</p>
 				`,
-			);
-		}
+					);
+				} catch (mailErr) {
+					console.error("returnBookAction: email send failed", mailErr);
+				}
+			}
 
-		revalidatePath("/", "page");
-		revalidatePath("/profile", "page");
-		revalidatePath("/books", "page");
-		revalidatePath(`/books/${bookId}`, "page");
-		revalidateTag("borrowed-books", "default");
-		revalidateTag("books", "default");
-		revalidateTag("notifications", "default");
-		return { success: true };
-	});
+			revalidatePath("/", "page");
+			revalidatePath("/profile", "page");
+			revalidatePath("/my-books", "page");
+			revalidatePath("/books", "page");
+			revalidatePath(`/books/${bookId}`, "page");
+			revalidateTag("borrowed-books", "default");
+			revalidateTag("books", "default");
+			revalidateTag("notifications", "default");
+			return { success: true };
+		},
+	);

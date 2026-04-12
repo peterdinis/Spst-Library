@@ -1,13 +1,17 @@
 import { router, protectedProcedure } from "../server";
 import { userSettings } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { resolveUserIdFromDb } from "@/lib/resolve-user-id";
 import { z } from "zod";
 import { revalidateTag, unstable_cache } from "next/cache";
 import { CACHE_TAGS, CACHE_TTL } from "../cache-config";
 
 export const settingsRouter = router({
 	getSettings: protectedProcedure.query(async ({ ctx }) => {
-		const userId = ctx.session.user.id;
+		const userId = resolveUserIdFromDb(
+			ctx.session.user.email,
+			ctx.session.user.id,
+		);
 		if (!userId) return null;
 
 		let settings = await ctx.db.query.userSettings.findFirst({
@@ -62,7 +66,10 @@ export const settingsRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const userId = ctx.session.user.id;
+			const userId = resolveUserIdFromDb(
+				ctx.session.user.email,
+				ctx.session.user.id,
+			);
 			if (!userId) return { success: false };
 
 			await ctx.db

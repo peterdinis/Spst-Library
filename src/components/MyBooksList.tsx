@@ -24,11 +24,13 @@ export function MyBooksList() {
 
 	const { execute, isExecuting } = useAction(returnBookAction, {
 		onSuccess: () => {
-			toast.success("Book returned successfully!");
+			toast.success("Kniha bola úspešne vrátená.");
 			refetch();
 		},
 		onError: (error) => {
-			toast.error(error.error.serverError || "Failed to return book");
+			toast.error(
+				error.error.serverError || "Nepodarilo sa vrátiť knihu. Skúste to znova.",
+			);
 		},
 	});
 
