@@ -68,13 +68,6 @@ export function BookCatalog() {
 	const totalItems = data?.total || 0;
 	const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
 
-	const rangeLabel = useMemo(() => {
-		if (totalItems === 0) return null;
-		const from = (currentPage - 1) * ITEMS_PER_PAGE + 1;
-		const to = Math.min(currentPage * ITEMS_PER_PAGE, totalItems);
-		return `${from}–${to} z ${totalItems}`;
-	}, [currentPage, totalItems]);
-
 	const visiblePages = useMemo(() => {
 		if (totalPages <= 1) return [] as number[];
 		if (totalPages <= 7) {
@@ -291,12 +284,6 @@ export function BookCatalog() {
 				</div>
 			</div>
 
-			{rangeLabel && (
-				<p className="text-center text-sm font-medium text-slate-500 dark:text-slate-400">
-					Zobrazené knihy: <span className="font-semibold text-slate-700 dark:text-slate-200">{rangeLabel}</span>
-				</p>
-			)}
-
 			{/* Zoznam Kníh */}
 			{books.length > 0 ? (
 				<motion.div
@@ -415,11 +402,6 @@ export function BookCatalog() {
 			{/* Paginácia */}
 			{totalPages > 1 && (
 				<div className="flex flex-col items-center gap-4 pt-10">
-					<p className="text-sm text-slate-500">
-						Stránka{" "}
-						<span className="font-semibold text-slate-800 dark:text-slate-200">{currentPage}</span> z{" "}
-						{totalPages}
-					</p>
 					<div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
 						<Button
 							variant="ghost"
