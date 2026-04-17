@@ -60,7 +60,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 			<aside
 				className={cn(
 					"sticky top-16 z-30 flex max-h-[calc(100dvh-4rem)] shrink-0 flex-col border-r border-slate-200/80 bg-white transition-[width] duration-200 dark:border-border dark:bg-card",
-					collapsed ? "w-[72px]" : "w-64",
+					collapsed ? "w-18" : "w-64",
 				)}
 			>
 				<div className="flex max-h-[calc(100dvh-4rem)] min-h-0 flex-1 flex-col">

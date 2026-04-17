@@ -14,14 +14,9 @@ import { BookMarked, Settings, User, Activity } from "lucide-react";
 type ProfileDropdownMenuProps = {
 	name?: string | null;
 	email?: string | null;
-	/** Z DB (`is_admin`); bez toho sa nezobrazí položka Administrácia. */
 	showAdminLink?: boolean;
 };
 
-/**
- * Samostatný client komponent: navigácia cez router (nie Link vnútri Menu.Item),
- * odhlásenie bez vnoreného &lt;button&gt; v položke menu — Base UI Menu inak padá / správa sa divne.
- */
 export function ProfileDropdownMenu({
 	name,
 	email,

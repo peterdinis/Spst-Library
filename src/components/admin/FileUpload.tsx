@@ -148,7 +148,7 @@ export function FileUpload({
 					</div>
 				</div>
 			) : (
-				<div className="relative w-full aspect-[3/4] max-w-[240px] mx-auto rounded-2xl overflow-hidden shadow-xl border border-border group">
+				<div className="relative w-full aspect-3/4 max-w-60 mx-auto rounded-2xl overflow-hidden shadow-xl border border-border group">
 					<Image src={previewUrl} alt="Náhľad" fill className="object-cover" />
 					<div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
 						<Button
@@ -185,7 +185,7 @@ export function FileUpload({
 						</DialogTitle>
 					</DialogHeader>
 
-					<div className="relative h-[400px] w-full bg-slate-950">
+					<div className="relative h-100 w-full bg-slate-950">
 						{imageSrc && (
 							<Cropper
 								image={imageSrc}

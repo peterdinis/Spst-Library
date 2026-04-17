@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { PaginationControls } from "@/components/ui/pagination-controls";
-
 import { trpc } from "@/trpc/client";
 import {
 	Table,
@@ -14,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ShieldCheck, User, ShieldX, Loader2 } from "lucide-react";
+import { ShieldCheck, ShieldX, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 

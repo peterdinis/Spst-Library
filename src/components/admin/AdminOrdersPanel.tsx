@@ -71,7 +71,7 @@ export function AdminOrdersPanel() {
 						<TableHead>Kniha</TableHead>
 						<TableHead>Čitateľ</TableHead>
 						<TableHead className="max-w-[min(100%,14rem)]">Poznámka</TableHead>
-						<TableHead className="min-w-[10rem] whitespace-nowrap">
+						<TableHead className="min-w-40 whitespace-nowrap">
 							Stav
 						</TableHead>
 					</TableRow>
@@ -123,7 +123,7 @@ export function AdminOrdersPanel() {
 									}
 									disabled={updateStatus.isPending}
 								>
-									<SelectTrigger className="h-9 w-full min-w-[10.5rem] rounded-xl">
+									<SelectTrigger className="h-9 w-full min-w-42 rounded-xl">
 										<SelectValue>
 											{(value) =>
 												statusLabels[String(value)] ?? String(value ?? "")
