@@ -65,6 +65,7 @@ export function MyBooksList() {
 									src={record.book.coverUrl}
 									alt={record.book.title}
 									fill
+								sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
 									className="object-cover rounded-md"
 								/>
 							</div>

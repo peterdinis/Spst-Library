@@ -87,6 +87,7 @@ export function AuthorsTable() {
 												src={a.imageUrl}
 												alt=""
 												fill
+												sizes="36px"
 												className="object-cover"
 											/>
 										</div>
@@ -326,6 +327,7 @@ export function BooksTable() {
 												src={b.coverUrl}
 												alt={b.title}
 												fill
+												sizes="36px"
 												className="object-cover rounded shadow-sm group-hover:shadow-md transition-shadow"
 											/>
 										</div>

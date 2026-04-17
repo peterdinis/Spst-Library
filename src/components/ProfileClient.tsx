@@ -321,6 +321,7 @@ export function ProfileClient({ user }: { user: any }) {
 															src={borrow.book.coverUrl}
 															alt={borrow.book?.title || "Kniha"}
 															fill
+														sizes="(max-width: 768px) 100vw, 33vw"
 															className="object-cover transition-transform duration-500 group-hover:scale-105"
 														/>
 													) : (
