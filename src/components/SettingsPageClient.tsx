@@ -131,20 +131,6 @@ export function SettingsPageClient() {
 							disabled={isLoading || update.isPending}
 						/>
 					</div>
-					<div className="h-px bg-border" />
-					<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-						<div className="space-y-1">
-							<p className="font-semibold">Systémové novinky</p>
-							<p className="text-sm text-muted-foreground">
-								Novinky o funkciách a vylepšeniach aplikácie.
-							</p>
-						</div>
-						<Switch
-							checked={local.systemUpdates}
-							onCheckedChange={(v) => toggle("systemUpdates", v)}
-							disabled={isLoading || update.isPending}
-						/>
-					</div>
 				</CardContent>
 			</Card>
 
@@ -198,29 +184,6 @@ export function SettingsPageClient() {
 							limit výpožičiek).
 						</p>
 					</div>
-				</CardContent>
-			</Card>
-
-			<Card className="rounded-3xl border-dashed bg-muted/20">
-				<CardContent className="flex flex-col gap-2 py-6 sm:flex-row sm:items-center sm:justify-between">
-					<div className="flex items-start gap-3">
-						<Mail className="h-5 w-5 shrink-0 text-muted-foreground mt-0.5" />
-						<div>
-							<p className="font-medium">Potrebujete pomoc?</p>
-							<p className="text-sm text-muted-foreground">
-								Kontaktujte správcu knižnice alebo IT podporu školy.
-							</p>
-						</div>
-					</div>
-					<Link
-						href="/books"
-						className={cn(
-							buttonVariants({ variant: "outline", size: "default" }),
-							"shrink-0 rounded-xl",
-						)}
-					>
-						Prejsť do katalógu
-					</Link>
 				</CardContent>
 			</Card>
 		</div>

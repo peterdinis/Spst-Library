@@ -185,7 +185,7 @@ export function ProfileClient({ user }: { user: any }) {
 					</TabsTrigger>
 				</TabsList>
 
-				<AnimatePresence mode="wait">
+				<AnimatePresence>
 					<TabsContent value="overview" className="space-y-8 outline-none">
 						<motion.div
 							initial={{ opacity: 0, x: -10 }}

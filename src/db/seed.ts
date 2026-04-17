@@ -9,7 +9,7 @@ async function main() {
 	// 0. Seed Admin
 	console.log("Seeding admin...");
 	const hashedPassword = await bcrypt.hash("admin123", 10);
-	await db
+	db
 		.insert(admins)
 		.values({
 			id: crypto.randomUUID(),
