@@ -1,5 +1,6 @@
 import { AdminEntraUsersPanel } from "@/components/admin/AdminEntraUsersPanel";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminAzureIntegrationPanel } from "@/components/admin/AdminAzureIntegrationPanel";
 
 export default function AdminEntraUsersPage() {
 	return (
@@ -8,6 +9,7 @@ export default function AdminEntraUsersPage() {
 				title="Používatelia Entra"
 				description="Zoznam z Microsoft Entra ID cez Graph API. Vyžaduje oprávnenie User.Read.All a administrátorský súhlas v Azure."
 			/>
+			<AdminAzureIntegrationPanel variant="compact" />
 			<AdminEntraUsersPanel />
 		</div>
 	);

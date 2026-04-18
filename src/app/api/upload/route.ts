@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { uploadImageToAzure } from "@/lib/azure-storage";
+import { getAzureStorageConfigStatus } from "@/lib/azure-validation";
 
 export async function POST(req: NextRequest) {
 	const session = await auth();
@@ -10,6 +11,11 @@ export async function POST(req: NextRequest) {
 
 	if (!allowWithoutAuth && !session?.user) {
 		return new NextResponse("Unauthorized", { status: 401 });
+	}
+
+	const storage = getAzureStorageConfigStatus();
+	if (!storage.ready) {
+		return new NextResponse(storage.message, { status: 503 });
 	}
 
 	try {

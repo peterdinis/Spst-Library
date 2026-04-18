@@ -28,6 +28,7 @@ export function AdminEntraUsersPanel() {
 
 	const users = data?.users ?? [];
 	const errMsg = data?.error;
+	const missingGraphEnv = data?.missingGraphEnv ?? [];
 
 	return (
 		<div className="space-y-4">
@@ -37,6 +38,16 @@ export function AdminEntraUsersPanel() {
 					<div>
 						<p className="font-semibold text-destructive">Graph API</p>
 						<p className="text-destructive/90 mt-1">{errMsg}</p>
+						{missingGraphEnv.length > 0 ? (
+							<ul className="mt-2 list-inside list-disc text-xs text-destructive/80">
+								{missingGraphEnv.map((key) => (
+									<li key={key}>
+										Chýba:{" "}
+										<code className="rounded bg-destructive/20 px-1">{key}</code>
+									</li>
+								))}
+							</ul>
+						) : null}
 					</div>
 				</div>
 			) : null}

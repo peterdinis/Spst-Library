@@ -10,6 +10,7 @@ import { usersRouter } from "./users";
 import { adminWhitelistRouter } from "./adminWhitelist";
 import { uploadRouter } from "./upload";
 import { profileRouter } from "./profile";
+import { azureRouter } from "./azure";
 
 export const appRouter = router({
 	healthInfo: publicProcedure.query(() => {
@@ -26,6 +27,7 @@ export const appRouter = router({
 	adminWhitelist: adminWhitelistRouter,
 	upload: uploadRouter,
 	profile: profileRouter,
+	azure: azureRouter,
 });
 
 export type AppRouter = typeof appRouter;
