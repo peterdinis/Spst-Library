@@ -79,7 +79,7 @@ export function AuthorForm({ initialData, onSuccess }: AuthorFormProps) {
 
 	return (
 		<Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white/80 dark:bg-slate-950/80 backdrop-blur-md ring-1 ring-slate-200 dark:ring-slate-800">
-			<CardHeader className="bg-linear-to-r from-violet-600/5 to-purple-600/5 border-b border-slate-100 dark:border-slate-800 pb-8 px-8">
+			<CardHeader className="bg-gradient-to-r from-violet-600/5 to-purple-600/5 border-b border-slate-100 dark:border-slate-800 pb-8 px-8">
 				<div className="flex items-center gap-4 mb-2">
 					<div className="p-3 bg-primary/10 rounded-2xl">
 						<UserPlus className="h-6 w-6 text-primary" />
@@ -96,33 +96,33 @@ export function AuthorForm({ initialData, onSuccess }: AuthorFormProps) {
 			</CardHeader>
 			<CardContent className="pt-8 px-8">
 				<form onSubmit={handleSubmit} className="space-y-8">
-					<div className="space-y-2">
-						<label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-							Celé meno
+					<div className="space-y-1.5">
+						<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+							Celé meno autora *
 						</label>
 						<Input
-							placeholder="Meno autora"
+							placeholder="napr. J.K. Rowlingová"
 							value={name}
 							onChange={(e) => setName(e.target.value)}
 							required
-							className="rounded-xl"
+							className="rounded-xl bg-slate-50/50 dark:bg-slate-900 focus-visible:ring-primary/50 h-11"
 						/>
 					</div>
 
-					<div className="space-y-2">
-						<label className="text-sm font-medium text-slate-700 dark:text-slate-200 flex items-center gap-2">
+					<div className="space-y-1.5">
+						<label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
 							<Info className="h-4 w-4 text-primary" /> Životopis
 						</label>
 						<RichTextEditor
 							value={bio || ""}
 							onChange={(val: string) => setBio(val)}
-							placeholder="Krátky životopis autora..."
+							placeholder="Podeľte sa o krátky životopis autora, kde žil, tvoril..."
 						/>
 					</div>
 
-					<div className="space-y-2">
-						<label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-							Fotka autora
+					<div className="space-y-1.5 pt-2">
+						<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+							Fotografia
 						</label>
 						<FileUpload
 							defaultValue={imageUrl || ""}

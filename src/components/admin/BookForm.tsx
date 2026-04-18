@@ -118,7 +118,7 @@ export function BookForm({
 
 	return (
 		<Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white/80 dark:bg-slate-950/80 backdrop-blur-md ring-1 ring-slate-200 dark:ring-slate-800">
-			<CardHeader className="bg-linear-to-r from-violet-600/5 to-purple-600/5 border-b border-slate-100 dark:border-slate-800 pb-8 px-8">
+			<CardHeader className="bg-gradient-to-r from-violet-600/5 to-purple-600/5 border-b border-slate-100 dark:border-slate-800 pb-8 px-8">
 				<div className="flex items-center gap-4 mb-2">
 					<div className="p-3 bg-primary/10 rounded-2xl">
 						<Plus className="h-6 w-6 text-primary" />
@@ -133,98 +133,136 @@ export function BookForm({
 					</div>
 				</div>
 			</CardHeader>
-			<CardContent className="pt-6">
+			<CardContent className="pt-8 px-8">
 				<form
 					onSubmit={handleSubmit}
-					className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+					className="grid grid-cols-1 lg:grid-cols-2 gap-10"
 				>
-					<div className="space-y-5">
-						<div className="space-y-2">
-							<label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+					<div className="space-y-6">
+						<div className="space-y-5">
+							<h3 className="text-lg font-bold text-foreground border-b border-primary/10 pb-2">
 								Základné informácie
-							</label>
-							<Input
-								placeholder="Názov knihy"
-								value={title}
-								onChange={(e) => setTitle(e.target.value)}
-								required
-								className="rounded-xl"
-							/>
-							<div className="space-y-2">
-								<label className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-2">
-									<Info className="h-3 w-3" /> Popis knihy
+							</h3>
+							
+							<div className="space-y-1.5">
+								<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+									Názov knihy *
+								</label>
+								<Input
+									placeholder="Zadajte názov knihy"
+									value={title}
+									onChange={(e) => setTitle(e.target.value)}
+									required
+									className="rounded-xl bg-slate-50/50 dark:bg-slate-900 focus-visible:ring-primary/50 h-11"
+								/>
+							</div>
+
+							<div className="space-y-1.5 pt-2">
+								<label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+									<Info className="h-4 w-4 text-primary" /> Popis obsahu
 								</label>
 								<RichTextEditor
 									value={description || ""}
 									onChange={(val: string) => setDescription(val)}
-									placeholder="Podrobný popis obsahu knihy..."
+									placeholder="Napíšte podrobný popis..."
 								/>
 							</div>
-							<Input
-								placeholder="ISBN (voliteľné)"
-								value={isbn || ""}
-								onChange={(e) => setIsbn(e.target.value)}
-								className="rounded-xl"
-							/>
-							<Input
-								type="number"
-								min={0}
-								placeholder="Počet kusov"
-								value={availableCopies}
-								onChange={(e) => setAvailableCopies(Number(e.target.value))}
-								required
-								className="rounded-xl"
-							/>
+							
+							<div className="grid grid-cols-2 gap-4 pt-2">
+								<div className="space-y-1.5">
+									<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+										ISBN
+									</label>
+									<Input
+										placeholder="napr. 978-80..."
+										value={isbn || ""}
+										onChange={(e) => setIsbn(e.target.value)}
+										className="rounded-xl bg-slate-50/50 dark:bg-slate-900 focus-visible:ring-primary/50 h-11"
+									/>
+								</div>
+								
+								<div className="space-y-1.5">
+									<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+										Dostupné kusy *
+									</label>
+									<Input
+										type="number"
+										min={0}
+										placeholder="Zadajte počet"
+										value={availableCopies}
+										onChange={(e) => setAvailableCopies(Number(e.target.value))}
+										required
+										className="rounded-xl bg-slate-50/50 dark:bg-slate-900 focus-visible:ring-primary/50 h-11"
+									/>
+								</div>
+							</div>
 						</div>
 
-						<div className="space-y-2">
-							<label className="text-sm font-medium text-slate-700 dark:text-slate-200">
+						<div className="space-y-5 mt-8 lg:mt-0">
+							<h3 className="text-lg font-bold text-foreground border-b border-primary/10 pb-2">
 								Kategorizácia
-							</label>
-							<Select
-								value={authorId ?? ""}
-								onValueChange={(val) => setAuthorId(val ?? "")}
-							>
-								<SelectTrigger className="rounded-xl">
-									<SelectValue placeholder="Vyberte autora" />
-								</SelectTrigger>
-								<SelectContent>
-									{resolvedAuthors.map((a) => (
-										<SelectItem key={a.id} value={a.id}>
-											{a.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							</h3>
+							
+							<div className="space-y-1.5">
+								<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+									Autor diela *
+								</label>
+								<Select
+									value={authorId ?? ""}
+									onValueChange={(val) => setAuthorId(val ?? "")}
+								>
+									<SelectTrigger className="rounded-xl bg-slate-50/50 dark:bg-slate-900 focus-visible:ring-primary/50 h-11">
+										<SelectValue placeholder="Vyberte autora" />
+									</SelectTrigger>
+									<SelectContent>
+										{resolvedAuthors.map((a) => (
+											<SelectItem key={a.id} value={a.id}>
+												{a.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
 
-							<Select
-								value={categoryId ?? ""}
-								onValueChange={(val) => setCategoryId(val ?? "")}
-							>
-								<SelectTrigger className="rounded-xl">
-									<SelectValue placeholder="Vyberte kategóriu" />
-								</SelectTrigger>
-								<SelectContent>
-									{resolvedCategories.map((c) => (
-										<SelectItem key={c.id} value={c.id}>
-											{c.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
+							<div className="space-y-1.5 pt-2">
+								<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+									Žáner / Kategória *
+								</label>
+								<Select
+									value={categoryId ?? ""}
+									onValueChange={(val) => setCategoryId(val ?? "")}
+								>
+									<SelectTrigger className="rounded-xl bg-slate-50/50 dark:bg-slate-900 focus-visible:ring-primary/50 h-11">
+										<SelectValue placeholder="Vyberte kategóriu" />
+									</SelectTrigger>
+									<SelectContent>
+										{resolvedCategories.map((c) => (
+											<SelectItem key={c.id} value={c.id}>
+												{c.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
 						</div>
 					</div>
 
-					<div className="space-y-6">
-						<div className="space-y-2">
-							<label className="text-sm font-medium text-slate-700 dark:text-slate-200">
-								Obálka knihy
-							</label>
-							<FileUpload
-								defaultValue={coverUrl ?? ""}
-								onUploadComplete={setCoverUrl}
-								uploadFolder="books"
-							/>
+					<div className="space-y-8">
+						<div className="space-y-5">
+							<h3 className="text-lg font-bold text-foreground border-b border-primary/10 pb-2">
+								Vizuál
+							</h3>
+							
+							<div className="space-y-1.5">
+								<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+									Obálka knihy (Odporúčaný pomer 2:3)
+								</label>
+								<FileUpload
+									defaultValue={coverUrl ?? ""}
+									onUploadComplete={setCoverUrl}
+									uploadFolder="books"
+								/>
+							</div>
 						</div>
 
 						<div className="pt-4">
