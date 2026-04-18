@@ -152,7 +152,7 @@ export function RichTextEditor({
 		<div className="w-full rounded-2xl border border-border bg-background focus-within:ring-2 focus-within:ring-primary/20 transition-all overflow-hidden flex flex-col">
 			<Toolbar editor={editor} />
 			<EditorContent editor={editor} />
-			<style jsx global>{`
+			<style>{`
 				.ProseMirror p.is-editor-empty:first-child::before {
 					content: attr(data-placeholder);
 					float: left;
