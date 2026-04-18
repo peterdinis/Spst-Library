@@ -51,7 +51,7 @@ export const booksRouter = router({
 			async () => getBorrowedByUserId(userId),
 			["books", "borrowed", userId],
 			{
-				tags: [CACHE_TAGS.books],
+				tags: [CACHE_TAGS.borrowedBooks],
 				revalidate: CACHE_TTL.books,
 			},
 		);
