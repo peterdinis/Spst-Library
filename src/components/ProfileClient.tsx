@@ -53,9 +53,9 @@ export function ProfileClient({ user }: { user: any }) {
 				utils.books.getBorrowedByUser.invalidate();
 				utils.profile.getDashboard.invalidate();
 			},
-			onError: (error) => {
+			onError: ({ error }) => {
 				toast.error(
-					error.error.serverError ||
+					error.serverError ||
 						"Nepodarilo sa vrátiť knihu. Skúste to znova.",
 				);
 			},
@@ -185,8 +185,8 @@ export function ProfileClient({ user }: { user: any }) {
 					</TabsTrigger>
 				</TabsList>
 
-				<AnimatePresence>
-					<TabsContent value="overview" className="space-y-8 outline-none">
+				<AnimatePresence mode="wait">
+					<TabsContent key="overview" value="overview" className="space-y-8 outline-none">
 						<motion.div
 							initial={{ opacity: 0, x: -10 }}
 							animate={{ opacity: 1, x: 0 }}
@@ -279,7 +279,7 @@ export function ProfileClient({ user }: { user: any }) {
 						</motion.div>
 					</TabsContent>
 
-					<TabsContent value="borrows" className="outline-none">
+					<TabsContent key="borrows" value="borrows" className="outline-none">
 						<motion.div
 							initial={{ opacity: 0, x: 10 }}
 							animate={{ opacity: 1, x: 0 }}

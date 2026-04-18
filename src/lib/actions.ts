@@ -4,7 +4,7 @@ import { protectedActionClient } from "./safe-action";
 import { z } from "zod";
 import { db } from "@/db";
 import { users, authors, categories, books, borrowedBooks } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { notifications } from "@/db/schema";
 import { sendTransactionalEmail } from "./mail";
@@ -15,7 +15,7 @@ export const createAuthorAction = protectedActionClient
 	.action(async ({ parsedInput: { name, bio } }) => {
 		const id = crypto.randomUUID();
 		db.insert(authors).values({ id, name, bio }).run();
-		revalidateTag("authors", "default");
+		revalidateTag("authors");
 		return { success: true, id };
 	});
 
@@ -24,7 +24,7 @@ export const createCategoryAction = protectedActionClient
 	.action(async ({ parsedInput: { name } }) => {
 		const id = crypto.randomUUID();
 		db.insert(categories).values({ id, name }).run();
-		revalidateTag("categories", "default");
+		revalidateTag("categories");
 		return { success: true, id };
 	});
 
@@ -64,7 +64,7 @@ export const createBookAction = protectedActionClient
 				.run();
 			revalidatePath("/admin/books", "page");
 			revalidatePath("/", "page");
-			revalidateTag("books", "default");
+			revalidateTag("books");
 			return { success: true, id };
 		},
 	);
@@ -185,9 +185,9 @@ export const borrowBookAction = protectedActionClient
 			revalidatePath("/profile", "page");
 			revalidatePath("/books", "page");
 			revalidatePath(`/books/${bookId}`, "page");
-			revalidateTag("borrowed-books", "default");
-			revalidateTag("books", "default");
-			revalidateTag("notifications", "default");
+			revalidateTag("borrowed-books");
+			revalidateTag("books");
+			revalidateTag("notifications");
 			return { success: true, userId };
 		} catch (e: any) {
 			console.error("borrowBookAction ERROR:", e);
@@ -288,9 +288,38 @@ export const returnBookAction = protectedActionClient
 			revalidatePath("/my-books", "page");
 			revalidatePath("/books", "page");
 			revalidatePath(`/books/${bookId}`, "page");
-			revalidateTag("borrowed-books", "default");
-			revalidateTag("books", "default");
-			revalidateTag("notifications", "default");
+			revalidateTag("borrowed-books");
+			revalidateTag("books");
+			revalidateTag("notifications");
 			return { success: true };
 		},
 	);
+
+export const clearReturnHistoryAction = protectedActionClient
+	.inputSchema(z.object({}))
+	.action(async ({ ctx: { session } }) => {
+		const sessionUserId = session.user?.id;
+		if (!sessionUserId) throw new Error("Nie ste prihlásený.");
+
+		const resolvedUserId = resolveUserIdFromDb(
+			session.user?.email,
+			sessionUserId,
+		);
+
+		if (!resolvedUserId) throw new Error("Používateľ nenájdený.");
+
+		db.delete(borrowedBooks)
+			.where(
+				and(
+					eq(borrowedBooks.userId, resolvedUserId),
+					eq(borrowedBooks.status, "returned")
+				)
+			)
+			.run();
+
+		revalidatePath("/my-books", "page");
+		revalidatePath("/profile", "page");
+		revalidateTag("borrowed-books");
+		
+		return { success: true };
+	});

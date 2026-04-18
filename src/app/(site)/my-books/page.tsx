@@ -13,10 +13,10 @@ export default async function MyBooksPage() {
 		<div className="space-y-6">
 			<div className="flex flex-col gap-2">
 				<h1 className="text-4xl font-extrabold tracking-tight">
-					My Borrowed Books
+					Moje požičané knihy
 				</h1>
 				<p className="text-lg text-slate-500">
-					View and return the books you are currently reading.
+					Prezerajte si a spravujte knihy, ktoré momentálne čítate, alebo si pozrite vašu históriu.
 				</p>
 			</div>
 			<MyBooksList />
