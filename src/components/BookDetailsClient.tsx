@@ -12,6 +12,8 @@ import {
 	Calendar,
 	CheckCircle2,
 	AlertCircle,
+	Clock,
+	Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -27,7 +29,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 type BookForDetails = {
 	id: string;
@@ -66,6 +68,17 @@ export function BookDetailsClient({
 		execute({ bookId: book.id });
 	};
 
+	const dueDateLabel = useMemo(() => {
+		const d = new Date();
+		d.setDate(d.getDate() + 14);
+		return d.toLocaleDateString("sk-SK", {
+			weekday: "long",
+			day: "numeric",
+			month: "long",
+			year: "numeric",
+		});
+	}, [isModalOpen]);
+
 	return (
 		<div className="max-w-6xl mx-auto space-y-12 pb-16">
 			<Link href="/books">
@@ -93,6 +106,7 @@ export function BookDetailsClient({
 										src={book.coverUrl}
 										alt={book.title}
 										fill
+										sizes="(max-width: 1024px) 100vw, 33vw"
 										className="object-cover transition-transform duration-700 group-hover:scale-105"
 									/>
 									<div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -194,117 +208,148 @@ export function BookDetailsClient({
 						initial={{ opacity: 0, y: 20 }}
 						animate={{ opacity: 1, y: 0 }}
 						transition={{ delay: 0.4, duration: 0.5 }}
-						className="pt-4 flex flex-col sm:flex-row flex-wrap gap-4"
+						className="flex flex-col flex-wrap gap-4 pt-4 sm:flex-row"
 					>
-						{/* Vypožičanie Modal */}
+						<Button
+							type="button"
+							size="lg"
+							className={`h-16 rounded-2xl px-10 text-lg font-bold shadow-xl transition-all ${!user ? "cursor-not-allowed bg-slate-300 text-slate-500 dark:bg-slate-700" : book.availableCopies > 0 ? "bg-primary text-primary-foreground hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-primary/25" : "cursor-not-allowed bg-slate-200 text-slate-500 dark:bg-slate-800"}`}
+							disabled={!user || book.availableCopies <= 0 || isExecuting}
+							onClick={() => setIsModalOpen(true)}
+						>
+							<BookOpen className="mr-3 h-6 w-6" />
+							{!user
+								? "Potrebné prihlásenie"
+								: book.availableCopies > 0
+									? "Požičať knihu"
+									: "Momentálne nedostupná"}
+						</Button>
+
 						<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-							<Button
-								type="button"
-								size="lg"
-								className={`h-16 px-10 text-lg rounded-2xl font-bold shadow-xl transition-all ${!user ? "bg-slate-300 dark:bg-slate-700 text-slate-500 cursor-not-allowed" : book.availableCopies > 0 ? "bg-primary hover:bg-primary/90 text-primary-foreground hover:shadow-primary/30 hover:-translate-y-1" : "bg-slate-200 dark:bg-slate-800 text-slate-500 cursor-not-allowed"}`}
-								disabled={
-									!user ||
-									book.availableCopies <= 0 ||
-									isExecuting
-								}
-								onClick={() => setIsModalOpen(true)}
-							>
-								<BookOpen className="mr-3 h-6 w-6" />
-								{!user
-									? "Potrebné prihlásenie"
-									: book.availableCopies > 0
-										? "Ihneď Vypožičať (Zadarmo)"
-										: "Všetky Kusy Vypožičané"}
-							</Button>
-							<DialogContent className="sm:max-w-[425px] rounded-3xl p-0 overflow-hidden border-0 shadow-2xl">
-								<div className="bg-gradient-to-br from-primary/20 to-transparent p-6 pb-4 border-b border-primary/10">
-									<DialogHeader>
-										<div className="flex justify-center mb-4">
-											<div className="p-3 bg-primary/10 rounded-full">
-												<BookOpen className="h-8 w-8 text-primary" />
-											</div>
+							<DialogContent className="max-h-[min(90vh,640px)] gap-0 overflow-hidden rounded-3xl border border-slate-200/80 p-0 shadow-2xl sm:max-w-[540px] dark:border-slate-800">
+								<div className="relative overflow-hidden bg-gradient-to-br from-violet-600 via-primary to-violet-800 px-6 pb-8 pt-8 text-white">
+									<div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
+									<DialogHeader className="relative space-y-3 text-left">
+										<div className="inline-flex w-fit items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white/90">
+											<Library className="h-3.5 w-3.5" />
+											Výpožička
 										</div>
-										<DialogTitle className="text-2xl font-bold text-center">
-											Potvrdenie Výpožičky
+										<DialogTitle className="text-2xl font-bold leading-tight text-white sm:text-3xl">
+											Potvrdiť požičanie
 										</DialogTitle>
-										<DialogDescription className="text-center text-slate-500">
-											Skontrolujte detaily pred potvrdením vypožičania.
+										<DialogDescription className="text-sm leading-relaxed text-violet-100">
+											Skontrolujte údaje. Po potvrdení vám knihu priradíme a pošleme pripomienku pred
+											termínom vrátenia.
 										</DialogDescription>
 									</DialogHeader>
 								</div>
 
-								<div className="p-6 space-y-6 bg-card">
-									{/* Book Summary */}
-									<div className="flex gap-4 items-center bg-muted/50 p-4 rounded-2xl border border-slate-200/50 dark:border-slate-800/50">
+								<div className="space-y-5 overflow-y-auto bg-card p-6">
+									<div className="flex gap-4 rounded-2xl border border-slate-200/80 bg-muted/40 p-4 dark:border-slate-800">
 										{book.coverUrl ? (
-											<div className="relative w-12 h-16">
+											<div className="relative h-[7.5rem] w-14 shrink-0 overflow-hidden rounded-lg shadow-md ring-1 ring-black/5">
 												<Image
 													src={book.coverUrl}
-													alt="Obal"
+													alt={book.title}
 													fill
-													className="object-cover rounded-md shadow-sm"
+													className="object-cover"
+													sizes="56px"
 												/>
 											</div>
 										) : (
-											<div className="w-12 h-16 bg-slate-200 dark:bg-slate-800 rounded-md flex items-center justify-center">
-												<BookOpen className="h-6 w-6 text-slate-400" />
+											<div className="flex h-[7.5rem] w-14 shrink-0 items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-800">
+												<BookOpen className="h-8 w-8 text-slate-400" />
 											</div>
 										)}
-										<div className="flex-1 overflow-hidden">
-											<h4 className="font-bold text-foreground line-clamp-1">
+										<div className="min-w-0 flex-1 space-y-1">
+											<p className="font-semibold leading-snug text-foreground line-clamp-3">
 												{book.title}
-											</h4>
-											<p className="text-sm text-slate-500">{book.author}</p>
+											</p>
+											<p className="text-sm text-muted-foreground">{book.author}</p>
+											<div className="flex flex-wrap gap-2 pt-2">
+												<Badge
+													variant="secondary"
+													className="rounded-lg font-normal"
+												>
+													{book.availableCopies > 0
+														? `${book.availableCopies} ks na sklade`
+														: "Nedostupná"}
+												</Badge>
+											</div>
 										</div>
 									</div>
 
-									{/* User Details */}
-									<div className="space-y-3">
-										<h4 className="text-sm font-semibold uppercase tracking-wider text-slate-500 px-1">
+									<div className="grid gap-3 sm:grid-cols-2">
+										<div className="rounded-2xl border border-slate-200/80 bg-muted/30 p-4 dark:border-slate-800">
+											<div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+												<Clock className="h-3.5 w-3.5" />
+												Dĺžka výpožičky
+											</div>
+											<p className="text-lg font-bold text-foreground">14 dní</p>
+											<p className="mt-1 text-xs text-muted-foreground">
+												Štandardná lehota v našej knižnici
+											</p>
+										</div>
+										<div className="rounded-2xl border border-primary/25 bg-primary/5 p-4 dark:border-primary/30">
+											<div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-primary">
+												<Calendar className="h-3.5 w-3.5" />
+												Termín vrátenia
+											</div>
+											<p className="text-sm font-semibold leading-snug text-foreground capitalize">
+												{dueDateLabel}
+											</p>
+										</div>
+									</div>
+
+									<div className="space-y-2">
+										<h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
 											Údaje čitateľa
 										</h4>
 										{user ? (
-											<div className="bg-primary/5 border border-primary/20 p-4 rounded-2xl flex items-center gap-3">
-												<div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+											<div className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-4">
+												<div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary/15">
 													<User className="h-5 w-5 text-primary" />
 												</div>
-												<div>
-													<p className="font-bold text-foreground text-sm leading-tight">
+												<div className="min-w-0">
+													<p className="truncate text-sm font-semibold text-foreground">
 														{user.name}
 													</p>
-													<p className="text-xs text-slate-500">{user.email}</p>
+													<p className="truncate text-xs text-muted-foreground">{user.email}</p>
 												</div>
 											</div>
 										) : (
-											<div className="bg-destructive/10 border border-destructive/20 p-4 rounded-2xl flex items-center gap-3 text-destructive">
-												<AlertCircle className="h-6 w-6" />
-												<div className="text-sm font-medium">
-													Pre vypožičanie sa musíte prihlásiť.
-												</div>
+											<div className="flex items-center gap-3 rounded-2xl border border-destructive/25 bg-destructive/10 p-4 text-destructive">
+												<AlertCircle className="h-6 w-6 shrink-0" />
+												<p className="text-sm font-medium">Pre požičanie sa musíte prihlásiť.</p>
 											</div>
 										)}
 									</div>
 								</div>
 
-								<DialogFooter className="p-6 pt-0 bg-card sm:justify-between items-center gap-4 border-t border-slate-100 dark:border-slate-800/50 mt-auto">
+								<DialogFooter className="flex-col gap-3 border-t border-slate-200/80 bg-muted/20 p-6 dark:border-slate-800 sm:flex-row sm:justify-end">
 									<Button
+										type="button"
 										variant="ghost"
 										onClick={() => setIsModalOpen(false)}
-										className="rounded-xl w-full sm:w-auto"
+										className="w-full rounded-xl sm:w-auto"
 									>
 										Zrušiť
 									</Button>
 									<Button
+										type="button"
 										onClick={handleConfirmBorrow}
 										disabled={isExecuting || !user}
-										className="rounded-xl px-8 w-full sm:w-auto font-bold shadow-md shadow-primary/20"
+										className="w-full rounded-xl px-8 font-semibold shadow-md shadow-primary/15 sm:w-auto"
 									>
 										{isExecuting ? (
-											"Pracujem..."
+											<>
+												<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+												Odosielam…
+											</>
 										) : (
 											<>
-												<CheckCircle2 className="mr-2 h-4 w-4" /> Potvrdiť
-												výpožičku
+												<CheckCircle2 className="mr-2 h-4 w-4" />
+												Potvrdiť požičanie
 											</>
 										)}
 									</Button>

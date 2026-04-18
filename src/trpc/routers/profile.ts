@@ -2,11 +2,15 @@ import { router, protectedProcedure } from "../server";
 import { userSettings, users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getBorrowedByUserId } from "@/lib/data";
+import { resolveUserIdFromDb } from "@/lib/resolve-user-id";
 
 export const profileRouter = router({
 	/** Jedno volanie namiesto samostatných settings + výpožičiek (batch na klientovi). */
 	getDashboard: protectedProcedure.query(async ({ ctx }) => {
-		const userId = ctx.session.user.id;
+		const userId = resolveUserIdFromDb(
+			ctx.session.user.email,
+			ctx.session.user.id,
+		);
 		if (!userId) return null;
 
 		let settings = await ctx.db.query.userSettings.findFirst({

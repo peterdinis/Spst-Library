@@ -124,7 +124,7 @@ export function AdminNotificationsPanel() {
 						<Table>
 							<TableHeader>
 								<TableRow className="border-b bg-muted/20 hover:bg-muted/20">
-									<TableHead className="w-[70px]">Typ</TableHead>
+									<TableHead className="w-17.5">Typ</TableHead>
 									<TableHead>Udalosť</TableHead>
 									<TableHead className="max-w-[min(100%,28rem)]">Detail</TableHead>
 									<TableHead className="whitespace-nowrap">Čas</TableHead>

@@ -87,6 +87,7 @@ export function AuthorsTable() {
 												src={a.imageUrl}
 												alt=""
 												fill
+												sizes="36px"
 												className="object-cover"
 											/>
 										</div>
@@ -108,14 +109,16 @@ export function AuthorsTable() {
 											if (open) setSelectedAuthor(a);
 										}}
 									>
-										<DialogTrigger>
-											<Button
-												variant="ghost"
-												size="icon"
-												className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary"
-											>
-												<Edit className="h-4 w-4" />
-											</Button>
+										<DialogTrigger
+											render={
+												<Button
+													variant="ghost"
+													size="icon"
+													className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary"
+												/>
+											}
+										>
+											<Edit className="h-4 w-4" />
 										</DialogTrigger>
 										<DialogContent className="sm:max-w-md rounded-3xl">
 											<AuthorForm
@@ -214,14 +217,16 @@ export function CategoriesTable() {
 											if (open) setSelectedCategory(c);
 										}}
 									>
-										<DialogTrigger>
-											<Button
-												variant="ghost"
-												size="icon"
-												className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary"
-											>
-												<Edit className="h-4 w-4" />
-											</Button>
+										<DialogTrigger
+											render={
+												<Button
+													variant="ghost"
+													size="icon"
+													className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary"
+												/>
+											}
+										>
+											<Edit className="h-4 w-4" />
 										</DialogTrigger>
 										<DialogContent className="sm:max-w-md rounded-3xl">
 											<CategoryForm
@@ -326,6 +331,7 @@ export function BooksTable() {
 												src={b.coverUrl}
 												alt={b.title}
 												fill
+												sizes="36px"
 												className="object-cover rounded shadow-sm group-hover:shadow-md transition-shadow"
 											/>
 										</div>
@@ -364,14 +370,16 @@ export function BooksTable() {
 											if (open) setSelectedBook(b);
 										}}
 									>
-										<DialogTrigger>
-											<Button
-												variant="ghost"
-												size="icon"
-												className="h-9 w-9 rounded-xl hover:bg-violet-50 hover:text-violet-600 border border-transparent hover:border-violet-100"
-											>
-												<Edit className="h-4 w-4" />
-											</Button>
+										<DialogTrigger
+											render={
+												<Button
+													variant="ghost"
+													size="icon"
+													className="h-9 w-9 rounded-xl hover:bg-violet-50 hover:text-violet-600 border border-transparent hover:border-violet-100"
+												/>
+											}
+										>
+											<Edit className="h-4 w-4" />
 										</DialogTrigger>
 										<DialogContent className="sm:max-w-4xl rounded-3xl p-0 overflow-hidden border-none shadow-2xl">
 											<div className="max-h-[90vh] overflow-y-auto p-6 bg-white dark:bg-slate-950">

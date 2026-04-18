@@ -32,7 +32,7 @@ export default function NotFound() {
 				className="space-y-6 max-w-lg mt-6"
 			>
 				<h2 className="text-3xl font-extrabold tracking-tight">
-					Kniha nebola nájdená
+					Stránka nebola nájdená
 				</h2>
 				<p className="text-lg text-slate-500 font-medium">
 					Stránka, ktorú hľadáte, v našom archíve neexistuje alebo bola

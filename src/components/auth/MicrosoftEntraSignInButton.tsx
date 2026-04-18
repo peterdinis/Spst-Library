@@ -11,9 +11,7 @@ type MicrosoftEntraSignInButtonProps = {
 	callbackUrl: string;
 	className?: string;
 	children: ReactNode;
-	/** Ikona vľavo pred textom (skryje sa počas presmerovania). */
 	icon?: ReactNode;
-	/** Krátky text pod tlačidlom počas presmerovania na Microsoft. */
 	pendingHint?: string;
 };
 

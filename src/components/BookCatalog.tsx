@@ -10,7 +10,8 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import Image from "next/image";
+import { useState, useEffect, useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import {
 	Search,
@@ -18,7 +19,6 @@ import {
 	ChevronRight,
 	BookOpen,
 	ExternalLink,
-	Filter,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -67,6 +67,18 @@ export function BookCatalog() {
 	const books = data?.items || [];
 	const totalItems = data?.total || 0;
 	const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+
+	const visiblePages = useMemo(() => {
+		if (totalPages <= 1) return [] as number[];
+		if (totalPages <= 7) {
+			return Array.from({ length: totalPages }, (_, i) => i + 1);
+		}
+		const s = new Set<number>([1, totalPages]);
+		for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+			if (i >= 1 && i <= totalPages) s.add(i);
+		}
+		return [...s].sort((a, b) => a - b);
+	}, [totalPages, currentPage]);
 
 	if (isLoading)
 		return (
@@ -276,10 +288,10 @@ export function BookCatalog() {
 			{books.length > 0 ? (
 				<motion.div
 					layout
-					className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+					className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8"
 				>
 					<AnimatePresence mode="popLayout">
-						{books.map((book) => (
+						{books.map((book, index) => (
 							<motion.div
 								key={book.id}
 								layout
@@ -290,67 +302,63 @@ export function BookCatalog() {
 								className="h-full"
 							>
 								<Link href={`/books/${book.id}`} className="block h-full group">
-									<Card className="flex flex-col h-full bg-white dark:bg-slate-950 border-slate-200/50 dark:border-slate-800/50 overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 hover:border-violet-500/50 relative rounded-[2rem]">
-										<div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0" />
-
-										<CardHeader className="p-0 z-10 w-full relative">
+									<Card className="flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white ring-1 ring-slate-950/5 transition-all duration-300 hover:-translate-y-1 hover:border-violet-300/60 hover:shadow-xl hover:shadow-violet-500/10 dark:border-slate-800/80 dark:bg-slate-950 dark:ring-white/10 dark:hover:border-violet-500/40">
+										<CardHeader className="relative w-full p-0">
 											{book.coverUrl ? (
-												<div className="relative w-full aspect-[3/4] overflow-hidden">
-													<motion.img
-														whileHover={{ scale: 1.05 }}
-														transition={{ duration: 0.6 }}
-														src={book.coverUrl!}
+												<div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
+													<Image
+														src={book.coverUrl}
 														alt={book.title}
-														className="w-full h-full object-cover group-hover:brightness-110 transition-all"
+														fill
+														sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+														className="object-cover transition duration-500 group-hover:scale-[1.03]"
+														priority={index < 4}
 													/>
 												</div>
 											) : (
-												<div className="relative w-full aspect-[3/4] bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
-													<BookOpen className="h-16 w-16 text-slate-200" />
+												<div className="relative flex aspect-[3/4] w-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800">
+													<BookOpen className="h-16 w-16 text-slate-300 dark:text-slate-600" />
 												</div>
 											)}
 
-											<div className="absolute top-6 right-6 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-1.5 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-xl z-20">
-												<span className="text-[10px] font-black uppercase tracking-widest text-violet-600">
-													{(book as any).category?.name || "Kniha"}
+											<div className="absolute left-4 top-4 max-w-[calc(100%-2rem)] rounded-2xl border border-white/60 bg-white/90 px-3 py-1.5 shadow-sm backdrop-blur-md dark:border-slate-700/60 dark:bg-slate-900/90">
+												<span className="line-clamp-1 text-[10px] font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400">
+													{book.category?.name ?? "Kniha"}
 												</span>
 											</div>
 										</CardHeader>
 
-										<CardContent className="flex-1 p-8 z-10">
-											<div className="space-y-2 mb-4">
-												<CardTitle className="leading-tight text-2xl font-black text-slate-900 dark:text-white group-hover:text-violet-600 transition-colors line-clamp-2">
+										<CardContent className="flex flex-1 flex-col p-6 pt-5">
+											<div className="mb-3 space-y-1">
+												<CardTitle className="line-clamp-2 text-xl font-bold leading-snug text-slate-900 transition-colors group-hover:text-violet-600 dark:text-white">
 													{book.title}
 												</CardTitle>
-												<CardDescription className="text-sm font-bold text-slate-400 uppercase tracking-tight">
-													{(book as any).author?.name || "Neznámy autor"}
+												<CardDescription className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+													{book.author?.name ?? "Neznámy autor"}
 												</CardDescription>
 											</div>
-											<p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-3 leading-relaxed font-medium">
-												{book.description}
+											<p className="line-clamp-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+												{book.description || "Bez popisu."}
 											</p>
 										</CardContent>
 
-										<CardFooter className="p-8 pt-0 flex flex-col items-stretch gap-6 z-10">
-											<div className="flex justify-between items-center text-sm">
-												<span className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">
-													Dostupnosť
+										<CardFooter className="flex flex-col gap-4 p-6 pt-0">
+											<div className="flex items-center justify-between gap-2 text-xs">
+												<span className="font-semibold uppercase tracking-wider text-slate-400">
+													Sklad
 												</span>
 												<span
-													className={`font-black px-3 py-1 rounded-xl text-[10px] uppercase tracking-wider ${book.availableCopies > 0 ? "bg-emerald-50 text-emerald-600 border border-emerald-100" : "bg-rose-50 text-rose-600 border border-rose-100"}`}
+													className={`rounded-lg px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${book.availableCopies > 0 ? "border border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-400" : "border border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-900 dark:bg-rose-950/40 dark:text-rose-400"}`}
 												>
 													{book.availableCopies > 0
-														? `${book.availableCopies} na sklade`
-														: "Nedostupná"}
+														? `${book.availableCopies} ks`
+														: "Vypredané"}
 												</span>
 											</div>
-											<Button
-												size="lg"
-												className="w-full rounded-2xl font-bold h-12 bg-slate-900 hover:bg-violet-600 text-white transition-all shadow-xl hover:shadow-violet-500/25 border-none"
-											>
-												Detail knihy
-												<ExternalLink className="ml-2 h-4 w-4" />
-											</Button>
+											<span className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 text-sm font-bold text-white shadow-md transition group-hover:bg-violet-600 dark:bg-slate-800 dark:group-hover:bg-violet-600">
+												Otvoriť detail
+												<ExternalLink className="h-4 w-4 opacity-80" />
+											</span>
 										</CardFooter>
 									</Card>
 								</Link>
@@ -393,38 +401,52 @@ export function BookCatalog() {
 
 			{/* Paginácia */}
 			{totalPages > 1 && (
-				<div className="flex items-center justify-center gap-8 pt-12">
-					<Button
-						variant="ghost"
-						onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-						disabled={currentPage === 1}
-						className="rounded-2xl h-14 px-6 hover:bg-slate-100 font-bold gap-2 text-slate-600 disabled:opacity-30"
-					>
-						<ChevronLeft className="h-5 w-5" />
-						Predošlá
-					</Button>
+				<div className="flex flex-col items-center gap-4 pt-10">
+					<div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
+						<Button
+							variant="ghost"
+							onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+							disabled={currentPage === 1}
+							className="h-12 gap-2 rounded-2xl px-6 font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-30"
+						>
+							<ChevronLeft className="h-5 w-5" />
+							Predošlá
+						</Button>
 
-					<div className="flex items-center gap-3">
-						{[...Array(totalPages)].map((_, i) => (
-							<button
-								key={i}
-								onClick={() => setCurrentPage(i + 1)}
-								className={`h-10 w-10 rounded-xl font-bold transition-all ${currentPage === i + 1 ? "bg-slate-900 text-white shadow-xl scale-110" : "hover:bg-slate-100 text-slate-500"}`}
-							>
-								{i + 1}
-							</button>
-						))}
+						<div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2">
+							{visiblePages.map((page, idx) => {
+								const prev = visiblePages[idx - 1];
+								const showEllipsis = prev !== undefined && page - prev > 1;
+								return (
+									<span key={page} className="flex items-center gap-1.5">
+										{showEllipsis && (
+											<span className="px-1 text-slate-400" aria-hidden>
+												…
+											</span>
+										)}
+										<button
+											type="button"
+											onClick={() => setCurrentPage(page)}
+											className={`flex h-9 min-w-[2.25rem] items-center justify-center rounded-xl px-2 text-sm font-bold transition-all ${currentPage === page ? "scale-105 bg-slate-900 text-white shadow-md dark:bg-violet-600" : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
+											aria-current={currentPage === page ? "page" : undefined}
+										>
+											{page}
+										</button>
+									</span>
+								);
+							})}
+						</div>
+
+						<Button
+							variant="ghost"
+							onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+							disabled={currentPage === totalPages}
+							className="h-12 gap-2 rounded-2xl px-6 font-bold text-slate-600 hover:bg-slate-100 disabled:opacity-30"
+						>
+							Nasledovná
+							<ChevronRight className="h-5 w-5" />
+						</Button>
 					</div>
-
-					<Button
-						variant="ghost"
-						onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-						disabled={currentPage === totalPages}
-						className="rounded-2xl h-14 px-6 hover:bg-slate-100 font-bold gap-2 text-slate-600 disabled:opacity-30"
-					>
-						Nasledovná
-						<ChevronRight className="h-5 w-5" />
-					</Button>
 				</div>
 			)}
 		</div>

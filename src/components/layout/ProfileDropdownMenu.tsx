@@ -14,14 +14,9 @@ import { BookMarked, Settings, User, Activity } from "lucide-react";
 type ProfileDropdownMenuProps = {
 	name?: string | null;
 	email?: string | null;
-	/** Z DB (`is_admin`); bez toho sa nezobrazí položka Administrácia. */
 	showAdminLink?: boolean;
 };
 
-/**
- * Samostatný client komponent: navigácia cez router (nie Link vnútri Menu.Item),
- * odhlásenie bez vnoreného &lt;button&gt; v položke menu — Base UI Menu inak padá / správa sa divne.
- */
 export function ProfileDropdownMenu({
 	name,
 	email,
@@ -87,6 +82,18 @@ export function ProfileDropdownMenu({
 					</div>
 					<span className="font-medium text-slate-700 dark:text-slate-100">
 						Moje výpožičky
+					</span>
+				</DropdownMenuItem>
+
+				<DropdownMenuItem
+					className="cursor-pointer gap-3 rounded-lg py-2 focus:bg-slate-100 dark:focus:bg-slate-800/80"
+					onClick={() => router.push("/settings")}
+				>
+					<div className="rounded-md bg-slate-200/80 p-1.5 text-slate-700 dark:bg-slate-600/40 dark:text-slate-200">
+						<Settings className="h-3.5 w-3.5" />
+					</div>
+					<span className="font-medium text-slate-700 dark:text-slate-100">
+						Nastavenia
 					</span>
 				</DropdownMenuItem>
 

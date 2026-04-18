@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
 	Card,
@@ -21,17 +22,17 @@ import {
 	Star,
 	Activity,
 	Clock,
+	ExternalLink,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { mockUser } from "@/lib/mockData";
-import Link from "next/link";
 import { Progress } from "@/components/ui/progress";
 import { trpc } from "@/trpc/client";
-import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { useAction } from "next-safe-action/hooks";
 import { returnBookAction } from "@/lib/actions";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CLIENT_STALE_TIME } from "@/trpc/cache-config";
 
 export function ProfileClient({ user }: { user: any }) {
@@ -44,40 +45,6 @@ export function ProfileClient({ user }: { user: any }) {
 			staleTime: CLIENT_STALE_TIME.profile,
 		});
 
-	const [localSettings, setLocalSettings] = useState({
-		emailNotifications: true,
-		dueReminders: true,
-		systemUpdates: false,
-	});
-
-	const settings = dashboard?.settings;
-
-	useEffect(() => {
-		if (!settings) return;
-		setLocalSettings({
-			emailNotifications: settings.emailNotifications,
-			dueReminders: settings.dueReminders,
-			systemUpdates: settings.systemUpdates,
-		});
-	}, [settings]);
-
-	const updateSetting = trpc.settings.updateSettings.useMutation({
-		onSuccess: () => {
-			utils.settings.getSettings.invalidate();
-			utils.profile.getDashboard.invalidate();
-			toast.success("Nastavenia uložené");
-		},
-		onError: () => toast.error("Chyba pri ukladaní"),
-	});
-
-	const toggleSetting = (
-		key: "emailNotifications" | "dueReminders" | "systemUpdates",
-		value: boolean,
-	) => {
-		setLocalSettings((prev) => ({ ...prev, [key]: value }));
-		updateSetting.mutate({ [key]: value });
-	};
-
 	const { execute: executeReturn, isExecuting: isReturning } = useAction(
 		returnBookAction,
 		{
@@ -86,13 +53,19 @@ export function ProfileClient({ user }: { user: any }) {
 				utils.books.getBorrowedByUser.invalidate();
 				utils.profile.getDashboard.invalidate();
 			},
-			onError: (error) => {
-				toast.error(error.error.serverError || "Chyba pri vracaní knihy");
+			onError: ({ error }) => {
+				toast.error(
+					error.serverError ||
+						"Nepodarilo sa vrátiť knihu. Skúste to znova.",
+				);
 			},
 		},
 	);
 
 	const userBorrows = dashboard?.borrows;
+	const settings = dashboard?.settings;
+	const readingGoal = settings?.readingGoal ?? null;
+
 	const borrowsLoading = isAuthed && dashboardLoading;
 
 	const [activeTab, setActiveTab] = useState("overview");
@@ -118,8 +91,11 @@ export function ProfileClient({ user }: { user: any }) {
 		[userBorrows],
 	);
 
-	const readingGoal = 12;
 	const booksRead = returnedCount;
+	const challengePct =
+		readingGoal != null && readingGoal > 0
+			? Math.min(100, Math.round((booksRead / readingGoal) * 100))
+			: 0;
 
 	const firstActivityDate = useMemo(() => {
 		if (!userBorrows?.length) return null;
@@ -134,179 +110,201 @@ export function ProfileClient({ user }: { user: any }) {
 			<motion.div
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
-				className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-primary/10 via-primary/5 to-background border border-primary/10 shadow-lg p-8 sm:p-12 mb-8"
+				className="relative overflow-hidden rounded-[2.5rem] border border-primary/10 bg-gradient-to-r from-primary/10 via-primary/5 to-background p-8 shadow-lg sm:p-12 mb-8"
 			>
-				<div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-primary/20 rounded-full blur-[80px] pointer-events-none" />
+				<div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-[80px]" />
 
-				<div className="relative z-10 flex flex-col sm:flex-row items-center gap-8 text-center sm:text-left">
+				<div className="relative z-10 flex flex-col items-center gap-8 text-center sm:flex-row sm:text-left">
 					<div className="relative group">
-						<div className="absolute -inset-1 bg-gradient-to-r from-primary to-emerald-400 rounded-full blur opacity-40 group-hover:opacity-70 transition duration-500" />
-						<div className="relative w-32 h-32 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center border-4 border-background overflow-hidden">
+						<div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary to-emerald-400 opacity-40 blur transition duration-500 group-hover:opacity-70" />
+						<div className="relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-background bg-slate-100 dark:bg-slate-800">
 							{displayUser.image ? (
 								<Image
 									src={displayUser.image}
 									alt=""
 									width={128}
 									height={128}
-									className="object-cover w-full h-full"
+									className="h-full w-full object-cover"
 								/>
 							) : (
-								<User className="w-12 h-12 text-slate-400" />
+								<User className="h-12 w-12 text-slate-400" />
 							)}
 						</div>
-						<Badge className="absolute bottom-2 right-0 bg-primary shadow-lg border-2 border-background">
+						<Badge className="absolute bottom-2 right-0 border-2 border-background bg-primary shadow-lg">
 							{displayUser.role}
 						</Badge>
 					</div>
 
-					<div className="flex-1 space-y-2">
+					<div className="min-w-0 flex-1 space-y-2">
 						<h1 className="text-4xl font-extrabold tracking-tight text-foreground">
 							{displayUser.name}
 						</h1>
-						<p className="text-lg text-slate-500 font-medium flex items-center justify-center sm:justify-start gap-2">
-							<Mail className="w-4 h-4" /> {displayUser.email}
+						<p className="flex items-center justify-center gap-2 text-lg font-medium text-slate-500 sm:justify-start">
+							<Mail className="h-4 w-4 shrink-0" />{" "}
+							<span className="truncate">{displayUser.email}</span>
 						</p>
 						{firstActivityDate && (
-							<p className="text-sm text-slate-400 flex items-center justify-center sm:justify-start gap-2 pt-2">
-								<Calendar className="w-4 h-4" /> Prvá výpožička:{" "}
+							<p className="flex items-center justify-center gap-2 pt-2 text-sm text-slate-400 sm:justify-start">
+								<Calendar className="h-4 w-4 shrink-0" /> Prvá výpožička:{" "}
 								{firstActivityDate.toLocaleDateString("sk-SK")}
 							</p>
 						)}
 					</div>
 
-					<div className="flex flex-col gap-3 w-full sm:w-auto mt-6 sm:mt-0">
-						<Button
-							variant="outline"
-							className="rounded-full shadow-sm hover:border-primary/50"
-							type="button"
-							onClick={() => setActiveTab("settings")}
-						>
-							<Settings className="w-4 h-4 mr-2" /> Nastavenia
-						</Button>
-					</div>
+					{isAuthed && (
+						<div className="mt-2 flex w-full flex-col gap-2 sm:mt-0 sm:w-auto">
+							<Link
+								href="/settings"
+								className={cn(
+									buttonVariants({ variant: "outline", size: "lg" }),
+									"rounded-full shadow-sm",
+								)}
+							>
+								<Settings className="mr-2 h-4 w-4" />
+								Nastavenia účtu
+								<ExternalLink className="ml-2 h-3.5 w-3.5 opacity-60" />
+							</Link>
+						</div>
+					)}
 				</div>
 			</motion.div>
 
-			<Tabs
-				value={activeTab}
-				onValueChange={setActiveTab}
-				className="w-full"
-			>
-				<TabsList className="grid w-full grid-cols-3 md:w-[600px] h-12 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 mb-8 transition-all">
+			<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+				<TabsList className="mb-8 grid h-12 w-full max-w-md grid-cols-2 rounded-full border border-slate-200 bg-slate-100 p-1 dark:border-slate-800 dark:bg-slate-900">
 					<TabsTrigger
 						value="overview"
 						className="rounded-full text-sm font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm"
 					>
-						<Activity className="w-4 h-4 mr-2" /> Prehľad
+						<Activity className="mr-2 h-4 w-4" /> Prehľad
 					</TabsTrigger>
 					<TabsTrigger
 						value="borrows"
 						className="rounded-full text-sm font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm"
 					>
-						<BookMarked className="w-4 h-4 mr-2" /> Moje Výpožičky
-					</TabsTrigger>
-					<TabsTrigger
-						value="settings"
-						className="rounded-full text-sm font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm"
-					>
-						<Settings className="w-4 h-4 mr-2" /> Nastavenia
+						<BookMarked className="mr-2 h-4 w-4" /> Výpožičky
 					</TabsTrigger>
 				</TabsList>
 
 				<AnimatePresence mode="wait">
-					<TabsContent value="overview" className="space-y-8 outline-none">
+					<TabsContent key="overview" value="overview" className="space-y-8 outline-none">
 						<motion.div
 							initial={{ opacity: 0, x: -10 }}
 							animate={{ opacity: 1, x: 0 }}
 							exit={{ opacity: 0, x: -10 }}
-							className="grid grid-cols-1 md:grid-cols-3 gap-6"
+							className="grid grid-cols-1 gap-6 md:grid-cols-3"
 						>
-							<Card className="bg-card/50 backdrop-blur-sm border-slate-200/50 dark:border-slate-800/50 rounded-3xl shadow-md">
+							<Card className="rounded-3xl border-slate-200/50 bg-card/50 shadow-md backdrop-blur-sm dark:border-slate-800/50">
 								<CardHeader className="pb-2">
-									<CardTitle className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-										<BookMarked className="w-4 h-4 text-primary" /> Aktuálne
-										Výpožičky
+									<CardTitle className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
+										<BookMarked className="h-4 w-4 text-primary" />
+										Aktuálne výpožičky
 									</CardTitle>
 								</CardHeader>
 								<CardContent>
 									<div className="text-4xl font-black text-foreground">
 										{activeBorrows.length}
 									</div>
-									<p className="text-sm text-slate-500 mt-1">
-										Z celkového limitu 5 kníh.
+									<p className="mt-1 text-sm text-slate-500">
+										Bez limitu na počet súčasných výpožičiek.
 									</p>
 								</CardContent>
 							</Card>
 
-							<Card className="bg-card/50 backdrop-blur-sm border-slate-200/50 dark:border-slate-800/50 rounded-3xl shadow-md">
+							<Card className="rounded-3xl border-slate-200/50 bg-card/50 shadow-md backdrop-blur-sm dark:border-slate-800/50">
 								<CardHeader className="pb-2">
-									<CardTitle className="text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
-										<History className="w-4 h-4 text-emerald-500" /> Prečítané
-										Knihy
+									<CardTitle className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
+										<History className="h-4 w-4 text-emerald-500" />
+										Vrátené knihy
 									</CardTitle>
 								</CardHeader>
 								<CardContent>
 									<div className="text-4xl font-black text-foreground">
 										{booksRead}
 									</div>
-									<p className="text-sm text-slate-500 mt-1">
-										Vrátených kníh v histórii.
+									<p className="mt-1 text-sm text-slate-500">
+										Celkom v histórii účtu.
 									</p>
 								</CardContent>
 							</Card>
 
-							<Card className="bg-card/50 backdrop-blur-sm border-slate-200/50 dark:border-slate-800/50 rounded-3xl shadow-md bg-gradient-to-br from-primary/5 to-transparent">
+							<Card className="rounded-3xl border-slate-200/50 bg-gradient-to-br from-primary/5 to-transparent bg-card/50 shadow-md backdrop-blur-sm dark:border-slate-800/50">
 								<CardHeader className="pb-2">
-									<CardTitle className="text-sm font-bold text-primary uppercase tracking-wider flex items-center gap-2">
-										<Star className="w-4 h-4 fill-primary text-primary" /> Výzva
-										Roka
+									<CardTitle className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary">
+										<Star className="h-4 w-4 fill-primary text-primary" />
+										Čitateľská výzva
 									</CardTitle>
 								</CardHeader>
-								<CardContent>
-									<div className="flex justify-between items-end mb-2">
-										<span className="text-3xl font-black text-foreground">
-											{Math.round((booksRead / readingGoal) * 100)}%
-										</span>
-										<span className="text-sm text-slate-500 font-medium mb-1">
-											{booksRead} / {readingGoal} kníh
-										</span>
-									</div>
-									<Progress
-										value={(booksRead / readingGoal) * 100}
-										className="h-2.5 rounded-full"
-									/>
+								<CardContent className="space-y-3">
+									{readingGoal != null && readingGoal > 0 ? (
+										<>
+											<div className="flex items-end justify-between">
+												<span className="text-3xl font-black text-foreground">
+													{challengePct}%
+												</span>
+												<span className="mb-1 text-sm font-medium text-slate-500">
+													{booksRead} / {readingGoal} kníh
+												</span>
+											</div>
+											<Progress value={challengePct} className="h-2.5 rounded-full" />
+											<p className="text-xs text-muted-foreground">
+												Cieľ upravíte v{" "}
+												<Link
+													href="/settings"
+													className="font-medium text-primary underline-offset-4 hover:underline"
+												>
+													nastaveniach
+												</Link>
+												.
+											</p>
+										</>
+									) : (
+										<>
+											<p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+												Nastavte si ročný cieľ počtu prečítaných kníh (podľa
+												vrátených výpožičiek).
+											</p>
+											<Link
+												href="/settings"
+												className={cn(
+													buttonVariants({ variant: "secondary", size: "sm" }),
+													"rounded-xl",
+												)}
+											>
+												Otvoriť nastavenia
+											</Link>
+										</>
+									)}
 								</CardContent>
 							</Card>
 						</motion.div>
 					</TabsContent>
 
-					<TabsContent value="borrows" className="outline-none">
+					<TabsContent key="borrows" value="borrows" className="outline-none">
 						<motion.div
 							initial={{ opacity: 0, x: 10 }}
 							animate={{ opacity: 1, x: 0 }}
 							exit={{ opacity: 0, x: 10 }}
 						>
-							<div className="flex items-center justify-between mb-6 px-2">
+							<div className="mb-6 flex items-center justify-between px-2">
 								<h2 className="text-2xl font-bold tracking-tight">
 									Aktuálne požičané knihy
 								</h2>
 								<Badge
 									variant="secondary"
-									className="px-3 py-1 text-sm font-bold rounded-full"
+									className="rounded-full px-3 py-1 text-sm font-bold"
 								>
-									{activeBorrows.length} Aktívne
+									{activeBorrows.length} aktívne
 								</Badge>
 							</div>
 
 							{borrowsLoading ? (
-								<div className="py-20 text-center text-slate-500 rounded-[3rem] border border-dashed border-slate-200 dark:border-slate-800">
+								<div className="rounded-[3rem] border border-dashed border-slate-200 py-20 text-center text-slate-500 dark:border-slate-800">
 									Načítavam výpožičky…
 								</div>
 							) : activeBorrows.length > 0 ? (
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+								<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 									{activeBorrows.map((borrow) => {
 										const borrowedDate = new Date(borrow.borrowDate);
-										// Realná zmluva by mala používať dueDate z databázy
 										const deadlineDate = new Date(
 											borrow.dueDate || borrowedDate,
 										);
@@ -315,30 +313,31 @@ export function ProfileClient({ user }: { user: any }) {
 										return (
 											<Card
 												key={borrow.id}
-												className="flex flex-col sm:flex-row overflow-hidden rounded-3xl group border-slate-200/50 dark:border-slate-800/50 hover:shadow-xl hover:border-primary/30 transition-all bg-card/60 backdrop-blur-md"
+												className="group flex flex-col overflow-hidden rounded-3xl border-slate-200/50 bg-card/60 backdrop-blur-md transition-all hover:border-primary/30 hover:shadow-xl dark:border-slate-800/50 sm:flex-row"
 											>
-												<div className="w-full sm:w-1/3 aspect-[3/4] sm:aspect-auto bg-slate-100 dark:bg-slate-900 relative overflow-hidden shrink-0">
+												<div className="relative aspect-[3/4] w-full shrink-0 overflow-hidden bg-slate-100 dark:bg-slate-900 sm:aspect-auto sm:w-1/3">
 													{borrow.book?.coverUrl ? (
 														<Image
 															src={borrow.book.coverUrl}
 															alt={borrow.book?.title || "Kniha"}
 															fill
-															className="object-cover group-hover:scale-105 transition-transform duration-500"
+														sizes="(max-width: 768px) 100vw, 33vw"
+															className="object-cover transition-transform duration-500 group-hover:scale-105"
 														/>
 													) : (
-														<div className="w-full h-full flex items-center justify-center text-slate-400">
-															<BookMarked className="w-12 h-12 opacity-50" />
+														<div className="flex h-full w-full items-center justify-center text-slate-400">
+															<BookMarked className="h-12 w-12 opacity-50" />
 														</div>
 													)}
 													{isLate && (
-														<div className="absolute top-0 left-0 w-full bg-destructive text-destructive-foreground text-xs font-bold text-center py-1.5 uppercase tracking-widest shadow-md">
-															Po Termíne
+														<div className="absolute left-0 top-0 w-full bg-destructive py-1.5 text-center text-xs font-bold uppercase tracking-widest text-destructive-foreground shadow-md">
+															Po termíne
 														</div>
 													)}
 												</div>
-												<div className="flex-1 flex flex-col p-5 sm:p-6 justify-between">
+												<div className="flex flex-1 flex-col justify-between p-5 sm:p-6">
 													<div>
-														<CardTitle className="text-xl font-bold leading-tight group-hover:text-primary transition-colors line-clamp-2 mb-1">
+														<CardTitle className="mb-1 line-clamp-2 text-xl font-bold leading-tight transition-colors group-hover:text-primary">
 															{borrow.book?.title || "Neznáma kniha"}
 														</CardTitle>
 														<CardDescription className="text-sm font-medium">
@@ -347,28 +346,28 @@ export function ProfileClient({ user }: { user: any }) {
 													</div>
 
 													<div className="mt-6 space-y-4">
-														<div className="flex flex-col gap-1 w-full bg-slate-50 dark:bg-slate-900/50 p-3 rounded-2xl border border-slate-100 dark:border-slate-800 text-sm">
-															<div className="flex justify-between items-center text-slate-500 font-medium">
+														<div className="flex w-full flex-col gap-1 rounded-2xl border border-slate-100 bg-slate-50 p-3 text-sm dark:border-slate-800 dark:bg-slate-900/50">
+															<div className="flex items-center justify-between font-medium text-slate-500">
 																<span className="flex items-center gap-1.5">
-																	<Clock className="w-3.5 h-3.5" /> Výpožička:
+																	<Clock className="h-3.5 w-3.5" /> Výpožička
 																</span>
 																<span>
 																	{borrowedDate.toLocaleDateString("sk-SK")}
 																</span>
 															</div>
 															<div
-																className={`flex justify-between items-center font-bold ${isLate ? "text-destructive" : "text-emerald-500"}`}
+																className={`flex items-center justify-between font-bold ${isLate ? "text-destructive" : "text-emerald-500"}`}
 															>
 																<span className="flex items-center gap-1.5">
-																	<Calendar className="w-3.5 h-3.5" /> Vrátiť
-																	do:
+																	<Calendar className="h-3.5 w-3.5" />
+																	Termín vrátenia
 																</span>
 																<span>
 																	{deadlineDate.toLocaleDateString("sk-SK")}
 																</span>
 															</div>
 														</div>
-														<div className="flex flex-col xl:flex-row gap-2">
+														<div className="flex flex-col gap-2 xl:flex-row">
 															<Link
 																href={`/books/${borrow.bookId}`}
 																className="block flex-1"
@@ -400,106 +399,19 @@ export function ProfileClient({ user }: { user: any }) {
 									})}
 								</div>
 							) : (
-								<div className="text-center py-20 bg-muted/30 rounded-[3rem] border border-dashed border-slate-300 dark:border-slate-700">
-									<BookMarked className="h-16 w-16 text-slate-300 mx-auto mb-4" />
-									<h3 className="text-2xl font-bold">
-										Zatiaľ žiadne výpožičky
-									</h3>
-									<p className="text-slate-500 mt-2 mb-8 max-w-sm mx-auto">
-										Nemáte u nás požičané žiadne knihy. Prezrite si náš obrovský
-										katalóg.
+								<div className="rounded-[3rem] border border-dashed border-slate-300 bg-muted/30 py-20 text-center dark:border-slate-700">
+									<BookMarked className="mx-auto mb-4 h-16 w-16 text-slate-300" />
+									<h3 className="text-2xl font-bold">Zatiaľ žiadne výpožičky</h3>
+									<p className="mx-auto mt-2 mb-8 max-w-sm text-slate-500">
+										Nemáte u nás požičané žiadne knihy. Prezrite si katalóg.
 									</p>
 									<Link href="/books">
 										<Button size="lg" className="rounded-full px-8 shadow-xl">
-											Prezerať Katalóg
+											Prezerať katalóg
 										</Button>
 									</Link>
 								</div>
 							)}
-						</motion.div>
-					</TabsContent>
-					<TabsContent value="settings" className="outline-none">
-						<motion.div
-							initial={{ opacity: 0, y: 10 }}
-							animate={{ opacity: 1, y: 0 }}
-							className="space-y-6"
-						>
-							<div className="mb-8">
-								<h2 className="text-2xl font-bold tracking-tight">
-									Nastavenia Účtu
-								</h2>
-								<p className="text-slate-500">
-									Prispôsobte si ako funguje váš knižničný systém.
-								</p>
-							</div>
-
-							<div className="grid gap-6">
-								<Card className="rounded-[2rem] border-slate-200/50 shadow-sm overflow-hidden">
-									<div className="p-8 space-y-8">
-										<div className="flex items-center justify-between gap-4">
-											<div className="space-y-1">
-												<h4 className="text-lg font-bold leading-none">
-													Emailové Notifikácie
-												</h4>
-												<p className="text-sm text-slate-500 font-medium">
-													Budeme vám posielať informácie o zmenách stavu vašich
-													objednávok.
-												</p>
-											</div>
-											<Switch
-												checked={localSettings.emailNotifications}
-												onCheckedChange={(val) =>
-													toggleSetting("emailNotifications", val)
-												}
-												disabled={dashboardLoading || updateSetting.isPending}
-											/>
-										</div>
-
-										<div className="h-px bg-slate-100 dark:bg-slate-800" />
-
-										<div className="flex items-center justify-between gap-4">
-											<div className="space-y-1">
-												<h4 className="text-lg font-bold leading-none">
-													Pripomienky Vrátenia
-												</h4>
-												<p className="text-sm text-slate-500 font-medium">
-													Upozorníme vás 2 dni pred termínom vrátenia knihy.
-												</p>
-											</div>
-											<Switch
-												checked={localSettings.dueReminders}
-												onCheckedChange={(val) =>
-													toggleSetting("dueReminders", val)
-												}
-												disabled={dashboardLoading || updateSetting.isPending}
-											/>
-										</div>
-
-										<div className="h-px bg-slate-100 dark:bg-slate-800" />
-
-										<div className="flex items-center justify-between gap-4">
-											<div className="space-y-1">
-												<h4 className="text-lg font-bold leading-none">
-													Systémové Novinky
-												</h4>
-												<p className="text-sm text-slate-500 font-medium">
-													Budeme vám posielať novinky o nových funkciách a
-													zmenách v aplikácii.
-												</p>
-											</div>
-											<Switch
-												checked={localSettings.systemUpdates}
-												onCheckedChange={(val) =>
-													toggleSetting("systemUpdates", val)
-												}
-												disabled={dashboardLoading || updateSetting.isPending}
-											/>
-										</div>
-
-										<div className="h-px bg-slate-100 dark:bg-slate-800" />
-									</div>
-								</Card>
-							</div>
 						</motion.div>
 					</TabsContent>
 				</AnimatePresence>
