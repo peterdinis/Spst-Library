@@ -2,6 +2,7 @@ import { router, adminProcedure } from "../server";
 import { fetchEntraDirectoryUsers } from "@/lib/microsoft-graph";
 import { unstable_cache } from "next/cache";
 import { CACHE_TAGS, CACHE_TTL } from "../cache-config";
+import { getMicrosoftGraphConfigStatus } from "@/lib/azure-validation";
 
 const getCachedEntraUsers = unstable_cache(
 	async () => {
@@ -29,6 +30,21 @@ const getCachedEntraUsers = unstable_cache(
 export const entraRouter = router({
 	/** Používatelia z Entra (Graph). Vyžaduje app permission User.Read.All + admin consent. */
 	listDirectoryUsers: adminProcedure.query(async () => {
-		return getCachedEntraUsers();
+		const graph = getMicrosoftGraphConfigStatus();
+		if (!graph.ready) {
+			return {
+				users: [] as Awaited<ReturnType<typeof fetchEntraDirectoryUsers>>,
+				error: graph.message,
+				graphConfigured: false as const,
+				missingGraphEnv: graph.missing,
+			};
+		}
+
+		const cached = await getCachedEntraUsers();
+		return {
+			...cached,
+			graphConfigured: true as const,
+				missingGraphEnv: [] as const,
+		};
 	}),
 });

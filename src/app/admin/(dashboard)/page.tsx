@@ -12,10 +12,12 @@ import {
 	Tags,
 	ArrowRight,
 	ClipboardList,
-	Cloud,
 	Bell,
 } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { AdminAzureIntegrationPanel } from "@/components/admin/AdminAzureIntegrationPanel";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export default function AdminDashboardPage() {
 	const sections = [
@@ -70,6 +72,24 @@ export default function AdminDashboardPage() {
 				title="Administrácia"
 				description="Rýchly prehľad sekcií. Použite menu vľavo na prepínanie medzi knihami, autormi a kategóriami."
 			/>
+
+			<div className="space-y-3">
+				<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+					<h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+						Stav integrácií Azure
+					</h2>
+					<Link
+						href="/admin/azure"
+						className={cn(
+							buttonVariants({ variant: "outline", size: "sm" }),
+							"rounded-xl w-fit",
+						)}
+					>
+						Podrobnosti a kontrola premenných
+					</Link>
+				</div>
+				<AdminAzureIntegrationPanel variant="compact" />
+			</div>
 
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 				{sections.map((section) => (

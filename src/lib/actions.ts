@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { users, authors, categories, books, borrowedBooks } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { CACHE_TAGS } from "@/trpc/cache-config";
 import { notifications } from "@/db/schema";
 import { sendTransactionalEmail } from "./mail";
 import { resolveUserIdFromDb } from "./resolve-user-id";
@@ -15,7 +16,7 @@ export const createAuthorAction = protectedActionClient
 	.action(async ({ parsedInput: { name, bio } }) => {
 		const id = crypto.randomUUID();
 		db.insert(authors).values({ id, name, bio }).run();
-		revalidateTag("authors");
+		revalidateTag(CACHE_TAGS.authors, "default");
 		return { success: true, id };
 	});
 
@@ -24,7 +25,7 @@ export const createCategoryAction = protectedActionClient
 	.action(async ({ parsedInput: { name } }) => {
 		const id = crypto.randomUUID();
 		db.insert(categories).values({ id, name }).run();
-		revalidateTag("categories");
+		revalidateTag(CACHE_TAGS.categories, "default");
 		return { success: true, id };
 	});
 
@@ -64,7 +65,7 @@ export const createBookAction = protectedActionClient
 				.run();
 			revalidatePath("/admin/books", "page");
 			revalidatePath("/", "page");
-			revalidateTag("books");
+			revalidateTag(CACHE_TAGS.books, "default");
 			return { success: true, id };
 		},
 	);
@@ -185,9 +186,9 @@ export const borrowBookAction = protectedActionClient
 			revalidatePath("/profile", "page");
 			revalidatePath("/books", "page");
 			revalidatePath(`/books/${bookId}`, "page");
-			revalidateTag("borrowed-books");
-			revalidateTag("books");
-			revalidateTag("notifications");
+			revalidateTag(CACHE_TAGS.borrowedBooks, "default");
+			revalidateTag(CACHE_TAGS.books, "default");
+			revalidateTag(CACHE_TAGS.notifications, "default");
 			return { success: true, userId };
 		} catch (e: any) {
 			console.error("borrowBookAction ERROR:", e);
@@ -288,9 +289,9 @@ export const returnBookAction = protectedActionClient
 			revalidatePath("/my-books", "page");
 			revalidatePath("/books", "page");
 			revalidatePath(`/books/${bookId}`, "page");
-			revalidateTag("borrowed-books");
-			revalidateTag("books");
-			revalidateTag("notifications");
+			revalidateTag(CACHE_TAGS.borrowedBooks, "default");
+			revalidateTag(CACHE_TAGS.books, "default");
+			revalidateTag(CACHE_TAGS.notifications, "default");
 			return { success: true };
 		},
 	);
@@ -319,7 +320,7 @@ export const clearReturnHistoryAction = protectedActionClient
 
 		revalidatePath("/my-books", "page");
 		revalidatePath("/profile", "page");
-		revalidateTag("borrowed-books");
-		
+		revalidateTag(CACHE_TAGS.borrowedBooks, "default");
+
 		return { success: true };
 	});

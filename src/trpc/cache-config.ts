@@ -14,6 +14,7 @@ export const CACHE_TAGS = {
 	orders: "book-orders",
 	settings: "settings",
 	entra: "entra-users",
+	borrowedBooks: "borrowed-books",
 } as const;
 
 export type CacheTag = (typeof CACHE_TAGS)[keyof typeof CACHE_TAGS];

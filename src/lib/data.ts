@@ -1,4 +1,5 @@
 import { unstable_cache } from "next/cache";
+import { CACHE_TAGS } from "@/trpc/cache-config";
 import { db } from "@/db";
 import { authors, books, borrowedBooks } from "@/db/schema";
 import { eq, and, like, or, count, inArray, sql } from "drizzle-orm";
@@ -81,7 +82,7 @@ export const getAuthors = unstable_cache(
 	},
 	["authors"],
 	{
-		tags: ["authors"],
+		tags: [CACHE_TAGS.authors],
 		revalidate: 3600,
 	},
 );
@@ -92,7 +93,7 @@ export const getCategories = unstable_cache(
 	},
 	["categories"],
 	{
-		tags: ["categories"],
+		tags: [CACHE_TAGS.categories],
 		revalidate: 3600,
 	},
 );
@@ -110,7 +111,7 @@ export const getBorrowedByUserId = unstable_cache(
 	},
 	["borrowed-books"],
 	{
-		tags: ["borrowed-books"],
+		tags: [CACHE_TAGS.borrowedBooks],
 		revalidate: 60, // Shorter revalidation for user-specific data
 	},
 );
@@ -132,7 +133,7 @@ export const isBookBorrowedByUser = unstable_cache(
 	},
 	["is-book-borrowed"],
 	{
-		tags: ["borrowed-books"],
+		tags: [CACHE_TAGS.borrowedBooks],
 		revalidate: 60,
 	},
 );
