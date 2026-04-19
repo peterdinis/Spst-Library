@@ -7,7 +7,7 @@ import { resolveUserIdFromDb } from "@/lib/resolve-user-id";
 export const profileRouter = router({
 	/** Jedno volanie namiesto samostatných settings + výpožičiek (batch na klientovi). */
 	getDashboard: protectedProcedure.query(async ({ ctx }) => {
-		const userId = resolveUserIdFromDb(
+		const userId = await resolveUserIdFromDb(
 			ctx.session.user.email,
 			ctx.session.user.id,
 		);
@@ -18,15 +18,12 @@ export const profileRouter = router({
 		});
 
 		if (!settings) {
-			await ctx.db
-				.insert(userSettings)
-				.values({
-					userId,
-					emailNotifications: true,
-					dueReminders: true,
-					systemUpdates: false,
-				})
-				.run();
+			await ctx.db.insert(userSettings).values({
+				userId,
+				emailNotifications: true,
+				dueReminders: true,
+				systemUpdates: false,
+			});
 			settings = await ctx.db.query.userSettings.findFirst({
 				where: eq(userSettings.userId, userId),
 			});

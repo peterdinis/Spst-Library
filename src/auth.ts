@@ -32,11 +32,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 					return null;
 				}
 
-				const admin = db
+				const adminRows = await db
 					.select()
 					.from(admins)
 					.where(eq(admins.username, credentials.username as string))
-					.get();
+					.limit(1);
+				const admin = adminRows[0];
 				if (!admin) return null;
 
 				const isPasswordValid = await bcrypt.compare(
@@ -47,24 +48,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
 				if (!isPasswordValid || !isAdminCodeValid) return null;
 
-				// Zabezpečíme, že lokálny admin má záznam v tabuľke `users`,
-				// aby nepadal Foreign Key Constraint pri požičiavaní kníh a notifikáciách.
-				const existingAdminInUsers = db
+				const existingRows = await db
 					.select()
 					.from(users)
 					.where(eq(users.id, admin.id))
-					.get();
-					
+					.limit(1);
+				const existingAdminInUsers = existingRows[0];
+
 				if (!existingAdminInUsers) {
 					try {
-						db.insert(users)
-							.values({
-								id: admin.id,
-								name: admin.name || admin.username,
-								email: `admin-${admin.username}@local.spst`,
-								isAdmin: true,
-							})
-							.run();
+						await db.insert(users).values({
+							id: admin.id,
+							name: admin.name || admin.username,
+							email: `admin-${admin.username}@local.spst`,
+							isAdmin: true,
+						});
 					} catch (e) {
 						console.error("Failed to sync admin to users table", e);
 					}
@@ -84,63 +82,63 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 			if (account?.provider === "microsoft-entra-id") {
 				if (!user.email) return false;
 
-				const existingUser = db
+				const existingRows = await db
 					.select()
 					.from(users)
 					.where(eq(users.email, user.email))
-					.get();
+					.limit(1);
+				const existingUser = existingRows[0];
 
 				if (!existingUser) {
-					db.insert(users)
-						.values({
-							id: (user.id || profile?.oid || crypto.randomUUID()) as string,
-							name: user.name,
-							email: user.email,
-							image: user.image,
-							isAdmin: false,
-						})
-						.run();
+					await db.insert(users).values({
+						id: (user.id || profile?.oid || crypto.randomUUID()) as string,
+						name: user.name,
+						email: user.email,
+						image: user.image,
+						isAdmin: false,
+					});
 				} else {
-					db.update(users)
+					await db
+						.update(users)
 						.set({
 							name: user.name,
 							image: user.image,
 						})
-						.where(eq(users.email, user.email))
-						.run();
+						.where(eq(users.email, user.email));
 				}
 
-				// Attach role from DB so the jwt callback can read it
-				const dbUser = db
+				const dbUserRows = await db
 					.select()
 					.from(users)
 					.where(eq(users.email, user.email))
-					.get();
+					.limit(1);
+				const dbUser = dbUserRows[0];
 
 				if (dbUser?.isAdmin) {
-					(user as any).role = "admin";
+					(user as { role?: string }).role = "admin";
 				}
 			}
 			return true;
 		},
 		async jwt({ token, user }) {
 			if (user) {
-				// Persists role into JWT for both Credentials admins and Entra admins
-				token.role = (user as any).role ?? null;
+				token.role = (user as { role?: string }).role ?? null;
 			}
 			return token;
 		},
 		async session({ session, token }) {
 			if (session.user) {
 				const sub = token.sub as string | undefined;
-				const resolved = resolveUserIdFromDb(session.user.email, sub) ?? sub;
+				const resolved =
+					(await resolveUserIdFromDb(session.user.email, sub)) ?? sub;
 				if (!resolved) {
 					console.error("NextAuth session: chýba token.sub aj DB používateľ", {
 						email: session.user.email,
 					});
 				}
 				session.user.id = resolved ?? "";
-				(session.user as any).role = token.role ?? null;
+				(session.user as { role?: string | null }).role =
+					(token.role as string | null) ?? null;
 			}
 			return session;
 		},

@@ -8,7 +8,7 @@ import { CACHE_TAGS, CACHE_TTL } from "../cache-config";
 
 export const settingsRouter = router({
 	getSettings: protectedProcedure.query(async ({ ctx }) => {
-		const userId = resolveUserIdFromDb(
+		const userId = await resolveUserIdFromDb(
 			ctx.session.user.email,
 			ctx.session.user.id,
 		);
@@ -20,15 +20,12 @@ export const settingsRouter = router({
 
 		if (!settings) {
 			// Create default settings if they don't exist
-			await ctx.db
-				.insert(userSettings)
-				.values({
-					userId,
-					emailNotifications: true,
-					dueReminders: true,
-					systemUpdates: false,
-				})
-				.run();
+			await ctx.db.insert(userSettings).values({
+				userId,
+				emailNotifications: true,
+				dueReminders: true,
+				systemUpdates: false,
+			});
 
 			settings = await ctx.db.query.userSettings.findFirst({
 				where: eq(userSettings.userId, userId),
@@ -66,7 +63,7 @@ export const settingsRouter = router({
 			}),
 		)
 		.mutation(async ({ ctx, input }) => {
-			const userId = resolveUserIdFromDb(
+			const userId = await resolveUserIdFromDb(
 				ctx.session.user.email,
 				ctx.session.user.id,
 			);
@@ -75,8 +72,7 @@ export const settingsRouter = router({
 			await ctx.db
 				.update(userSettings)
 				.set(input)
-				.where(eq(userSettings.userId, userId))
-				.run();
+				.where(eq(userSettings.userId, userId));
 
 			revalidateTag(CACHE_TAGS.settings, "default");
 			return { success: true };

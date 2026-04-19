@@ -36,19 +36,16 @@ export async function POST(req: NextRequest) {
 		const coverUrl = await uploadImageToAzure(coverFile, { prefix: "books" });
 		const id = crypto.randomUUID();
 
-		await db
-			.insert(books)
-			.values({
-				id,
-				title,
-				description,
-				isbn,
-				availableCopies,
-				authorId,
-				categoryId,
-				coverUrl,
-			})
-			.run();
+		await db.insert(books).values({
+			id,
+			title,
+			description,
+			isbn,
+			availableCopies,
+			authorId,
+			categoryId,
+			coverUrl,
+		});
 
 		revalidatePath("/");
 		revalidatePath("/admin/books");

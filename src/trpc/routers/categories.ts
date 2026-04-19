@@ -24,10 +24,7 @@ export const categoriesRouter = router({
 		.input(z.object({ name: z.string().min(1) }))
 		.mutation(async ({ ctx, input }) => {
 			const id = crypto.randomUUID();
-			await ctx.db
-				.insert(categories)
-				.values({ id, ...input })
-				.run();
+			await ctx.db.insert(categories).values({ id, ...input });
 			revalidateTag(CACHE_TAGS.categories, "default");
 			return { success: true, id };
 		}),
@@ -39,8 +36,7 @@ export const categoriesRouter = router({
 			await ctx.db
 				.update(categories)
 				.set(data)
-				.where(eq(categories.id, id))
-				.run();
+				.where(eq(categories.id, id));
 			revalidateTag(CACHE_TAGS.categories, "default");
 			return { success: true };
 		}),
@@ -48,7 +44,7 @@ export const categoriesRouter = router({
 	delete: adminProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ ctx, input }) => {
-			await ctx.db.delete(categories).where(eq(categories.id, input.id)).run();
+			await ctx.db.delete(categories).where(eq(categories.id, input.id));
 			revalidateTag(CACHE_TAGS.categories, "default");
 			return { success: true };
 		}),

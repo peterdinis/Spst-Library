@@ -26,10 +26,7 @@ export const authorsRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const id = crypto.randomUUID();
-			await ctx.db
-				.insert(authors)
-				.values({ id, ...input })
-				.run();
+			await ctx.db.insert(authors).values({ id, ...input });
 			revalidateTag(CACHE_TAGS.authors, "default");
 			return { success: true, id };
 		}),
@@ -45,7 +42,7 @@ export const authorsRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const { id, ...data } = input;
-			await ctx.db.update(authors).set(data).where(eq(authors.id, id)).run();
+			await ctx.db.update(authors).set(data).where(eq(authors.id, id));
 			revalidateTag(CACHE_TAGS.authors, "default");
 			return { success: true };
 		}),
@@ -53,7 +50,7 @@ export const authorsRouter = router({
 	delete: adminProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ ctx, input }) => {
-			await ctx.db.delete(authors).where(eq(authors.id, input.id)).run();
+			await ctx.db.delete(authors).where(eq(authors.id, input.id));
 			revalidateTag(CACHE_TAGS.authors, "default");
 			return { success: true };
 		}),

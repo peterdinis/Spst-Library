@@ -15,7 +15,7 @@ export const createAuthorAction = protectedActionClient
 	.inputSchema(z.object({ name: z.string().min(1), bio: z.string().optional() }))
 	.action(async ({ parsedInput: { name, bio } }) => {
 		const id = crypto.randomUUID();
-		db.insert(authors).values({ id, name, bio }).run();
+		await db.insert(authors).values({ id, name, bio });
 		revalidateTag(CACHE_TAGS.authors, "default");
 		return { success: true, id };
 	});
@@ -24,7 +24,7 @@ export const createCategoryAction = protectedActionClient
 	.inputSchema(z.object({ name: z.string().min(1) }))
 	.action(async ({ parsedInput: { name } }) => {
 		const id = crypto.randomUUID();
-		db.insert(categories).values({ id, name }).run();
+		await db.insert(categories).values({ id, name });
 		revalidateTag(CACHE_TAGS.categories, "default");
 		return { success: true, id };
 	});
@@ -52,17 +52,15 @@ export const createBookAction = protectedActionClient
 			},
 		}) => {
 			const id = crypto.randomUUID();
-			db.insert(books)
-				.values({
-					id,
-					title,
-					description,
-					isbn,
-					availableCopies,
-					authorId,
-					categoryId,
-				})
-				.run();
+			await db.insert(books).values({
+				id,
+				title,
+				description,
+				isbn,
+				availableCopies,
+				authorId,
+				categoryId,
+			});
 			revalidatePath("/admin/books", "page");
 			revalidatePath("/", "page");
 			revalidateTag(CACHE_TAGS.books, "default");
@@ -79,34 +77,36 @@ export const borrowBookAction = protectedActionClient
 				throw new Error("Neprihlásený používateľ alebo chýbajúce ID používateľa");
 			}
 
-			let userId = resolveUserIdFromDb(u.email, u.id);
+			let userId = await resolveUserIdFromDb(u.email, u.id);
 			if (!userId) {
 				throw new Error("Neprihlásený používateľ alebo chýbajúce ID používateľa");
 			}
 
 			// Zaistíme, že používateľ naozaj existuje v tabuľke users (kvôli Foreign Key pre admins)
-			let existingUser = db
+			let existingUserRows = await db
 				.select()
 				.from(users)
 				.where(eq(users.id, userId))
-				.get();
+				.limit(1);
+			let existingUser = existingUserRows[0];
 
 			if (!existingUser) {
 				try {
-					db.insert(users).values({
+					await db.insert(users).values({
 						id: userId,
 						name: u.name || "Neznámy",
 						email: u.email || `user-${userId}@local.spst`,
 						isAdmin: (u as { role?: string }).role === "admin",
-					}).run();
+					});
 				} catch {
-					const byEmail = u.email
-						? db
+					const byEmailRows = u.email
+						? await db
 								.select()
 								.from(users)
 								.where(eq(users.email, u.email))
-								.get()
-						: undefined;
+								.limit(1)
+						: [];
+					const byEmail = byEmailRows[0];
 					if (byEmail?.id) {
 						userId = byEmail.id;
 						existingUser = byEmail;
@@ -119,11 +119,12 @@ export const borrowBookAction = protectedActionClient
 			}
 
 			// Check if book exists and has copies
-			const book = db
+			const bookRows = await db
 				.select({ availableCopies: books.availableCopies, title: books.title })
 				.from(books)
 				.where(eq(books.id, bookId))
-				.get();
+				.limit(1);
+			const book = bookRows[0];
 
 			if (!book) {
 				throw new Error("Kniha nebola nájdená");
@@ -136,32 +137,28 @@ export const borrowBookAction = protectedActionClient
 			const dueDate = new Date();
 			dueDate.setDate(dueDate.getDate() + 14);
 
-			db.transaction((tx) => {
-				tx.insert(borrowedBooks)
-					.values({
-						id: crypto.randomUUID(),
-						userId: userId,
-						bookId: bookId,
-						borrowDate: new Date(),
-						dueDate: dueDate,
-						status: "borrowed",
-					})
-					.run();
+			await db.transaction(async (tx) => {
+				await tx.insert(borrowedBooks).values({
+					id: crypto.randomUUID(),
+					userId: userId,
+					bookId: bookId,
+					borrowDate: new Date(),
+					dueDate: dueDate,
+					status: "borrowed",
+				});
 
-				tx.update(books)
+				await tx
+					.update(books)
 					.set({ availableCopies: book.availableCopies - 1 })
-					.where(eq(books.id, bookId))
-					.run();
+					.where(eq(books.id, bookId));
 
-				tx.insert(notifications)
-					.values({
-						id: crypto.randomUUID(),
-						userId: userId,
-						message: `Úspešne ste si požičali knihu "${book.title}". Termín vrátenia je ${dueDate.toLocaleDateString("sk-SK")}.`,
-						type: "borrow",
-						isRead: false,
-					})
-					.run();
+				await tx.insert(notifications).values({
+					id: crypto.randomUUID(),
+					userId: userId,
+					message: `Úspešne ste si požičali knihu "${book.title}". Termín vrátenia je ${dueDate.toLocaleDateString("sk-SK")}.`,
+					type: "borrow",
+					isRead: false,
+				});
 			});
 
 			if (u.email) {
@@ -208,16 +205,17 @@ export const returnBookAction = protectedActionClient
 				throw new Error("Nie ste prihlásený.");
 			}
 
-			const resolvedUserId = resolveUserIdFromDb(
+			const resolvedUserId = await resolveUserIdFromDb(
 				session.user?.email,
 				sessionUserId,
 			);
 
-			const record = db
+			const recordRows = await db
 				.select()
 				.from(borrowedBooks)
 				.where(eq(borrowedBooks.id, borrowId))
-				.get();
+				.limit(1);
+			const record = recordRows[0];
 
 			if (!record || record.status !== "borrowed") {
 				throw new Error(
@@ -238,32 +236,31 @@ export const returnBookAction = protectedActionClient
 
 			const bookId = record.bookId;
 
-			const book = db
+			const bookRows = await db
 				.select({ availableCopies: books.availableCopies, title: books.title })
 				.from(books)
 				.where(eq(books.id, bookId))
-				.get();
+				.limit(1);
+			const book = bookRows[0];
 
-			db.transaction((tx) => {
-				tx.update(borrowedBooks)
+			await db.transaction(async (tx) => {
+				await tx
+					.update(borrowedBooks)
 					.set({ status: "returned", returnDate: new Date() })
-					.where(eq(borrowedBooks.id, borrowId))
-					.run();
+					.where(eq(borrowedBooks.id, borrowId));
 
-				tx.update(books)
+				await tx
+					.update(books)
 					.set({ availableCopies: (book?.availableCopies ?? 0) + 1 })
-					.where(eq(books.id, bookId))
-					.run();
+					.where(eq(books.id, bookId));
 
-				tx.insert(notifications)
-					.values({
-						id: crypto.randomUUID(),
-						userId: record.userId,
-						message: `Kniha "${book?.title ?? "Kniha"}" bola úspešne vrátená. Ďakujeme!`,
-						type: "return",
-						isRead: false,
-					})
-					.run();
+				await tx.insert(notifications).values({
+					id: crypto.randomUUID(),
+					userId: record.userId,
+					message: `Kniha "${book?.title ?? "Kniha"}" bola úspešne vrátená. Ďakujeme!`,
+					type: "return",
+					isRead: false,
+				});
 			});
 
 			if (session.user?.email && book) {
@@ -302,21 +299,21 @@ export const clearReturnHistoryAction = protectedActionClient
 		const sessionUserId = session.user?.id;
 		if (!sessionUserId) throw new Error("Nie ste prihlásený.");
 
-		const resolvedUserId = resolveUserIdFromDb(
+		const resolvedUserId = await resolveUserIdFromDb(
 			session.user?.email,
 			sessionUserId,
 		);
 
 		if (!resolvedUserId) throw new Error("Používateľ nenájdený.");
 
-		db.delete(borrowedBooks)
+		await db
+			.delete(borrowedBooks)
 			.where(
 				and(
 					eq(borrowedBooks.userId, resolvedUserId),
-					eq(borrowedBooks.status, "returned")
-				)
-			)
-			.run();
+					eq(borrowedBooks.status, "returned"),
+				),
+			);
 
 		revalidatePath("/my-books", "page");
 		revalidatePath("/profile", "page");

@@ -10,8 +10,7 @@ export const usersRouter = router({
 			const loggedUsers = await ctx.db
 				.select()
 				.from(users)
-				.orderBy(desc(users.isAdmin))
-				.all();
+				.orderBy(desc(users.isAdmin));
 			return { users: loggedUsers, error: null };
 		} catch (e: unknown) {
 			const message =
@@ -34,11 +33,12 @@ export const usersRouter = router({
 
 				// Ak odoberáme práva, skúsime ich odobrať aj z whitelistu (podľa mailu)
 				if (!input.isAdmin) {
-					const user = await ctx.db
+					const userRows = await ctx.db
 						.select({ email: users.email })
 						.from(users)
 						.where(eq(users.id, input.id))
-						.get();
+						.limit(1);
+					const user = userRows[0];
 
 					if (user?.email) {
 						await ctx.db

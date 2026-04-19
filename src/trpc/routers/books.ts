@@ -41,7 +41,7 @@ export const booksRouter = router({
 		}),
 
 	getBorrowedByUser: protectedProcedure.query(async ({ ctx }) => {
-		const userId = resolveUserIdFromDb(
+		const userId = await resolveUserIdFromDb(
 			ctx.session?.user?.email,
 			ctx.session?.user?.id,
 		);
@@ -72,10 +72,7 @@ export const booksRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const id = crypto.randomUUID();
-			await ctx.db
-				.insert(books)
-				.values({ id, ...input })
-				.run();
+			await ctx.db.insert(books).values({ id, ...input });
 			revalidateTag(CACHE_TAGS.books, "default");
 			return { success: true, id };
 		}),
@@ -95,7 +92,7 @@ export const booksRouter = router({
 		)
 		.mutation(async ({ ctx, input }) => {
 			const { id, ...data } = input;
-			await ctx.db.update(books).set(data).where(eq(books.id, id)).run();
+			await ctx.db.update(books).set(data).where(eq(books.id, id));
 			revalidateTag(CACHE_TAGS.books, "default");
 			return { success: true };
 		}),
@@ -103,7 +100,7 @@ export const booksRouter = router({
 	delete: adminProcedure
 		.input(z.object({ id: z.string() }))
 		.mutation(async ({ ctx, input }) => {
-			await ctx.db.delete(books).where(eq(books.id, input.id)).run();
+			await ctx.db.delete(books).where(eq(books.id, input.id));
 			revalidateTag(CACHE_TAGS.books, "default");
 			return { success: true };
 		}),
