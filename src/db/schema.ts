@@ -1,32 +1,39 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { relations } from "drizzle-orm";
+import {
+	pgTable,
+	text,
+	integer,
+	boolean,
+	timestamp,
+} from "drizzle-orm/pg-core";
 
-export const users = sqliteTable("users", {
+export const users = pgTable("users", {
 	id: text("id").primaryKey(),
 	name: text("name"),
 	email: text("email").unique(),
 	image: text("image"),
-	isAdmin: integer("is_admin", { mode: "boolean" }).default(false).notNull(),
+	isAdmin: boolean("is_admin").default(false).notNull(),
 });
 
-export const authors = sqliteTable("authors", {
-	id: text("id").primaryKey(), // using uuid or similar
+export const authors = pgTable("authors", {
+	id: text("id").primaryKey(),
 	name: text("name").notNull(),
 	bio: text("bio"),
 	imageUrl: text("image_url"),
-	createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
+	createdAt: timestamp("created_at", { mode: "date" }).$defaultFn(
 		() => new Date(),
 	),
 });
 
-export const categories = sqliteTable("categories", {
+export const categories = pgTable("categories", {
 	id: text("id").primaryKey(),
 	name: text("name").notNull(),
-	createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
+	createdAt: timestamp("created_at", { mode: "date" }).$defaultFn(
 		() => new Date(),
 	),
 });
 
-export const books = sqliteTable("books", {
+export const books = pgTable("books", {
 	id: text("id").primaryKey(),
 	title: text("title").notNull(),
 	description: text("description"),
@@ -35,12 +42,12 @@ export const books = sqliteTable("books", {
 	availableCopies: integer("available_copies").default(1).notNull(),
 	authorId: text("author_id").references(() => authors.id),
 	categoryId: text("category_id").references(() => categories.id),
-	createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
+	createdAt: timestamp("created_at", { mode: "date" }).$defaultFn(
 		() => new Date(),
 	),
 });
 
-export const borrowedBooks = sqliteTable("borrowed_books", {
+export const borrowedBooks = pgTable("borrowed_books", {
 	id: text("id").primaryKey(),
 	userId: text("user_id")
 		.references(() => users.id)
@@ -48,16 +55,16 @@ export const borrowedBooks = sqliteTable("borrowed_books", {
 	bookId: text("book_id")
 		.references(() => books.id)
 		.notNull(),
-	borrowDate: integer("borrow_date", { mode: "timestamp" }).notNull(),
-	dueDate: integer("due_date", { mode: "timestamp" }).notNull(),
-	returnDate: integer("return_date", { mode: "timestamp" }),
+	borrowDate: timestamp("borrow_date", { mode: "date" }).notNull(),
+	dueDate: timestamp("due_date", { mode: "date" }).notNull(),
+	returnDate: timestamp("return_date", { mode: "date" }),
 	status: text("status", { enum: ["borrowed", "returned"] })
 		.default("borrowed")
 		.notNull(),
 });
 
 /** Objednávka knihy na prevzatie (spracovanie v knižnici) */
-export const bookOrders = sqliteTable("book_orders", {
+export const bookOrders = pgTable("book_orders", {
 	id: text("id").primaryKey(),
 	userId: text("user_id")
 		.references(() => users.id)
@@ -71,15 +78,15 @@ export const bookOrders = sqliteTable("book_orders", {
 		.default("pending")
 		.notNull(),
 	note: text("note"),
-	createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
+	createdAt: timestamp("created_at", { mode: "date" }).$defaultFn(
 		() => new Date(),
 	),
-	updatedAt: integer("updated_at", { mode: "timestamp" }).$defaultFn(
+	updatedAt: timestamp("updated_at", { mode: "date" }).$defaultFn(
 		() => new Date(),
 	),
 });
 
-export const notifications = sqliteTable("notifications", {
+export const notifications = pgTable("notifications", {
 	id: text("id").primaryKey(),
 	userId: text("user_id")
 		.references(() => users.id)
@@ -88,50 +95,44 @@ export const notifications = sqliteTable("notifications", {
 	type: text("type", {
 		enum: ["borrow", "return", "reminder", "system"],
 	}).notNull(),
-	isRead: integer("is_read", { mode: "boolean" }).default(false).notNull(),
-	createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
+	isRead: boolean("is_read").default(false).notNull(),
+	createdAt: timestamp("created_at", { mode: "date" }).$defaultFn(
 		() => new Date(),
 	),
 });
 
-export const userSettings = sqliteTable("user_settings", {
+export const userSettings = pgTable("user_settings", {
 	userId: text("user_id")
 		.primaryKey()
 		.references(() => users.id)
 		.notNull(),
-	emailNotifications: integer("email_notifications", { mode: "boolean" })
+	emailNotifications: boolean("email_notifications")
 		.default(true)
 		.notNull(),
-	dueReminders: integer("due_reminders", { mode: "boolean" })
-		.default(true)
-		.notNull(),
-	systemUpdates: integer("system_updates", { mode: "boolean" })
-		.default(false)
-		.notNull(),
+	dueReminders: boolean("due_reminders").default(true).notNull(),
+	systemUpdates: boolean("system_updates").default(false).notNull(),
 	/** Ročný cieľ počtu prečítaných (vrátených) kníh; null = ešte nenastavené */
-	readingGoal: integer("reading_goal", { mode: "number" }),
+	readingGoal: integer("reading_goal"),
 });
 
-export const admins = sqliteTable("admins", {
+export const admins = pgTable("admins", {
 	id: text("id").primaryKey(),
 	username: text("username").unique().notNull(),
 	password: text("password").notNull(),
 	adminCode: text("admin_code").notNull(),
 	name: text("name"),
-	createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
+	createdAt: timestamp("created_at", { mode: "date" }).$defaultFn(
 		() => new Date(),
 	),
 });
 
-export const adminWhitelist = sqliteTable("admin_whitelist", {
+export const adminWhitelist = pgTable("admin_whitelist", {
 	id: text("id").primaryKey(),
 	email: text("email").unique().notNull(),
-	createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(
+	createdAt: timestamp("created_at", { mode: "date" }).$defaultFn(
 		() => new Date(),
 	),
 });
-
-import { relations } from "drizzle-orm";
 
 export const usersRelations = relations(users, ({ many, one }) => ({
 	borrowedBooks: many(borrowedBooks),

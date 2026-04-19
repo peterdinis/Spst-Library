@@ -10,8 +10,7 @@ export const adminWhitelistRouter = router({
 			const list = await ctx.db
 				.select()
 				.from(adminWhitelist)
-				.orderBy(desc(adminWhitelist.createdAt))
-				.all();
+				.orderBy(desc(adminWhitelist.createdAt));
 			return { list, error: null };
 		} catch (e: unknown) {
 			return {
@@ -27,13 +26,10 @@ export const adminWhitelistRouter = router({
 		.input(z.object({ email: z.string().email() }))
 		.mutation(async ({ ctx, input }) => {
 			try {
-				await ctx.db
-					.insert(adminWhitelist)
-					.values({
-						id: crypto.randomUUID(),
-						email: input.email.toLowerCase(),
-					})
-					.run();
+				await ctx.db.insert(adminWhitelist).values({
+					id: crypto.randomUUID(),
+					email: input.email.toLowerCase(),
+				});
 				return { success: true };
 			} catch (e: unknown) {
 				throw new Error(
@@ -49,8 +45,7 @@ export const adminWhitelistRouter = router({
 			try {
 				await ctx.db
 					.delete(adminWhitelist)
-					.where(eq(adminWhitelist.id, input.id))
-					.run();
+					.where(eq(adminWhitelist.id, input.id));
 				return { success: true };
 			} catch (e: unknown) {
 				throw new Error("Nepodarilo sa odstrániť položku.");

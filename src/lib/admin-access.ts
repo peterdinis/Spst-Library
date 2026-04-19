@@ -15,28 +15,37 @@ export async function userHasAdminAccess(
 
 	const id = session.user.id;
 
-	const credentialsAdmin = db
+	const credentialsAdminRows = await db
 		.select()
 		.from(admins)
 		.where(eq(admins.id, id))
-		.get();
-	if (credentialsAdmin) return true;
+		.limit(1);
+	if (credentialsAdminRows[0]) return true;
 
-	const byId = db.select().from(users).where(eq(users.id, id)).get();
+	const byIdRows = await db
+		.select()
+		.from(users)
+		.where(eq(users.id, id))
+		.limit(1);
+	const byId = byIdRows[0];
 	if (byId?.isAdmin) return true;
 
 	const email = session.user.email;
 	if (email) {
-		const byEmail = db.select().from(users).where(eq(users.email, email)).get();
+		const byEmailRows = await db
+			.select()
+			.from(users)
+			.where(eq(users.email, email))
+			.limit(1);
+		const byEmail = byEmailRows[0];
 		if (byEmail?.isAdmin) return true;
 
-		// Check the special permission whitelist
-		const whitelisted = db
+		const whitelistedRows = await db
 			.select()
 			.from(adminWhitelist)
 			.where(eq(adminWhitelist.email, email.toLowerCase()))
-			.get();
-		if (whitelisted) return true;
+			.limit(1);
+		if (whitelistedRows[0]) return true;
 	}
 
 	return false;

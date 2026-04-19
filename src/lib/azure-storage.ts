@@ -5,6 +5,8 @@ import {
 	StorageSharedKeyCredential,
 } from "@azure/storage-blob";
 
+import { getAzureBlobContainerName } from "@/lib/azure-blob-config";
+
 const AZURE_STORAGE_CONNECTION_STRING = process.env
 	.AZURE_STORAGE_CONNECTION_STRING as string;
 
@@ -44,7 +46,7 @@ export async function generateAzureSASUrl(
 		throw new Error("Azure Storage credentials missing or invalid.");
 	}
 
-	const containerName = "covers";
+	const containerName = getAzureBlobContainerName();
 	const prefix = options?.prefix ? `${options.prefix.replace(/\/$/, "")}/` : "";
 	const safeName = fileName.replace(/[^a-zA-Z0-9.]/g, "_");
 	const blobName = `${prefix}${Date.now()}-${safeName}`;
@@ -84,7 +86,7 @@ export async function uploadImageToAzure(
 	const blobServiceClient = BlobServiceClient.fromConnectionString(
 		AZURE_STORAGE_CONNECTION_STRING,
 	);
-	const containerName = "covers";
+	const containerName = getAzureBlobContainerName();
 	const containerClient = blobServiceClient.getContainerClient(containerName);
 
 	// Ensure container exists

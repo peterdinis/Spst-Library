@@ -42,16 +42,13 @@ export const notificationsRouter = router({
 			});
 
 			if (!alreadySent) {
-				await ctx.db
-					.insert(notifications)
-					.values({
-						id: crypto.randomUUID(),
-						userId,
-						message,
-						type: "reminder",
-						isRead: false,
-					})
-					.run();
+				await ctx.db.insert(notifications).values({
+					id: crypto.randomUUID(),
+					userId,
+					message,
+					type: "reminder",
+					isRead: false,
+				});
 			}
 		}
 
@@ -87,8 +84,7 @@ export const notificationsRouter = router({
 						eq(notifications.id, input.id),
 						eq(notifications.userId, userId),
 					),
-				)
-				.run();
+				);
 
 			revalidateTag(CACHE_TAGS.notifications, "default");
 			return { success: true };
@@ -101,8 +97,7 @@ export const notificationsRouter = router({
 		await ctx.db
 			.update(notifications)
 			.set({ isRead: true })
-			.where(eq(notifications.userId, userId))
-			.run();
+			.where(eq(notifications.userId, userId));
 
 		revalidateTag(CACHE_TAGS.notifications, "default");
 		return { success: true };
@@ -121,8 +116,7 @@ export const notificationsRouter = router({
 						eq(notifications.id, input.id),
 						eq(notifications.userId, userId),
 					),
-				)
-				.run();
+				);
 
 			revalidateTag(CACHE_TAGS.notifications, "default");
 			return { success: true };
@@ -134,8 +128,7 @@ export const notificationsRouter = router({
 
 		await ctx.db
 			.delete(notifications)
-			.where(eq(notifications.userId, userId))
-			.run();
+			.where(eq(notifications.userId, userId));
 
 		revalidateTag(CACHE_TAGS.notifications, "default");
 		return { success: true };

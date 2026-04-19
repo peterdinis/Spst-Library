@@ -7,6 +7,31 @@ import { ModeToggle } from "@/components/ModeToggle";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ProfileDropdownMenu } from "@/components/layout/ProfileDropdownMenu";
 
+/** Rovnaká výška / rámec ako skutočná navigácia – pre Suspense fallback. */
+export function NavbarSkeleton() {
+	return (
+		<nav
+			className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
+			aria-hidden
+		>
+			<div className="container mx-auto flex h-16 items-center justify-between px-4">
+				<div className="flex items-center gap-6">
+					<div className="h-8 w-40 animate-pulse rounded-md bg-muted" />
+					<div className="hidden gap-2 md:flex">
+						<div className="h-8 w-14 animate-pulse rounded-md bg-muted" />
+						<div className="h-8 w-14 animate-pulse rounded-md bg-muted" />
+						<div className="h-8 w-20 animate-pulse rounded-md bg-muted" />
+					</div>
+				</div>
+				<div className="flex items-center gap-2">
+					<div className="size-8 animate-pulse rounded-md bg-muted" />
+					<div className="h-8 w-28 animate-pulse rounded-md bg-muted" />
+				</div>
+			</div>
+		</nav>
+	);
+}
+
 export async function Navbar() {
 	const session = await auth();
 	const canAccessAdmin = session ? await userHasAdminAccess(session) : false;

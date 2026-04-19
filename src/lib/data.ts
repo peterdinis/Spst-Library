@@ -118,7 +118,7 @@ export const getBorrowedByUserId = unstable_cache(
 
 export const isBookBorrowedByUser = unstable_cache(
 	async (userId: string, bookId: string) => {
-		const row = await db
+		const rows = await db
 			.select()
 			.from(borrowedBooks)
 			.where(
@@ -128,8 +128,8 @@ export const isBookBorrowedByUser = unstable_cache(
 					eq(borrowedBooks.status, "borrowed"),
 				),
 			)
-			.get();
-		return !!row;
+			.limit(1);
+		return Boolean(rows[0]);
 	},
 	["is-book-borrowed"],
 	{

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense, ViewTransition } from "react";
 import { Ubuntu } from "next/font/google";
 import "./globals.css";
 import { TRPCProvider } from "@/trpc/Provider";
 import { Toaster } from "@/components/ui/sonner";
-import { Navbar } from "@/components/layout/Navbar";
+import { Navbar, NavbarSkeleton } from "@/components/layout/Navbar";
 import { getSiteUrl, siteConfig } from "@/lib/site-config";
 
 const ubuntu = Ubuntu({
@@ -56,10 +57,14 @@ export default function RootLayout({
 					disableTransitionOnChange
 				>
 					<TRPCProvider>
-						<Navbar />
-						{children}
-						<ScrollToTop />
-						<Toaster />
+						<ViewTransition>
+							<Suspense fallback={<NavbarSkeleton />}>
+								<Navbar />
+							</Suspense>
+							{children}
+							<ScrollToTop />
+							<Toaster />
+						</ViewTransition>
 					</TRPCProvider>
 				</ThemeProvider>
 			</body>

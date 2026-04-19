@@ -1,3 +1,4 @@
+import type { Route } from "next";
 import Link from "next/link";
 import {
 	Card,
@@ -16,7 +17,7 @@ import {
 } from "lucide-react";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { AdminAzureIntegrationPanel } from "@/components/admin/AdminAzureIntegrationPanel";
-import { buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
 
 export default function AdminDashboardPage() {
@@ -79,7 +80,7 @@ export default function AdminDashboardPage() {
 						Stav integrácií Azure
 					</h2>
 					<Link
-						href="/admin/azure"
+						href={"/admin/azure" as Route}
 						className={cn(
 							buttonVariants({ variant: "outline", size: "sm" }),
 							"rounded-xl w-fit",

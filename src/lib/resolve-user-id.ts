@@ -6,24 +6,26 @@ import { eq } from "drizzle-orm";
  * Zhodnotí skutočné `users.id` z DB (email má prednosť pred JWT/sub),
  * aby FK na `borrowed_books` / notifikácie vždy sedeli.
  */
-export function resolveUserIdFromDb(
+export async function resolveUserIdFromDb(
 	email: string | null | undefined,
 	fallbackId: string | null | undefined,
-): string | undefined {
+): Promise<string | undefined> {
 	if (email) {
-		const byEmail = db
+		const byEmailRows = await db
 			.select()
 			.from(users)
 			.where(eq(users.email, email))
-			.get();
+			.limit(1);
+		const byEmail = byEmailRows[0];
 		if (byEmail?.id) return byEmail.id;
 	}
 	if (fallbackId) {
-		const byId = db
+		const byIdRows = await db
 			.select()
 			.from(users)
 			.where(eq(users.id, fallbackId))
-			.get();
+			.limit(1);
+		const byId = byIdRows[0];
 		if (byId?.id) return byId.id;
 		return fallbackId;
 	}

@@ -53,18 +53,15 @@ export const ordersRouter = router({
 
 			const id = crypto.randomUUID();
 			const now = new Date();
-			ctx.db
-				.insert(bookOrders)
-				.values({
-					id,
-					userId,
-					bookId: input.bookId,
-					status: "pending",
-					note: input.note != null && input.note !== "" ? input.note : null,
-					createdAt: now,
-					updatedAt: now,
-				})
-				.run();
+			await ctx.db.insert(bookOrders).values({
+				id,
+				userId,
+				bookId: input.bookId,
+				status: "pending",
+				note: input.note != null && input.note !== "" ? input.note : null,
+				createdAt: now,
+				updatedAt: now,
+			});
 
 			if (ctx.session.user.email) {
 				await sendTransactionalEmail(
@@ -153,11 +150,10 @@ export const ordersRouter = router({
 				});
 			}
 
-			ctx.db
+			await ctx.db
 				.update(bookOrders)
 				.set({ status: input.status, updatedAt: new Date() })
-				.where(eq(bookOrders.id, input.id))
-				.run();
+				.where(eq(bookOrders.id, input.id));
 
 			const statusLabel: Record<
 				"pending" | "approved" | "fulfilled" | "cancelled",
