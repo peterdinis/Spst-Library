@@ -3,6 +3,8 @@
  * Premenné zodpovedajú next-auth Entra provideru a fallbackom v microsoft-graph.ts / azure-storage.ts.
  */
 
+import { getAzureBlobContainerName } from "@/lib/azure-blob-config";
+
 export type GraphEnvField = "tenantId" | "clientId" | "clientSecret";
 
 export type GraphConfigResult = {
@@ -16,6 +18,8 @@ export type StorageConfigResult = {
 	ready: boolean;
 	missing: ("connectionString" | "accountName" | "accountKey")[];
 	message: string;
+	/** Názov blob kontajnera (voliteľná premenná AZURE_STORAGE_CONTAINER_NAME, inak „covers“). */
+	containerName: string;
 };
 
 export type AzureIntegrationStatus = {
@@ -81,6 +85,7 @@ export function isMicrosoftGraphConfigured(): boolean {
 }
 
 export function getAzureStorageConfigStatus(): StorageConfigResult {
+	const containerName = getAzureBlobContainerName();
 	const raw = process.env.AZURE_STORAGE_CONNECTION_STRING?.trim();
 	const missing: StorageConfigResult["missing"] = [];
 
@@ -89,8 +94,8 @@ export function getAzureStorageConfigStatus(): StorageConfigResult {
 		return {
 			ready: false,
 			missing,
-			message:
-				"Azure Blob Storage: chýba AZURE_STORAGE_CONNECTION_STRING (kontajner „covers“, upload obálok).",
+			containerName,
+			message: `Azure Blob Storage: chýba AZURE_STORAGE_CONNECTION_STRING (upload do kontajnera „${containerName}“; voliteľne AZURE_STORAGE_CONTAINER_NAME).`,
 		};
 	}
 
@@ -102,8 +107,9 @@ export function getAzureStorageConfigStatus(): StorageConfigResult {
 	return {
 		ready,
 		missing,
+		containerName,
 		message: ready
-			? "Azure Blob Storage: connection string je načítaný."
+			? `Azure Blob Storage: connection string je načítaný. Kontajner: „${containerName}“ (premenná AZURE_STORAGE_CONTAINER_NAME, ak chcete iný názov ako predvolený „covers“).`
 			: "Azure Blob Storage: connection string je neplatný alebo chýba AccountName / AccountKey.",
 	};
 }

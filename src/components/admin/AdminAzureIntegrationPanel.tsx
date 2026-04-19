@@ -155,7 +155,19 @@ export function AdminAzureIntegrationPanel({
 					</div>
 				</CardHeader>
 				<CardContent className="pt-4 text-sm leading-relaxed text-muted-foreground">
-					<p>{azureBlobStorage.message}</p>
+					<p className="font-medium text-foreground">
+						Kontajner (obdoba S3 bucket):{" "}
+						<code className="rounded bg-muted px-1.5 py-0.5 text-xs">
+							{azureBlobStorage.containerName}
+						</code>
+					</p>
+					<p className="mt-2">{azureBlobStorage.message}</p>
+					<p className="mt-3 text-xs text-muted-foreground">
+						Premenné: <code className="text-foreground">AZURE_STORAGE_CONNECTION_STRING</code>{" "}
+						(povinné),{" "}
+						<code className="text-foreground">AZURE_STORAGE_CONTAINER_NAME</code> (voliteľné, predvolené
+						„covers“).
+					</p>
 					{azureBlobStorage.missing.length > 0 ? (
 						<ul className="mt-3 list-inside list-disc space-y-1 text-xs font-medium text-foreground">
 							{azureBlobStorage.missing.map((key) => (
