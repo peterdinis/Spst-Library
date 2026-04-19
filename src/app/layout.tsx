@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ViewTransition } from "react";
 import { Ubuntu } from "next/font/google";
 import "./globals.css";
 import { TRPCProvider } from "@/trpc/Provider";
@@ -56,10 +57,12 @@ export default function RootLayout({
 					disableTransitionOnChange
 				>
 					<TRPCProvider>
-						<Navbar />
-						{children}
-						<ScrollToTop />
-						<Toaster />
+						<ViewTransition>
+							<Navbar />
+							{children}
+							<ScrollToTop />
+							<Toaster />
+						</ViewTransition>
 					</TRPCProvider>
 				</ThemeProvider>
 			</body>
