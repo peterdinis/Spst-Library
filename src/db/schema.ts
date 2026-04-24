@@ -134,13 +134,32 @@ export const adminWhitelist = pgTable("admin_whitelist", {
 	),
 });
 
+export const images = pgTable("images", {
+	id: text("id").primaryKey(), // Uploadthing key
+	url: text("url").notNull(),
+	fileName: text("file_name").notNull(),
+	size: integer("size").notNull(),
+	userId: text("user_id").references(() => users.id).notNull(),
+	createdAt: timestamp("created_at", { mode: "date" }).$defaultFn(
+		() => new Date(),
+	),
+});
+
 export const usersRelations = relations(users, ({ many, one }) => ({
 	borrowedBooks: many(borrowedBooks),
 	bookOrders: many(bookOrders),
 	notifications: many(notifications),
+	images: many(images),
 	settings: one(userSettings, {
 		fields: [users.id],
 		references: [userSettings.userId],
+	}),
+}));
+
+export const imagesRelations = relations(images, ({ one }) => ({
+	user: one(users, {
+		fields: [images.userId],
+		references: [users.id],
 	}),
 }));
 

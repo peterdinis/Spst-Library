@@ -13,8 +13,9 @@ import {
 } from "@/components/ui/card";
 import { trpc } from "@/trpc/client";
 import { toast } from "sonner";
-import { Loader2, UserPlus, Info } from "lucide-react";
+import { Loader2, UserPlus, Info, X } from "lucide-react";
 import { RichTextEditor } from "./RichTextEditor";
+import { UploadDropzone } from "@/utils/uploadthing";
 
 export type AuthorFormInitial = {
 	id: string;
@@ -123,12 +124,34 @@ export function AuthorForm({ initialData, onSuccess }: AuthorFormProps) {
 						<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
 							Fotografia
 						</label>
-						<Input
-							placeholder="Zadajte URL obrázka fotky autora"
-							value={imageUrl || ""}
-							onChange={(e) => setImageUrl(e.target.value)}
-							className="rounded-xl bg-slate-50/50 dark:bg-slate-900 focus-visible:ring-primary/50 h-11"
-						/>					</div>
+						{imageUrl ? (
+							<div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+								<img src={imageUrl} alt="Photo" className="max-h-48 w-auto object-cover" />
+								<Button
+									type="button"
+									variant="destructive"
+									size="icon"
+									className="absolute top-2 right-2 rounded-full size-8"
+									onClick={() => setImageUrl("")}
+								>
+									<X className="size-4" />
+								</Button>
+							</div>
+						) : (
+							<UploadDropzone
+								endpoint="authorPhoto"
+								onClientUploadComplete={(res) => {
+									if (res?.[0]) {
+										setImageUrl(res[0].url);
+										toast.success("Fotografia nahraná!");
+									}
+								}}
+								onUploadError={(error: Error) => {
+									toast.error(`Chyba pri nahrávaní: ${error.message}`);
+								}}
+							/>
+						)}
+					</div>
 
 					<div className="pt-4">
 						<Button

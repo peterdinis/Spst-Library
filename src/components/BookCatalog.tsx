@@ -86,7 +86,7 @@ export function BookCatalog() {
 				{[...Array(4)].map((_, i) => (
 					<div
 						key={i}
-						className="h-[400px] bg-slate-200/50 dark:bg-slate-800/50 animate-pulse rounded-3xl"
+						className="h-100 bg-slate-200/50 dark:bg-slate-800/50 animate-pulse rounded-3xl"
 					/>
 				))}
 			</div>
@@ -97,7 +97,7 @@ export function BookCatalog() {
 			{/* Filtre a Vyhľadávanie */}
 			<div className="space-y-8">
 				<div className="relative max-w-4xl mx-auto group">
-					<div className="absolute -inset-1 bg-gradient-to-r from-violet-500/20 via-purple-500/20 to-violet-500/20 rounded-[2.5rem] blur-2xl opacity-20 group-hover:opacity-100 transition duration-1000" />
+					<div className="absolute -inset-1 bg-linear-to-r from-violet-500/20 via-purple-500/20 to-violet-500/20 rounded-[2.5rem] blur-2xl opacity-20 group-hover:opacity-100 transition duration-1000" />
 					<div className="relative flex items-center bg-white/80 dark:bg-slate-950/80 backdrop-blur-2xl rounded-[2rem] border border-slate-200/50 dark:border-slate-800/50 shadow-2xl pl-8 pr-3 py-3">
 						<Search className="h-6 w-6 text-violet-500 mr-4" />
 						<Input
@@ -125,7 +125,7 @@ export function BookCatalog() {
 								setTempAuthor(val || "all")
 							}
 						>
-							<SelectTrigger className="w-[220px] h-12 rounded-2xl border-none bg-white dark:bg-slate-950 shadow-sm font-bold text-slate-600">
+							<SelectTrigger className="w-55 h-12 rounded-2xl border-none bg-white dark:bg-slate-950 shadow-sm font-bold text-slate-600">
 								<SelectValue placeholder="Všetci autori">
 									{(value) => {
 										const v = value as string | null | undefined;

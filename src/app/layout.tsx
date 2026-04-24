@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense, ViewTransition } from "react";
 import { Ubuntu } from "next/font/google";
 import "./globals.css";
+import "@uploadthing/react/styles.css";
 import { TRPCProvider } from "@/trpc/Provider";
 import { Toaster } from "@/components/ui/sonner";
 import { Navbar, NavbarSkeleton } from "@/components/layout/Navbar";
