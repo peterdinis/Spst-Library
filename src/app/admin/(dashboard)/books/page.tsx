@@ -7,7 +7,7 @@ export default function AdminBooksPage() {
 		<div className="space-y-10 pb-12">
 			<AdminPageHeader
 				title="Správa kníh"
-				description="Vytvárajte a upravujte tituly. Obálku môžete nahrať do Azure Blob (priečinok books v kontajneri covers)."
+				description="Vytvárajte a upravujte tituly. Obálku zadávate ako URL adresu obrázka."
 			/>
 
 			<div className="grid grid-cols-1 items-start gap-8 xl:grid-cols-[minmax(0,420px),1fr] xl:gap-10">

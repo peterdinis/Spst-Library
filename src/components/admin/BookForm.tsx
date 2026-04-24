@@ -12,7 +12,6 @@ import {
 	CardDescription,
 } from "@/components/ui/card";
 import { trpc } from "@/trpc/client";
-import { FileUpload } from "./FileUpload";
 import {
 	Select,
 	SelectContent,
@@ -257,12 +256,12 @@ export function BookForm({
 								<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
 									Obálka knihy (Odporúčaný pomer 2:3)
 								</label>
-								<FileUpload
-									defaultValue={coverUrl ?? ""}
-									onUploadComplete={setCoverUrl}
-									uploadFolder="books"
-								/>
-							</div>
+								<Input
+									placeholder="Zadajte URL obrázka obálky"
+									value={coverUrl ?? ""}
+									onChange={(e) => setCoverUrl(e.target.value)}
+									className="rounded-xl bg-slate-50/50 dark:bg-slate-900 focus-visible:ring-primary/50 h-11"
+								/>							</div>
 						</div>
 
 						<div className="pt-4">

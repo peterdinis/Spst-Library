@@ -12,7 +12,6 @@ import {
 	CardDescription,
 } from "@/components/ui/card";
 import { trpc } from "@/trpc/client";
-import { FileUpload } from "./FileUpload";
 import { toast } from "sonner";
 import { Loader2, UserPlus, Info } from "lucide-react";
 import { RichTextEditor } from "./RichTextEditor";
@@ -124,13 +123,12 @@ export function AuthorForm({ initialData, onSuccess }: AuthorFormProps) {
 						<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
 							Fotografia
 						</label>
-						<FileUpload
-							defaultValue={imageUrl || ""}
-							onUploadComplete={setImageUrl}
-							uploadFolder="authors"
-							aspectRatio={1}
-						/>
-					</div>
+						<Input
+							placeholder="Zadajte URL obrázka fotky autora"
+							value={imageUrl || ""}
+							onChange={(e) => setImageUrl(e.target.value)}
+							className="rounded-xl bg-slate-50/50 dark:bg-slate-900 focus-visible:ring-primary/50 h-11"
+						/>					</div>
 
 					<div className="pt-4">
 						<Button
