@@ -101,7 +101,7 @@ export function BookDetailsClient({
 					>
 						<Card className="overflow-hidden border-0 shadow-2xl rounded-3xl bg-slate-900/5 dark:bg-slate-900 ring-1 ring-slate-900/10 dark:ring-white/10 group">
 							{book.coverUrl ? (
-								<div className="relative w-full aspect-[2/3]">
+								<div className="relative w-full aspect-2/3">
 									<Image
 										src={book.coverUrl}
 										alt={book.title}
@@ -109,10 +109,10 @@ export function BookDetailsClient({
 										sizes="(max-width: 1024px) 100vw, 33vw"
 										className="object-cover transition-transform duration-700 group-hover:scale-105"
 									/>
-									<div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+									<div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 								</div>
 							) : (
-								<div className="w-full aspect-[2/3] bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center text-slate-400 group-hover:brightness-110 transition-all">
+								<div className="w-full aspect-2/3 bg-linear-to-br from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center text-slate-400 group-hover:brightness-110 transition-all">
 									<BookOpen className="h-24 w-24 opacity-50 drop-shadow-lg" />
 								</div>
 							)}
@@ -226,8 +226,8 @@ export function BookDetailsClient({
 						</Button>
 
 						<Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-							<DialogContent className="max-h-[min(90vh,640px)] gap-0 overflow-hidden rounded-3xl border border-slate-200/80 p-0 shadow-2xl sm:max-w-[540px] dark:border-slate-800">
-								<div className="relative overflow-hidden bg-gradient-to-br from-violet-600 via-primary to-violet-800 px-6 pb-8 pt-8 text-white">
+							<DialogContent className="max-h-[min(90vh,640px)] gap-0 overflow-hidden rounded-3xl border border-slate-200/80 p-0 shadow-2xl sm:max-w-135 dark:border-slate-800">
+								<div className="relative overflow-hidden bg-linear-to-br from-violet-600 via-primary to-violet-800 px-6 pb-8 pt-8 text-white">
 									<div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
 									<DialogHeader className="relative space-y-3 text-left">
 										<div className="inline-flex w-fit items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-white/90">
@@ -247,7 +247,7 @@ export function BookDetailsClient({
 								<div className="space-y-5 overflow-y-auto bg-card p-6">
 									<div className="flex gap-4 rounded-2xl border border-slate-200/80 bg-muted/40 p-4 dark:border-slate-800">
 										{book.coverUrl ? (
-											<div className="relative h-[7.5rem] w-14 shrink-0 overflow-hidden rounded-lg shadow-md ring-1 ring-black/5">
+											<div className="relative h-30 w-14 shrink-0 overflow-hidden rounded-lg shadow-md ring-1 ring-black/5">
 												<Image
 													src={book.coverUrl}
 													alt={book.title}
@@ -257,7 +257,7 @@ export function BookDetailsClient({
 												/>
 											</div>
 										) : (
-											<div className="flex h-[7.5rem] w-14 shrink-0 items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-800">
+											<div className="flex h-30 w-14 shrink-0 items-center justify-center rounded-lg bg-slate-200 dark:bg-slate-800">
 												<BookOpen className="h-8 w-8 text-slate-400" />
 											</div>
 										)}

@@ -110,13 +110,13 @@ export function ProfileClient({ user }: { user: any }) {
 			<motion.div
 				initial={{ opacity: 0, y: 20 }}
 				animate={{ opacity: 1, y: 0 }}
-				className="relative overflow-hidden rounded-[2.5rem] border border-primary/10 bg-gradient-to-r from-primary/10 via-primary/5 to-background p-8 shadow-lg sm:p-12 mb-8"
+				className="relative overflow-hidden rounded-[2.5rem] border border-primary/10 bg-linear-to-r from-primary/10 via-primary/5 to-background p-8 shadow-lg sm:p-12 mb-8"
 			>
 				<div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-[80px]" />
 
 				<div className="relative z-10 flex flex-col items-center gap-8 text-center sm:flex-row sm:text-left">
 					<div className="relative group">
-						<div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary to-emerald-400 opacity-40 blur transition duration-500 group-hover:opacity-70" />
+						<div className="absolute -inset-1 rounded-full bg-linear-to-r from-primary to-emerald-400 opacity-40 blur transition duration-500 group-hover:opacity-70" />
 						<div className="relative flex h-32 w-32 items-center justify-center overflow-hidden rounded-full border-4 border-background bg-slate-100 dark:bg-slate-800">
 							{displayUser.image ? (
 								<Image
@@ -227,7 +227,7 @@ export function ProfileClient({ user }: { user: any }) {
 								</CardContent>
 							</Card>
 
-							<Card className="rounded-3xl border-slate-200/50 bg-gradient-to-br from-primary/5 to-transparent bg-card/50 shadow-md backdrop-blur-sm dark:border-slate-800/50">
+							<Card className="rounded-3xl border-slate-200/50 bg-linear-to-br from-primary/5 to-transparent bg-card/50 shadow-md backdrop-blur-sm dark:border-slate-800/50">
 								<CardHeader className="pb-2">
 									<CardTitle className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary">
 										<Star className="h-4 w-4 fill-primary text-primary" />
@@ -315,7 +315,7 @@ export function ProfileClient({ user }: { user: any }) {
 												key={borrow.id}
 												className="group flex flex-col overflow-hidden rounded-3xl border-slate-200/50 bg-card/60 backdrop-blur-md transition-all hover:border-primary/30 hover:shadow-xl dark:border-slate-800/50 sm:flex-row"
 											>
-												<div className="relative aspect-[3/4] w-full shrink-0 overflow-hidden bg-slate-100 dark:bg-slate-900 sm:aspect-auto sm:w-1/3">
+												<div className="relative aspect-3/4 w-full shrink-0 overflow-hidden bg-slate-100 dark:bg-slate-900 sm:aspect-auto sm:w-1/3">
 													{borrow.book?.coverUrl ? (
 														<Image
 															src={borrow.book.coverUrl}

@@ -79,7 +79,7 @@ export function AuthorForm({ initialData, onSuccess }: AuthorFormProps) {
 
 	return (
 		<Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white/80 dark:bg-slate-950/80 backdrop-blur-md ring-1 ring-slate-200 dark:ring-slate-800">
-			<CardHeader className="bg-gradient-to-r from-violet-600/5 to-purple-600/5 border-b border-slate-100 dark:border-slate-800 pb-8 px-8">
+			<CardHeader className="bg-linear-to-r from-violet-600/5 to-purple-600/5 border-b border-slate-100 dark:border-slate-800 pb-8 px-8">
 				<div className="flex items-center gap-4 mb-2">
 					<div className="p-3 bg-primary/10 rounded-2xl">
 						<UserPlus className="h-6 w-6 text-primary" />

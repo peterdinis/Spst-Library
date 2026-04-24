@@ -76,7 +76,7 @@ export function NotificationBell() {
 							exit={{ scale: 0 }}
 							className="absolute -top-1 -right-1"
 						>
-							<Badge className="flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-rose-500 px-1 text-[10px] font-black text-white dark:border-slate-950">
+							<Badge className="flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-rose-500 px-1 text-[10px] font-black text-white dark:border-slate-950">
 								{unreadCount}
 							</Badge>
 						</motion.div>
@@ -123,7 +123,7 @@ export function NotificationBell() {
 						)}
 					</div>
 				</div>
-				<div className="max-h-[400px] overflow-y-auto space-y-2 pr-1">
+				<div className="max-h-100 overflow-y-auto space-y-2 pr-1">
 					{notifications?.length === 0 ? (
 						<div className="py-12 text-center text-slate-400">
 							<Bell className="h-10 w-10 mx-auto mb-3 opacity-20" />
