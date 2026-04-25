@@ -46,7 +46,7 @@ export async function Navbar() {
 							SPŠT Knižnica
 						</span>
 					</Link>
-					<div className="hidden md:flex items-center space-x-2">
+					<div className="items-center space-x-2">
 						<Link href="/books">
 							<Button variant="ghost">Knihy</Button>
 						</Link>
