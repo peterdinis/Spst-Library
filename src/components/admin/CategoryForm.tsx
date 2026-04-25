@@ -55,7 +55,7 @@ export function CategoryForm({ initialData, onSuccess }: CategoryFormProps) {
 
 	return (
 		<Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white/80 dark:bg-slate-950/80 backdrop-blur-md ring-1 ring-slate-200 dark:ring-slate-800">
-			<CardHeader className="bg-gradient-to-r from-emerald-600/5 to-teal-600/5 border-b border-slate-100 dark:border-slate-800 pb-6 px-6">
+			<CardHeader className="bg-linear-to-r from-emerald-600/5 to-teal-600/5 border-b border-slate-100 dark:border-slate-800 pb-6 px-6">
 				<div className="flex items-center gap-3">
 					<div className="p-2.5 bg-primary/10 rounded-2xl">
 						<Tag className="h-5 w-5 text-primary" />

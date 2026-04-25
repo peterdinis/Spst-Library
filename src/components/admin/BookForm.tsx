@@ -12,7 +12,6 @@ import {
 	CardDescription,
 } from "@/components/ui/card";
 import { trpc } from "@/trpc/client";
-import { FileUpload } from "./FileUpload";
 import {
 	Select,
 	SelectContent,
@@ -22,7 +21,8 @@ import {
 } from "@/components/ui/select";
 import { RichTextEditor } from "./RichTextEditor";
 import { toast } from "sonner";
-import { Loader2, Plus, Info } from "lucide-react";
+import { Loader2, Plus, Info, X } from "lucide-react";
+import { UploadDropzone } from "@/utils/uploadthing";
 
 export type BookFormInitial = {
 	id: string;
@@ -118,7 +118,7 @@ export function BookForm({
 
 	return (
 		<Card className="border-0 shadow-xl rounded-3xl overflow-hidden bg-white/80 dark:bg-slate-950/80 backdrop-blur-md ring-1 ring-slate-200 dark:ring-slate-800">
-			<CardHeader className="bg-gradient-to-r from-violet-600/5 to-purple-600/5 border-b border-slate-100 dark:border-slate-800 pb-8 px-8">
+			<CardHeader className="bg-linear-to-r from-violet-600/5 to-purple-600/5 border-b border-slate-100 dark:border-slate-800 pb-8 px-8">
 				<div className="flex items-center gap-4 mb-2">
 					<div className="p-3 bg-primary/10 rounded-2xl">
 						<Plus className="h-6 w-6 text-primary" />
@@ -257,11 +257,33 @@ export function BookForm({
 								<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
 									Obálka knihy (Odporúčaný pomer 2:3)
 								</label>
-								<FileUpload
-									defaultValue={coverUrl ?? ""}
-									onUploadComplete={setCoverUrl}
-									uploadFolder="books"
-								/>
+								{coverUrl ? (
+									<div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+										<img src={coverUrl} alt="Cover" className="max-h-48 w-auto object-cover" />
+										<Button
+											type="button"
+											variant="destructive"
+											size="icon"
+											className="absolute top-2 right-2 rounded-full size-8"
+											onClick={() => setCoverUrl("")}
+										>
+											<X className="size-4" />
+										</Button>
+									</div>
+								) : (
+									<UploadDropzone
+										endpoint="bookCover"
+										onClientUploadComplete={(res) => {
+											if (res?.[0]) {
+												setCoverUrl(res[0].url);
+												toast.success("Obálka nahraná!");
+											}
+										}}
+										onUploadError={(error: Error) => {
+											toast.error(`Chyba pri nahrávaní: ${error.message}`);
+										}}
+									/>
+								)}
 							</div>
 						</div>
 

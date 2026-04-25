@@ -8,7 +8,6 @@ import { ordersRouter } from "./orders";
 import { entraRouter } from "./entra";
 import { usersRouter } from "./users";
 import { adminWhitelistRouter } from "./adminWhitelist";
-import { uploadRouter } from "./upload";
 import { profileRouter } from "./profile";
 import { azureRouter } from "./azure";
 
@@ -25,7 +24,6 @@ export const appRouter = router({
 	entra: entraRouter,
 	users: usersRouter,
 	adminWhitelist: adminWhitelistRouter,
-	upload: uploadRouter,
 	profile: profileRouter,
 	azure: azureRouter,
 });

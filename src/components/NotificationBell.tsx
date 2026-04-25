@@ -13,8 +13,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { sk } from "date-fns/locale";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
-export function NotificationBell() {
+type NotificationBellProps = {
+	triggerClassName?: string;
+};
+
+export function NotificationBell({ triggerClassName }: NotificationBellProps) {
 	const { data: notifications } = trpc.notifications.getAll.useQuery();
 	const utils = trpc.useUtils();
 
@@ -66,7 +71,12 @@ export function NotificationBell() {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger className="group relative inline-flex size-9 items-center justify-center rounded-full transition-colors hover:bg-slate-100 dark:hover:bg-slate-800">
+			<DropdownMenuTrigger
+				className={cn(
+					"group relative inline-flex size-9 items-center justify-center rounded-full transition-colors hover:bg-slate-100 dark:hover:bg-slate-800",
+					triggerClassName,
+				)}
+			>
 				<Bell className="h-6 w-6 text-slate-600 transition-colors group-hover:text-violet-600 dark:text-slate-400" />
 				<AnimatePresence>
 					{unreadCount > 0 && (
@@ -76,7 +86,7 @@ export function NotificationBell() {
 							exit={{ scale: 0 }}
 							className="absolute -top-1 -right-1"
 						>
-							<Badge className="flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-rose-500 px-1 text-[10px] font-black text-white dark:border-slate-950">
+							<Badge className="flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-rose-500 px-1 text-[10px] font-black text-white dark:border-slate-950">
 								{unreadCount}
 							</Badge>
 						</motion.div>
@@ -123,7 +133,7 @@ export function NotificationBell() {
 						)}
 					</div>
 				</div>
-				<div className="max-h-[400px] overflow-y-auto space-y-2 pr-1">
+				<div className="max-h-100 overflow-y-auto space-y-2 pr-1">
 					{notifications?.length === 0 ? (
 						<div className="py-12 text-center text-slate-400">
 							<Bell className="h-10 w-10 mx-auto mb-3 opacity-20" />

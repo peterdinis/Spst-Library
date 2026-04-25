@@ -3,7 +3,6 @@ import { auth } from "@/auth";
 import { userHasAdminAccess } from "@/lib/admin-access";
 import { db } from "@/db";
 import { books } from "@/db/schema";
-import { uploadImageToAzure } from "@/lib/azure-storage";
 import { revalidatePath } from "next/cache";
 
 export async function POST(req: NextRequest) {
@@ -24,16 +23,15 @@ export async function POST(req: NextRequest) {
 			parseInt(formData.get("availableCopies") as string, 10) || 1;
 		const authorId = formData.get("authorId") as string;
 		const categoryId = formData.get("categoryId") as string;
-		const coverFile = formData.get("cover") as File;
+		const coverUrl = formData.get("coverUrl") as string;
 
-		if (!title || !authorId || !categoryId || !coverFile) {
+		if (!title || !authorId || !categoryId || !coverUrl) {
 			return NextResponse.json(
 				{ error: "Missing required fields" },
 				{ status: 400 },
 			);
 		}
 
-		const coverUrl = await uploadImageToAzure(coverFile, { prefix: "books" });
 		const id = crypto.randomUUID();
 
 		await db.insert(books).values({

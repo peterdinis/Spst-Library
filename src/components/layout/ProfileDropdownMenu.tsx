@@ -10,25 +10,33 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { BookMarked, Settings, User, Activity } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type ProfileDropdownMenuProps = {
 	name?: string | null;
 	email?: string | null;
 	showAdminLink?: boolean;
+	triggerClassName?: string;
 };
 
 export function ProfileDropdownMenu({
 	name,
 	email,
 	showAdminLink = false,
+	triggerClassName,
 }: ProfileDropdownMenuProps) {
 	const router = useRouter();
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger className="group rounded-full border border-slate-200 py-1 pr-1 pl-2 transition-all duration-200 hover:border-primary/30 hover:bg-slate-50 focus:outline-none dark:border-slate-700 dark:hover:bg-slate-800/70">
+			<DropdownMenuTrigger
+				className={cn(
+					"group rounded-full border border-slate-200 py-1 pr-1 pl-2 transition-all duration-200 hover:border-primary/30 hover:bg-slate-50 focus:outline-none dark:border-slate-700 dark:hover:bg-slate-800/70",
+					triggerClassName,
+				)}
+			>
 				<div className="flex items-center gap-3">
-					<div className="hidden flex-col items-end sm:flex">
+					<div className="hidden flex-col items-end xl:flex">
 						<span className="text-xs leading-none font-bold text-slate-900 dark:text-slate-50">
 							{name}
 						</span>

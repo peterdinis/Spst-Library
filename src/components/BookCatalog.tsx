@@ -86,7 +86,7 @@ export function BookCatalog() {
 				{[...Array(4)].map((_, i) => (
 					<div
 						key={i}
-						className="h-[400px] bg-slate-200/50 dark:bg-slate-800/50 animate-pulse rounded-3xl"
+						className="h-100 bg-slate-200/50 dark:bg-slate-800/50 animate-pulse rounded-3xl"
 					/>
 				))}
 			</div>
@@ -97,7 +97,7 @@ export function BookCatalog() {
 			{/* Filtre a Vyhľadávanie */}
 			<div className="space-y-8">
 				<div className="relative max-w-4xl mx-auto group">
-					<div className="absolute -inset-1 bg-gradient-to-r from-violet-500/20 via-purple-500/20 to-violet-500/20 rounded-[2.5rem] blur-2xl opacity-20 group-hover:opacity-100 transition duration-1000" />
+					<div className="absolute -inset-1 bg-linear-to-r from-violet-500/20 via-purple-500/20 to-violet-500/20 rounded-[2.5rem] blur-2xl opacity-20 group-hover:opacity-100 transition duration-1000" />
 					<div className="relative flex items-center bg-white/80 dark:bg-slate-950/80 backdrop-blur-2xl rounded-[2rem] border border-slate-200/50 dark:border-slate-800/50 shadow-2xl pl-8 pr-3 py-3">
 						<Search className="h-6 w-6 text-violet-500 mr-4" />
 						<Input
@@ -125,7 +125,7 @@ export function BookCatalog() {
 								setTempAuthor(val || "all")
 							}
 						>
-							<SelectTrigger className="w-[220px] h-12 rounded-2xl border-none bg-white dark:bg-slate-950 shadow-sm font-bold text-slate-600">
+							<SelectTrigger className="w-55 h-12 rounded-2xl border-none bg-white dark:bg-slate-950 shadow-sm font-bold text-slate-600">
 								<SelectValue placeholder="Všetci autori">
 									{(value) => {
 										const v = value as string | null | undefined;
@@ -148,7 +148,7 @@ export function BookCatalog() {
 							</SelectContent>
 						</Select>
 
-						<div className="h-6 w-[1px] bg-slate-200 dark:bg-slate-800 hidden md:block" />
+						<div className="h-6 w-px bg-slate-200 dark:bg-slate-800 hidden md:block" />
 
 						<Select
 							value={tempCategory}
@@ -156,7 +156,7 @@ export function BookCatalog() {
 								setTempCategory(val || "all")
 							}
 						>
-							<SelectTrigger className="w-[220px] h-12 rounded-2xl border-none bg-white dark:bg-slate-950 shadow-sm font-bold text-slate-600">
+							<SelectTrigger className="w-55 h-12 rounded-2xl border-none bg-white dark:bg-slate-950 shadow-sm font-bold text-slate-600">
 								<SelectValue placeholder="Všetky kategórie">
 									{(value) => {
 										const v = value as string | null | undefined;
@@ -305,7 +305,7 @@ export function BookCatalog() {
 									<Card className="flex h-full flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white ring-1 ring-slate-950/5 transition-all duration-300 hover:-translate-y-1 hover:border-violet-300/60 hover:shadow-xl hover:shadow-violet-500/10 dark:border-slate-800/80 dark:bg-slate-950 dark:ring-white/10 dark:hover:border-violet-500/40">
 										<CardHeader className="relative w-full p-0">
 											{book.coverUrl ? (
-												<div className="relative aspect-[3/4] w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
+												<div className="relative aspect-3/4 w-full overflow-hidden bg-slate-100 dark:bg-slate-900">
 													<Image
 														src={book.coverUrl}
 														alt={book.title}
@@ -316,7 +316,7 @@ export function BookCatalog() {
 													/>
 												</div>
 											) : (
-												<div className="relative flex aspect-[3/4] w-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800">
+												<div className="relative flex aspect-3/4 w-full items-center justify-center bg-linear-to-br from-slate-100 to-slate-200 dark:from-slate-900 dark:to-slate-800">
 													<BookOpen className="h-16 w-16 text-slate-300 dark:text-slate-600" />
 												</div>
 											)}
@@ -427,7 +427,7 @@ export function BookCatalog() {
 										<button
 											type="button"
 											onClick={() => setCurrentPage(page)}
-											className={`flex h-9 min-w-[2.25rem] items-center justify-center rounded-xl px-2 text-sm font-bold transition-all ${currentPage === page ? "scale-105 bg-slate-900 text-white shadow-md dark:bg-violet-600" : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
+											className={`flex h-9 min-w-9 items-center justify-center rounded-xl px-2 text-sm font-bold transition-all ${currentPage === page ? "scale-105 bg-slate-900 text-white shadow-md dark:bg-violet-600" : "text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"}`}
 											aria-current={currentPage === page ? "page" : undefined}
 										>
 											{page}
