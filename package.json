@@ -8,6 +8,8 @@
 		"start": "next start",
 		"db:push": "drizzle-kit push",
 		"db:studio": "drizzle-kit studio",
+		"db:migrate": "drizzle-kit migrate",
+		"db:generate": "drizzle-kit generate",
 		"db:seed": "tsx src/db/seed.ts",
 		"format": "bunx --bun @biomejs/biome format --write",
 		"mail:test": "tsx src/scripts/test-mail.ts"
