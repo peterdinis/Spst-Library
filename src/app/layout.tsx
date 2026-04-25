@@ -4,7 +4,6 @@ import "./globals.css";
 import "@uploadthing/react/styles.css";
 import { TRPCProvider } from "@/trpc/Provider";
 import { Toaster } from "@/components/ui/sonner";
-import { Navbar } from "@/components/layout/Navbar";
 import { getSiteUrl, siteConfig } from "@/lib/site-config";
 
 const ubuntu = Ubuntu({
@@ -15,6 +14,7 @@ const ubuntu = Ubuntu({
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import Navbar from "@/components/layout/Navbar";
 
 export const metadata: Metadata = {
 	metadataBase: getSiteUrl(),
@@ -57,10 +57,10 @@ export default function RootLayout({
 					disableTransitionOnChange
 				>
 					<TRPCProvider>
-								<Navbar />
-							{children}
-							<ScrollToTop />
-							<Toaster />
+						<Navbar />
+						{children}
+						<ScrollToTop />
+						<Toaster />
 					</TRPCProvider>
 				</ThemeProvider>
 			</body>

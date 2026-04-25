@@ -13,8 +13,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { sk } from "date-fns/locale";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
-export function NotificationBell() {
+type NotificationBellProps = {
+	triggerClassName?: string;
+};
+
+export function NotificationBell({ triggerClassName }: NotificationBellProps) {
 	const { data: notifications } = trpc.notifications.getAll.useQuery();
 	const utils = trpc.useUtils();
 
@@ -66,7 +71,12 @@ export function NotificationBell() {
 
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger className="group relative inline-flex size-9 items-center justify-center rounded-full transition-colors hover:bg-slate-100 dark:hover:bg-slate-800">
+			<DropdownMenuTrigger
+				className={cn(
+					"group relative inline-flex size-9 items-center justify-center rounded-full transition-colors hover:bg-slate-100 dark:hover:bg-slate-800",
+					triggerClassName,
+				)}
+			>
 				<Bell className="h-6 w-6 text-slate-600 transition-colors group-hover:text-violet-600 dark:text-slate-400" />
 				<AnimatePresence>
 					{unreadCount > 0 && (
