@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { userHasAdminAccess } from "@/lib/admin-access";
-import DockNavbarClient from "./DockNavbarClient";
+import TopNavbarClient from "./TopNavbarClient";
 
 const Navbar = async () => {
 	const session = await auth();
@@ -8,7 +8,7 @@ const Navbar = async () => {
 	const hasAdminAccess = isLoggedIn ? await userHasAdminAccess(session) : false;
 
 	return (
-		<DockNavbarClient
+		<TopNavbarClient
 			isLoggedIn={isLoggedIn}
 			hasAdminAccess={hasAdminAccess}
 			name={session?.user?.name}
