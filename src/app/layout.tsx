@@ -58,7 +58,7 @@ export default function RootLayout({
 				>
 					<TRPCProvider>
 						<Navbar />
-						<main className="flex-1 pb-28">{children}</main>
+						<main className="flex-1 pb-10 pt-20">{children}</main>
 						<ScrollToTop />
 						<Toaster />
 					</TRPCProvider>
