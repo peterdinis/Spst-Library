@@ -63,7 +63,6 @@ export const borrowedBooks = pgTable("borrowed_books", {
 		.notNull(),
 });
 
-/** Objednávka knihy na prevzatie (spracovanie v knižnici) */
 export const bookOrders = pgTable("book_orders", {
 	id: text("id").primaryKey(),
 	userId: text("user_id")

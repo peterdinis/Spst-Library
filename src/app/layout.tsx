@@ -14,7 +14,9 @@ const ubuntu = Ubuntu({
 
 import { ThemeProvider } from "@/components/theme-provider";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import Navbar from "@/components/layout/Navbar";
+import { Navbar } from "@/components/layout/Navbar";
+import { SessionProvider } from "@/components/providers/SessionProvider";
+import { auth } from "@/auth";
 
 export const metadata: Metadata = {
 	metadataBase: getSiteUrl(),
@@ -40,29 +42,33 @@ export const metadata: Metadata = {
 	robots: { index: true, follow: true },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const session = await auth();
+
 	return (
 		<html lang="sk" suppressHydrationWarning suppressContentEditableWarning>
 			<body
 				className={`${ubuntu.variable} font-sans antialiased flex min-h-screen flex-col bg-background text-foreground`}
 			>
-				<ThemeProvider
-					attribute="class"
-					defaultTheme="system"
-					enableSystem
-					disableTransitionOnChange
-				>
-					<TRPCProvider>
-						<Navbar />
-						{children}
-						<ScrollToTop />
-						<Toaster />
-					</TRPCProvider>
-				</ThemeProvider>
+				<SessionProvider session={session}>
+					<ThemeProvider
+						attribute="class"
+						defaultTheme="system"
+						enableSystem
+						disableTransitionOnChange
+					>
+						<TRPCProvider>
+							<Navbar />
+							<main className="flex-1 pb-10 pt-20">{children}</main>
+							<ScrollToTop />
+							<Toaster />
+						</TRPCProvider>
+					</ThemeProvider>
+				</SessionProvider>
 			</body>
 		</html>
 	);
