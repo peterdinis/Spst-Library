@@ -53,15 +53,14 @@ export default function TopNavbarClient({
 	return (
 		<header className="fixed top-0 left-0 right-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
 			<div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-				
 				{/* Left: Brand & Mobile Menu */}
 				<div className="flex items-center gap-4">
-					<MobileMenu 
-						navItems={navItems} 
-						isLoggedIn={isLoggedIn} 
-						hasAdminAccess={hasAdminAccess} 
+					<MobileMenu
+						navItems={navItems}
+						isLoggedIn={isLoggedIn}
+						hasAdminAccess={hasAdminAccess}
 					/>
-					
+
 					<Link
 						href="/"
 						className="flex items-center gap-2 transition-transform hover:scale-105 active:scale-95"
@@ -80,19 +79,24 @@ export default function TopNavbarClient({
 					{navItems.map((item) => {
 						const isActive = pathname.startsWith(item.href);
 						const Icon = item.icon;
-						
+
 						return (
 							<Link
 								key={item.href}
 								href={item.href}
 								className={cn(
 									"group flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary",
-									isActive 
-										? "text-primary" 
-										: "text-muted-foreground"
+									isActive ? "text-primary" : "text-muted-foreground",
 								)}
 							>
-								<Icon className={cn("h-4 w-4", isActive ? "text-primary" : "text-muted-foreground group-hover:text-primary")} />
+								<Icon
+									className={cn(
+										"h-4 w-4",
+										isActive
+											? "text-primary"
+											: "text-muted-foreground group-hover:text-primary",
+									)}
+								/>
 								{item.label}
 							</Link>
 						);
@@ -107,12 +111,16 @@ export default function TopNavbarClient({
 							<NotificationBell triggerClassName="h-9 w-9 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800" />
 						)}
 					</div>
-					
+
 					{isLoggedIn ? (
 						<div className="flex items-center gap-3">
 							{hasAdminAccess && (
 								<Link href="/admin" className="hidden lg:block">
-									<Button variant="ghost" size="sm" className="gap-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:text-amber-300 dark:hover:bg-amber-950/50">
+									<Button
+										variant="ghost"
+										size="sm"
+										className="gap-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:text-amber-300 dark:hover:bg-amber-950/50"
+									>
 										<ShieldCheck className="h-4 w-4" />
 										<span>Admin</span>
 									</Button>
@@ -132,7 +140,10 @@ export default function TopNavbarClient({
 								</Button>
 							</Link>
 							<Link href="/admin/login">
-								<Button size="sm" className="gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-md border-0">
+								<Button
+									size="sm"
+									className="gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white shadow-md border-0"
+								>
 									<ShieldCheck className="h-4 w-4" />
 									<span className="hidden sm:inline-block">Admin</span>
 								</Button>

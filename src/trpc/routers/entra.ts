@@ -44,7 +44,7 @@ export const entraRouter = router({
 		return {
 			...cached,
 			graphConfigured: true as const,
-				missingGraphEnv: [] as const,
+			missingGraphEnv: [] as const,
 		};
 	}),
 });

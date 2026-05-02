@@ -26,39 +26,43 @@ export function MyBooksList() {
 	const utils = trpc.useUtils();
 	const router = useRouter();
 
-	const {
-		data: books,
-		isLoading,
-	} = trpc.books.getBorrowedByUser.useQuery();
+	const { data: books, isLoading } = trpc.books.getBorrowedByUser.useQuery();
 
-	const { execute: executeReturn, isExecuting: isReturning } = useAction(returnBookAction, {
-		onSuccess: () => {
-			toast.success("Kniha bola úspešne vrátená.");
-			utils.books.getBorrowedByUser.invalidate();
-			utils.profile.getDashboard.invalidate();
-			window.location.reload()
+	const { execute: executeReturn, isExecuting: isReturning } = useAction(
+		returnBookAction,
+		{
+			onSuccess: () => {
+				toast.success("Kniha bola úspešne vrátená.");
+				utils.books.getBorrowedByUser.invalidate();
+				utils.profile.getDashboard.invalidate();
+				window.location.reload();
+			},
+			onError: ({ error }) => {
+				toast.error(
+					error.serverError || "Nepodarilo sa vrátiť knihu. Skúste to znova.",
+				);
+			},
 		},
-		onError: ({ error }) => {
-			toast.error(
-				error.serverError || "Nepodarilo sa vrátiť knihu. Skúste to znova.",
-			);
-		},
-	});
+	);
 
-	const { execute: executeClear, isExecuting: isClearing } = useAction(clearReturnHistoryAction, {
-		onSuccess: () => {
-			toast.success("História vrátených kníh bola úspešne vymazaná.");
-			setCurrentPage(1);
-			utils.books.getBorrowedByUser.invalidate();
-			utils.profile.getDashboard.invalidate();
-			router.refresh();
+	const { execute: executeClear, isExecuting: isClearing } = useAction(
+		clearReturnHistoryAction,
+		{
+			onSuccess: () => {
+				toast.success("História vrátených kníh bola úspešne vymazaná.");
+				setCurrentPage(1);
+				utils.books.getBorrowedByUser.invalidate();
+				utils.profile.getDashboard.invalidate();
+				router.refresh();
+			},
+			onError: ({ error }) => {
+				toast.error(
+					error.serverError ||
+						"Nepodarilo sa vymazať históriu. Skúste to znova.",
+				);
+			},
 		},
-		onError: ({ error }) => {
-			toast.error(
-				error.serverError || "Nepodarilo sa vymazať históriu. Skúste to znova.",
-			);
-		},
-	});
+	);
 
 	if (isLoading)
 		return (
@@ -84,7 +88,7 @@ export function MyBooksList() {
 	const totalPages = Math.ceil(books.length / ITEMS_PER_PAGE);
 	const paginatedBooks = books.slice(
 		(currentPage - 1) * ITEMS_PER_PAGE,
-		currentPage * ITEMS_PER_PAGE
+		currentPage * ITEMS_PER_PAGE,
 	);
 
 	return (
@@ -97,7 +101,11 @@ export function MyBooksList() {
 						className="rounded-xl shadow-sm"
 						disabled={isClearing}
 						onClick={() => {
-							if (confirm("Naozaj chcete natrvalo vymazať históriu vrátených kníh? Zníži sa vám tým počet v Čitateľskej výzve!")) {
+							if (
+								confirm(
+									"Naozaj chcete natrvalo vymazať históriu vrátených kníh? Zníži sa vám tým počet v Čitateľskej výzve!",
+								)
+							) {
 								executeClear({});
 							}
 						}}
@@ -142,14 +150,24 @@ export function MyBooksList() {
 									className="w-full"
 									disabled={isReturning}
 									onClick={() =>
-										executeReturn({ borrowId: record.id, bookId: record.bookId })
+										executeReturn({
+											borrowId: record.id,
+											bookId: record.bookId,
+										})
 									}
 								>
 									Vrátiť knihu
 								</Button>
 							) : (
-								<Button disabled variant="secondary" className="w-full text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 opacity-100">
-									✓ Vrátená {record.returnDate ? new Date(record.returnDate).toLocaleDateString("sk-SK") : ""}
+								<Button
+									disabled
+									variant="secondary"
+									className="w-full text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 opacity-100"
+								>
+									✓ Vrátená{" "}
+									{record.returnDate
+										? new Date(record.returnDate).toLocaleDateString("sk-SK")
+										: ""}
 								</Button>
 							)}
 						</CardFooter>

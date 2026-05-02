@@ -48,10 +48,7 @@ type BookDetailsClientProps = {
 	user: { name?: string | null; email?: string | null } | null;
 };
 
-export function BookDetailsClient({
-	book,
-	user,
-}: BookDetailsClientProps) {
+export function BookDetailsClient({ book, user }: BookDetailsClientProps) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 
 	const { execute, isExecuting } = useAction(borrowBookAction, {
@@ -238,8 +235,8 @@ export function BookDetailsClient({
 											Potvrdiť požičanie
 										</DialogTitle>
 										<DialogDescription className="text-sm leading-relaxed text-violet-100">
-											Skontrolujte údaje. Po potvrdení vám knihu priradíme a pošleme pripomienku pred
-											termínom vrátenia.
+											Skontrolujte údaje. Po potvrdení vám knihu priradíme a
+											pošleme pripomienku pred termínom vrátenia.
 										</DialogDescription>
 									</DialogHeader>
 								</div>
@@ -265,7 +262,9 @@ export function BookDetailsClient({
 											<p className="font-semibold leading-snug text-foreground line-clamp-3">
 												{book.title}
 											</p>
-											<p className="text-sm text-muted-foreground">{book.author}</p>
+											<p className="text-sm text-muted-foreground">
+												{book.author}
+											</p>
 											<div className="flex flex-wrap gap-2 pt-2">
 												<Badge
 													variant="secondary"
@@ -285,7 +284,9 @@ export function BookDetailsClient({
 												<Clock className="h-3.5 w-3.5" />
 												Dĺžka výpožičky
 											</div>
-											<p className="text-lg font-bold text-foreground">14 dní</p>
+											<p className="text-lg font-bold text-foreground">
+												14 dní
+											</p>
 											<p className="mt-1 text-xs text-muted-foreground">
 												Štandardná lehota v našej knižnici
 											</p>
@@ -314,13 +315,17 @@ export function BookDetailsClient({
 													<p className="truncate text-sm font-semibold text-foreground">
 														{user.name}
 													</p>
-													<p className="truncate text-xs text-muted-foreground">{user.email}</p>
+													<p className="truncate text-xs text-muted-foreground">
+														{user.email}
+													</p>
 												</div>
 											</div>
 										) : (
 											<div className="flex items-center gap-3 rounded-2xl border border-destructive/25 bg-destructive/10 p-4 text-destructive">
 												<AlertCircle className="h-6 w-6 shrink-0" />
-												<p className="text-sm font-medium">Pre požičanie sa musíte prihlásiť.</p>
+												<p className="text-sm font-medium">
+													Pre požičanie sa musíte prihlásiť.
+												</p>
 											</div>
 										)}
 									</div>

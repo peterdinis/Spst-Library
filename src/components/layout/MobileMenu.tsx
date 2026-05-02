@@ -36,7 +36,9 @@ export function MobileMenu({
 
 	return (
 		<Dialog>
-			<DialogTrigger render={<Button variant="ghost" size="icon" className="md:hidden" />}>
+			<DialogTrigger
+				render={<Button variant="ghost" size="icon" className="md:hidden" />}
+			>
 				<Menu className="h-6 w-6" />
 				<span className="sr-only">Menu</span>
 			</DialogTrigger>
@@ -55,42 +57,65 @@ export function MobileMenu({
 						const Icon = item.icon;
 
 						return (
-							<DialogClose key={item.href} render={<Link
-								href={item.href}
-								className={cn(
-									"flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium transition-colors",
-									isActive
-										? "bg-primary/10 text-primary"
-										: "text-muted-foreground hover:bg-slate-100 hover:text-foreground dark:hover:bg-slate-800"
-								)}
-							/>} />
+							<DialogClose
+								key={item.href}
+								render={
+									<Link
+										href={item.href}
+										className={cn(
+											"flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium transition-colors",
+											isActive
+												? "bg-primary/10 text-primary"
+												: "text-muted-foreground hover:bg-slate-100 hover:text-foreground dark:hover:bg-slate-800",
+										)}
+									/>
+								}
+							/>
 						);
 					})}
 				</div>
 				<div className="mt-auto border-t pt-4">
 					{!isLoggedIn && (
 						<div className="flex flex-col gap-2">
-							<DialogClose render={<Link href="/login" className="w-full">
-								<Button variant="outline" className="w-full justify-start gap-2">
-									<LogIn className="h-4 w-4" />
-									Prihlásiť sa
-								</Button>
-							</Link>} />
-							<DialogClose render={<Link href="/admin/login" className="w-full">
-								<Button className="w-full justify-start gap-2 bg-gradient-to-r from-violet-600 to-indigo-600">
-									<ShieldCheck className="h-4 w-4" />
-									Admin
-								</Button>
-							</Link>} />
+							<DialogClose
+								render={
+									<Link href="/login" className="w-full">
+										<Button
+											variant="outline"
+											className="w-full justify-start gap-2"
+										>
+											<LogIn className="h-4 w-4" />
+											Prihlásiť sa
+										</Button>
+									</Link>
+								}
+							/>
+							<DialogClose
+								render={
+									<Link href="/admin/login" className="w-full">
+										<Button className="w-full justify-start gap-2 bg-gradient-to-r from-violet-600 to-indigo-600">
+											<ShieldCheck className="h-4 w-4" />
+											Admin
+										</Button>
+									</Link>
+								}
+							/>
 						</div>
 					)}
 					{isLoggedIn && hasAdminAccess && (
-						<DialogClose render={<Link href="/admin" className="w-full">
-							<Button variant="ghost" className="w-full justify-start gap-2 text-amber-600 dark:text-amber-400">
-								<ShieldCheck className="h-4 w-4" />
-								Administrácia
-							</Button>
-						</Link>} />
+						<DialogClose
+							render={
+								<Link href="/admin" className="w-full">
+									<Button
+										variant="ghost"
+										className="w-full justify-start gap-2 text-amber-600 dark:text-amber-400"
+									>
+										<ShieldCheck className="h-4 w-4" />
+										Administrácia
+									</Button>
+								</Link>
+							}
+						/>
 					)}
 				</div>
 			</DialogContent>

@@ -12,7 +12,9 @@ import { sendTransactionalEmail } from "./mail";
 import { resolveUserIdFromDb } from "./resolve-user-id";
 
 export const createAuthorAction = protectedActionClient
-	.inputSchema(z.object({ name: z.string().min(1), bio: z.string().optional() }))
+	.inputSchema(
+		z.object({ name: z.string().min(1), bio: z.string().optional() }),
+	)
 	.action(async ({ parsedInput: { name, bio } }) => {
 		const id = crypto.randomUUID();
 		await db.insert(authors).values({ id, name, bio });
@@ -74,12 +76,16 @@ export const borrowBookAction = protectedActionClient
 		try {
 			const u = session.user;
 			if (!u) {
-				throw new Error("Neprihlásený používateľ alebo chýbajúce ID používateľa");
+				throw new Error(
+					"Neprihlásený používateľ alebo chýbajúce ID používateľa",
+				);
 			}
 
 			let userId = await resolveUserIdFromDb(u.email, u.id);
 			if (!userId) {
-				throw new Error("Neprihlásený používateľ alebo chýbajúce ID používateľa");
+				throw new Error(
+					"Neprihlásený používateľ alebo chýbajúce ID používateľa",
+				);
 			}
 
 			// Zaistíme, že používateľ naozaj existuje v tabuľke users (kvôli Foreign Key pre admins)
@@ -218,9 +224,7 @@ export const returnBookAction = protectedActionClient
 			const record = recordRows[0];
 
 			if (!record || record.status !== "borrowed") {
-				throw new Error(
-					"Výpožička sa nenašla alebo už bola vrátená.",
-				);
+				throw new Error("Výpožička sa nenašla alebo už bola vrátená.");
 			}
 
 			const ownerOk =

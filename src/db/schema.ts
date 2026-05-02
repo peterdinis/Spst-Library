@@ -105,9 +105,7 @@ export const userSettings = pgTable("user_settings", {
 		.primaryKey()
 		.references(() => users.id)
 		.notNull(),
-	emailNotifications: boolean("email_notifications")
-		.default(true)
-		.notNull(),
+	emailNotifications: boolean("email_notifications").default(true).notNull(),
 	dueReminders: boolean("due_reminders").default(true).notNull(),
 	systemUpdates: boolean("system_updates").default(false).notNull(),
 	/** Ročný cieľ počtu prečítaných (vrátených) kníh; null = ešte nenastavené */
@@ -138,7 +136,9 @@ export const images = pgTable("images", {
 	url: text("url").notNull(),
 	fileName: text("file_name").notNull(),
 	size: integer("size").notNull(),
-	userId: text("user_id").references(() => users.id).notNull(),
+	userId: text("user_id")
+		.references(() => users.id)
+		.notNull(),
 	createdAt: timestamp("created_at", { mode: "date" }).$defaultFn(
 		() => new Date(),
 	),

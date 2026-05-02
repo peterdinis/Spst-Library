@@ -6,7 +6,7 @@ import { defaultRateLimiter } from "./rate-limit";
 export const actionClient = createSafeActionClient().use(async ({ next }) => {
 	const headersList = await headers();
 	const ip = headersList.get("x-forwarded-for") || "127.0.0.1";
-	
+
 	// Check session for user ID
 	const session = await auth();
 	const identifier = session?.user?.id || ip;

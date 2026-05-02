@@ -71,76 +71,77 @@ export function AdminOrdersPanel() {
 						<TableHead>Kniha</TableHead>
 						<TableHead>Čitateľ</TableHead>
 						<TableHead className="max-w-[min(100%,14rem)]">Poznámka</TableHead>
-						<TableHead className="min-w-40 whitespace-nowrap">
-							Stav
-						</TableHead>
+						<TableHead className="min-w-40 whitespace-nowrap">Stav</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
 					{(orders || [])
-						.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+						.slice(
+							(currentPage - 1) * ITEMS_PER_PAGE,
+							currentPage * ITEMS_PER_PAGE,
+						)
 						.map((row) => (
-						<TableRow key={row.id} className="hover:bg-muted/40">
-							<TableCell className="whitespace-nowrap text-muted-foreground text-sm">
-								{row.createdAt
-									? new Date(row.createdAt).toLocaleString("sk-SK", {
-											dateStyle: "short",
-											timeStyle: "short",
-										})
-									: "—"}
-							</TableCell>
-							<TableCell className="font-medium">
-								{row.book?.title ?? "—"}
-								{row.book?.author?.name ? (
-									<span className="block text-xs text-muted-foreground font-normal">
-										{row.book.author.name}
-									</span>
-								) : null}
-							</TableCell>
-							<TableCell>
-								<span className="text-sm">{row.user?.name ?? "—"}</span>
-								{row.user?.email ? (
-									<span className="block text-xs text-muted-foreground">
-										{row.user.email}
-									</span>
-								) : null}
-							</TableCell>
-							<TableCell className="max-w-md text-sm text-muted-foreground">
-								<span className="line-clamp-2">{row.note || "—"}</span>
-							</TableCell>
-							<TableCell className="whitespace-nowrap align-middle">
-								<Select
-									value={row.status}
-									onValueChange={(status) =>
-										updateStatus.mutate({
-											id: row.id,
-											status: status as
-												| "pending"
-												| "approved"
-												| "fulfilled"
-												| "cancelled",
-										})
-									}
-									disabled={updateStatus.isPending}
-								>
-									<SelectTrigger className="h-9 w-full min-w-42 rounded-xl">
-										<SelectValue>
-											{(value) =>
-												statusLabels[String(value)] ?? String(value ?? "")
-											}
-										</SelectValue>
-									</SelectTrigger>
-									<SelectContent>
-										{Object.entries(statusLabels).map(([value, label]) => (
-											<SelectItem key={value} value={value}>
-												{label}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</TableCell>
-						</TableRow>
-					))}
+							<TableRow key={row.id} className="hover:bg-muted/40">
+								<TableCell className="whitespace-nowrap text-muted-foreground text-sm">
+									{row.createdAt
+										? new Date(row.createdAt).toLocaleString("sk-SK", {
+												dateStyle: "short",
+												timeStyle: "short",
+											})
+										: "—"}
+								</TableCell>
+								<TableCell className="font-medium">
+									{row.book?.title ?? "—"}
+									{row.book?.author?.name ? (
+										<span className="block text-xs text-muted-foreground font-normal">
+											{row.book.author.name}
+										</span>
+									) : null}
+								</TableCell>
+								<TableCell>
+									<span className="text-sm">{row.user?.name ?? "—"}</span>
+									{row.user?.email ? (
+										<span className="block text-xs text-muted-foreground">
+											{row.user.email}
+										</span>
+									) : null}
+								</TableCell>
+								<TableCell className="max-w-md text-sm text-muted-foreground">
+									<span className="line-clamp-2">{row.note || "—"}</span>
+								</TableCell>
+								<TableCell className="whitespace-nowrap align-middle">
+									<Select
+										value={row.status}
+										onValueChange={(status) =>
+											updateStatus.mutate({
+												id: row.id,
+												status: status as
+													| "pending"
+													| "approved"
+													| "fulfilled"
+													| "cancelled",
+											})
+										}
+										disabled={updateStatus.isPending}
+									>
+										<SelectTrigger className="h-9 w-full min-w-42 rounded-xl">
+											<SelectValue>
+												{(value) =>
+													statusLabels[String(value)] ?? String(value ?? "")
+												}
+											</SelectValue>
+										</SelectTrigger>
+										<SelectContent>
+											{Object.entries(statusLabels).map(([value, label]) => (
+												<SelectItem key={value} value={value}>
+													{label}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</TableCell>
+							</TableRow>
+						))}
 				</TableBody>
 			</Table>
 			<PaginationControls

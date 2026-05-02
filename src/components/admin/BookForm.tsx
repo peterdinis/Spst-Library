@@ -143,7 +143,7 @@ export function BookForm({
 							<h3 className="text-lg font-bold text-foreground border-b border-primary/10 pb-2">
 								Základné informácie
 							</h3>
-							
+
 							<div className="space-y-1.5">
 								<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
 									Názov knihy *
@@ -167,7 +167,7 @@ export function BookForm({
 									placeholder="Napíšte podrobný popis..."
 								/>
 							</div>
-							
+
 							<div className="grid grid-cols-2 gap-4 pt-2">
 								<div className="space-y-1.5">
 									<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
@@ -180,7 +180,7 @@ export function BookForm({
 										className="rounded-xl bg-slate-50/50 dark:bg-slate-900 focus-visible:ring-primary/50 h-11"
 									/>
 								</div>
-								
+
 								<div className="space-y-1.5">
 									<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
 										Dostupné kusy *
@@ -202,7 +202,7 @@ export function BookForm({
 							<h3 className="text-lg font-bold text-foreground border-b border-primary/10 pb-2">
 								Kategorizácia
 							</h3>
-							
+
 							<div className="space-y-1.5">
 								<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
 									Autor diela *
@@ -252,14 +252,18 @@ export function BookForm({
 							<h3 className="text-lg font-bold text-foreground border-b border-primary/10 pb-2">
 								Vizuál
 							</h3>
-							
+
 							<div className="space-y-1.5">
 								<label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
 									Obálka knihy (Odporúčaný pomer 2:3)
 								</label>
 								{coverUrl ? (
 									<div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800">
-										<img src={coverUrl} alt="Cover" className="max-h-48 w-auto object-cover" />
+										<img
+											src={coverUrl}
+											alt="Cover"
+											className="max-h-48 w-auto object-cover"
+										/>
 										<Button
 											type="button"
 											variant="destructive"

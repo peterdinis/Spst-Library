@@ -46,22 +46,26 @@ async function main() {
 		{
 			name: "Jozef Gregor Tajovský",
 			bio: "Slovenský prozaik a dramatik, jeden z vedúcich predstaviteľov druhej vlny slovenského realizmu.",
-			imageUrl: "https://upload.wikimedia.org/wikipedia/commons/4/4b/Jozef_Gregor_Tajovsk%C3%BD.jpg",
+			imageUrl:
+				"https://upload.wikimedia.org/wikipedia/commons/4/4b/Jozef_Gregor_Tajovsk%C3%BD.jpg",
 		},
 		{
 			name: "Pavol Országh Hviezdoslav",
 			bio: "Najväčší slovenský básnik, dramatik a prekladateľ. Patrí k zakladateľským osobnostiam slovenskej kultúry.",
-			imageUrl: "https://upload.wikimedia.org/wikipedia/commons/e/ec/Pavol_Orsz%C3%A1gh_Hviezdoslav.jpg",
+			imageUrl:
+				"https://upload.wikimedia.org/wikipedia/commons/e/ec/Pavol_Orsz%C3%A1gh_Hviezdoslav.jpg",
 		},
 		{
 			name: "Janko Jesenský",
 			bio: "Slovenský básnik, prozaik, prekladateľ z ruštiny, národný umelec.",
-			imageUrl: "https://upload.wikimedia.org/wikipedia/commons/2/23/Janko_Jesensk%C3%BD.jpg",
+			imageUrl:
+				"https://upload.wikimedia.org/wikipedia/commons/2/23/Janko_Jesensk%C3%BD.jpg",
 		},
 		{
 			name: "William Shakespeare",
 			bio: "Jeden z najvýznamnejších anglických spisovateľov a dramatikov.",
-			imageUrl: "https://upload.wikimedia.org/wikipedia/commons/a/a2/Shakespeare.jpg",
+			imageUrl:
+				"https://upload.wikimedia.org/wikipedia/commons/a/a2/Shakespeare.jpg",
 		},
 	];
 
@@ -99,7 +103,8 @@ async function main() {
 		},
 		{
 			title: "Krvavé sonety",
-			description: "Lyrická výpoveď o prvej svetovej vojne z pera P.O. Hviezdoslava.",
+			description:
+				"Lyrická výpoveď o prvej svetovej vojne z pera P.O. Hviezdoslava.",
 			isbn: "978-80-9999-123-3",
 			availableCopies: 5,
 			authorId: insertedAuthors["Pavol Országh Hviezdoslav"],

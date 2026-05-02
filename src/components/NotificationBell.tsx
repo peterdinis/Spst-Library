@@ -35,8 +35,9 @@ export function NotificationBell({ triggerClassName }: NotificationBellProps) {
 		async onMutate({ id }) {
 			await utils.notifications.getAll.cancel();
 			const previous = utils.notifications.getAll.getData();
-			utils.notifications.getAll.setData(undefined, (old) =>
-				old?.filter((n) => n.id !== id) ?? [],
+			utils.notifications.getAll.setData(
+				undefined,
+				(old) => old?.filter((n) => n.id !== id) ?? [],
 			);
 			return { previous };
 		},

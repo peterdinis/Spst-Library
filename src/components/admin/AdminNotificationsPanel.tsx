@@ -23,7 +23,7 @@ import {
 	ClipboardList,
 	Bell,
 	Trash2,
-	Activity
+	Activity,
 } from "lucide-react";
 
 function formatDate(value: Date | string | null | undefined) {
@@ -90,7 +90,7 @@ export function AdminNotificationsPanel() {
 	const totalPages = Math.ceil(validData.length / ITEMS_PER_PAGE);
 	const paginatedData = validData.slice(
 		(currentPage - 1) * ITEMS_PER_PAGE,
-		currentPage * ITEMS_PER_PAGE
+		currentPage * ITEMS_PER_PAGE,
 	);
 
 	return (
@@ -126,7 +126,9 @@ export function AdminNotificationsPanel() {
 								<TableRow className="border-b bg-muted/20 hover:bg-muted/20">
 									<TableHead className="w-17.5">Typ</TableHead>
 									<TableHead>Udalosť</TableHead>
-									<TableHead className="max-w-[min(100%,28rem)]">Detail</TableHead>
+									<TableHead className="max-w-[min(100%,28rem)]">
+										Detail
+									</TableHead>
 									<TableHead className="whitespace-nowrap">Čas</TableHead>
 								</TableRow>
 							</TableHeader>

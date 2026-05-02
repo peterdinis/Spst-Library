@@ -55,8 +55,7 @@ export function ProfileClient({ user }: { user: any }) {
 			},
 			onError: ({ error }) => {
 				toast.error(
-					error.serverError ||
-						"Nepodarilo sa vrátiť knihu. Skúste to znova.",
+					error.serverError || "Nepodarilo sa vrátiť knihu. Skúste to znova.",
 				);
 			},
 		},
@@ -77,7 +76,8 @@ export function ProfileClient({ user }: { user: any }) {
 		return {
 			name: dbUser?.name || user?.name || mockUser.name,
 			email: dbUser?.email || user?.email || mockUser.email,
-			image: dbUser?.image ?? (user as { image?: string | null })?.image ?? null,
+			image:
+				dbUser?.image ?? (user as { image?: string | null })?.image ?? null,
 			role: isAuthed ? roleLabel : mockUser.role,
 		};
 	}, [user, isAuthed, dashboard?.user]);
@@ -186,7 +186,11 @@ export function ProfileClient({ user }: { user: any }) {
 				</TabsList>
 
 				<AnimatePresence mode="wait">
-					<TabsContent key="overview" value="overview" className="space-y-8 outline-none">
+					<TabsContent
+						key="overview"
+						value="overview"
+						className="space-y-8 outline-none"
+					>
 						<motion.div
 							initial={{ opacity: 0, x: -10 }}
 							animate={{ opacity: 1, x: 0 }}
@@ -245,7 +249,10 @@ export function ProfileClient({ user }: { user: any }) {
 													{booksRead} / {readingGoal} kníh
 												</span>
 											</div>
-											<Progress value={challengePct} className="h-2.5 rounded-full" />
+											<Progress
+												value={challengePct}
+												className="h-2.5 rounded-full"
+											/>
 											<p className="text-xs text-muted-foreground">
 												Cieľ upravíte v{" "}
 												<Link
@@ -321,7 +328,7 @@ export function ProfileClient({ user }: { user: any }) {
 															src={borrow.book.coverUrl}
 															alt={borrow.book?.title || "Kniha"}
 															fill
-														sizes="(max-width: 768px) 100vw, 33vw"
+															sizes="(max-width: 768px) 100vw, 33vw"
 															className="object-cover transition-transform duration-500 group-hover:scale-105"
 														/>
 													) : (
@@ -401,7 +408,9 @@ export function ProfileClient({ user }: { user: any }) {
 							) : (
 								<div className="rounded-[3rem] border border-dashed border-slate-300 bg-muted/30 py-20 text-center dark:border-slate-700">
 									<BookMarked className="mx-auto mb-4 h-16 w-16 text-slate-300" />
-									<h3 className="text-2xl font-bold">Zatiaľ žiadne výpožičky</h3>
+									<h3 className="text-2xl font-bold">
+										Zatiaľ žiadne výpožičky
+									</h3>
 									<p className="mx-auto mt-2 mb-8 max-w-sm text-slate-500">
 										Nemáte u nás požičané žiadne knihy. Prezrite si katalóg.
 									</p>

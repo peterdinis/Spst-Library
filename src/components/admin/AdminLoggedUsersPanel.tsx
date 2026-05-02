@@ -82,88 +82,91 @@ export function AdminLoggedUsersPanel({
 				</TableHeader>
 				<TableBody>
 					{(users || [])
-						.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+						.slice(
+							(currentPage - 1) * ITEMS_PER_PAGE,
+							currentPage * ITEMS_PER_PAGE,
+						)
 						.map((u) => (
-						<TableRow
-							key={u.id}
-							className="hover:bg-muted/40 transition-colors"
-						>
-							<TableCell>
-								<Avatar className="h-9 w-9 border border-border/50">
-									<AvatarImage src={u.image ?? ""} alt={u.name ?? ""} />
-									<AvatarFallback className="bg-primary/5 text-primary text-xs">
-										{u.name?.slice(0, 2).toUpperCase() ?? "U"}
-									</AvatarFallback>
-								</Avatar>
-							</TableCell>
-							<TableCell className="font-medium">
-								<div className="flex items-center gap-2">
-									{u.name ?? "Neznámy"}
-									{u.isAdmin && (
-										<ShieldCheck className="h-4 w-4 text-primary" />
+							<TableRow
+								key={u.id}
+								className="hover:bg-muted/40 transition-colors"
+							>
+								<TableCell>
+									<Avatar className="h-9 w-9 border border-border/50">
+										<AvatarImage src={u.image ?? ""} alt={u.name ?? ""} />
+										<AvatarFallback className="bg-primary/5 text-primary text-xs">
+											{u.name?.slice(0, 2).toUpperCase() ?? "U"}
+										</AvatarFallback>
+									</Avatar>
+								</TableCell>
+								<TableCell className="font-medium">
+									<div className="flex items-center gap-2">
+										{u.name ?? "Neznámy"}
+										{u.isAdmin && (
+											<ShieldCheck className="h-4 w-4 text-primary" />
+										)}
+									</div>
+								</TableCell>
+								<TableCell className="text-sm text-muted-foreground">
+									{u.email}
+								</TableCell>
+								<TableCell>
+									{u.isAdmin ? (
+										<Badge
+											variant="default"
+											className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20"
+										>
+											Admin
+										</Badge>
+									) : (
+										<Badge variant="secondary" className="font-normal">
+											Používateľ
+										</Badge>
 									)}
-								</div>
-							</TableCell>
-							<TableCell className="text-sm text-muted-foreground">
-								{u.email}
-							</TableCell>
-							<TableCell>
-								{u.isAdmin ? (
-									<Badge
-										variant="default"
-										className="bg-primary/10 text-primary hover:bg-primary/20 border-primary/20"
-									>
-										Admin
-									</Badge>
-								) : (
-									<Badge variant="secondary" className="font-normal">
-										Používateľ
-									</Badge>
-								)}
-							</TableCell>
-							<TableCell>
-								{u.isAdmin && (
-									<Button
-										variant="ghost"
-										size="sm"
-										className="text-destructive hover:bg-destructive/10 hover:text-destructive rounded-xl h-8 px-3 text-xs font-semibold"
-										onClick={() =>
-											toggleAdmin.mutate({ id: u.id, isAdmin: false })
-										}
-										disabled={toggleAdmin.isPending}
-									>
-										{toggleAdmin.isPending ? (
-											<Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-										) : (
-											<ShieldX className="h-3.5 w-3.5 mr-1.5" />
-										)}
-										Odobrať práva
-									</Button>
-								)}
-								{!u.isAdmin && (
-									<Button
-										variant="ghost"
-										size="sm"
-										className="text-primary hover:bg-primary/10 hover:text-primary rounded-xl h-8 px-3 text-xs font-semibold"
-										onClick={() =>
-											toggleAdmin.mutate({ id: u.id, isAdmin: true })
-										}
-										disabled={toggleAdmin.isPending}
-									>
-										{toggleAdmin.isPending ? (
-											<Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-										) : (
-											<ShieldCheck className="h-3.5 w-3.5 mr-1.5" />
-										)}
-										Pridať admina
-									</Button>
-								)}
-							</TableCell>
-							<TableCell className="text-right font-mono text-[10px] text-muted-foreground whitespace-nowrap">
-								{u.id.slice(0, 8)}...
-							</TableCell>
-						</TableRow>
-					))}
+								</TableCell>
+								<TableCell>
+									{u.isAdmin && (
+										<Button
+											variant="ghost"
+											size="sm"
+											className="text-destructive hover:bg-destructive/10 hover:text-destructive rounded-xl h-8 px-3 text-xs font-semibold"
+											onClick={() =>
+												toggleAdmin.mutate({ id: u.id, isAdmin: false })
+											}
+											disabled={toggleAdmin.isPending}
+										>
+											{toggleAdmin.isPending ? (
+												<Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+											) : (
+												<ShieldX className="h-3.5 w-3.5 mr-1.5" />
+											)}
+											Odobrať práva
+										</Button>
+									)}
+									{!u.isAdmin && (
+										<Button
+											variant="ghost"
+											size="sm"
+											className="text-primary hover:bg-primary/10 hover:text-primary rounded-xl h-8 px-3 text-xs font-semibold"
+											onClick={() =>
+												toggleAdmin.mutate({ id: u.id, isAdmin: true })
+											}
+											disabled={toggleAdmin.isPending}
+										>
+											{toggleAdmin.isPending ? (
+												<Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+											) : (
+												<ShieldCheck className="h-3.5 w-3.5 mr-1.5" />
+											)}
+											Pridať admina
+										</Button>
+									)}
+								</TableCell>
+								<TableCell className="text-right font-mono text-[10px] text-muted-foreground whitespace-nowrap">
+									{u.id.slice(0, 8)}...
+								</TableCell>
+							</TableRow>
+						))}
 				</TableBody>
 			</Table>
 			<PaginationControls

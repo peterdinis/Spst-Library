@@ -33,10 +33,7 @@ export const categoriesRouter = router({
 		.input(z.object({ id: z.string(), name: z.string().min(1) }))
 		.mutation(async ({ ctx, input }) => {
 			const { id, ...data } = input;
-			await ctx.db
-				.update(categories)
-				.set(data)
-				.where(eq(categories.id, id));
+			await ctx.db.update(categories).set(data).where(eq(categories.id, id));
 			revalidateTag(CACHE_TAGS.categories, "default");
 			return { success: true };
 		}),

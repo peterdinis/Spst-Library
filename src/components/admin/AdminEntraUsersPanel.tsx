@@ -43,7 +43,9 @@ export function AdminEntraUsersPanel() {
 								{missingGraphEnv.map((key) => (
 									<li key={key}>
 										Chýba:{" "}
-										<code className="rounded bg-destructive/20 px-1">{key}</code>
+										<code className="rounded bg-destructive/20 px-1">
+											{key}
+										</code>
 									</li>
 								))}
 							</ul>

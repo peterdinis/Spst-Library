@@ -30,10 +30,5 @@ export default async function BookDetailsPage({
 
 	const session = await auth();
 
-	return (
-		<BookDetailsClient
-			book={book}
-			user={session?.user ?? null}
-		/>
-	);
+	return <BookDetailsClient book={book} user={session?.user ?? null} />;
 }

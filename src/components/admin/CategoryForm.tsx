@@ -64,7 +64,9 @@ export function CategoryForm({ initialData, onSuccess }: CategoryFormProps) {
 						<CardTitle className="text-xl font-bold tracking-tight">
 							{isEditing ? "Upraviť kategóriu" : "Nová kategória"}
 						</CardTitle>
-						<CardDescription className="text-xs mt-0.5">Názov žánru alebo tematického okruhu.</CardDescription>
+						<CardDescription className="text-xs mt-0.5">
+							Názov žánru alebo tematického okruhu.
+						</CardDescription>
 					</div>
 				</div>
 			</CardHeader>

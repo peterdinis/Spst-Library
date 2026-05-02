@@ -6,14 +6,7 @@ export const siteConfig = {
 	shortName: "SPŠT Knižnica",
 	description:
 		"Digitálna školská knižnica – katalóg kníh, výpožičky a čitateľský profil pre študentov a pedagógov SPŠT.",
-	keywords: [
-		"knižnica",
-		"SPŠT",
-		"škola",
-		"knihy",
-		"výpožičky",
-		"katalóg",
-	],
+	keywords: ["knižnica", "SPŠT", "škola", "knihy", "výpožičky", "katalóg"],
 } as const;
 
 export function getSiteUrl(): URL {

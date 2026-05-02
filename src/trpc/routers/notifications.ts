@@ -80,10 +80,7 @@ export const notificationsRouter = router({
 				.update(notifications)
 				.set({ isRead: true })
 				.where(
-					and(
-						eq(notifications.id, input.id),
-						eq(notifications.userId, userId),
-					),
+					and(eq(notifications.id, input.id), eq(notifications.userId, userId)),
 				);
 
 			revalidateTag(CACHE_TAGS.notifications, "default");
@@ -112,10 +109,7 @@ export const notificationsRouter = router({
 			await ctx.db
 				.delete(notifications)
 				.where(
-					and(
-						eq(notifications.id, input.id),
-						eq(notifications.userId, userId),
-					),
+					and(eq(notifications.id, input.id), eq(notifications.userId, userId)),
 				);
 
 			revalidateTag(CACHE_TAGS.notifications, "default");
@@ -126,9 +120,7 @@ export const notificationsRouter = router({
 		const userId = ctx.session?.user?.id;
 		if (!userId) return { success: false };
 
-		await ctx.db
-			.delete(notifications)
-			.where(eq(notifications.userId, userId));
+		await ctx.db.delete(notifications).where(eq(notifications.userId, userId));
 
 		revalidateTag(CACHE_TAGS.notifications, "default");
 		return { success: true };

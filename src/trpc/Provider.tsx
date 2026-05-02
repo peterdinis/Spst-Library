@@ -1,6 +1,11 @@
 "use client";
 
-import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from "@tanstack/react-query";
+import {
+	QueryClient,
+	QueryClientProvider,
+	QueryCache,
+	MutationCache,
+} from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { useState } from "react";
 import { trpc } from "./client";
@@ -11,7 +16,10 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 			new QueryClient({
 				queryCache: new QueryCache({
 					onError: (error) => {
-						if (error instanceof TRPCClientError && error.data?.code === "TOO_MANY_REQUESTS") {
+						if (
+							error instanceof TRPCClientError &&
+							error.data?.code === "TOO_MANY_REQUESTS"
+						) {
 							if (typeof window !== "undefined") {
 								window.dispatchEvent(new Event("rate-limit-exceeded"));
 							}
@@ -20,7 +28,10 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 				}),
 				mutationCache: new MutationCache({
 					onError: (error) => {
-						if (error instanceof TRPCClientError && error.data?.code === "TOO_MANY_REQUESTS") {
+						if (
+							error instanceof TRPCClientError &&
+							error.data?.code === "TOO_MANY_REQUESTS"
+						) {
 							if (typeof window !== "undefined") {
 								window.dispatchEvent(new Event("rate-limit-exceeded"));
 							}

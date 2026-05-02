@@ -126,7 +126,11 @@ export function AuthorForm({ initialData, onSuccess }: AuthorFormProps) {
 						</label>
 						{imageUrl ? (
 							<div className="relative rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800">
-								<img src={imageUrl} alt="Photo" className="max-h-48 w-auto object-cover" />
+								<img
+									src={imageUrl}
+									alt="Photo"
+									className="max-h-48 w-auto object-cover"
+								/>
 								<Button
 									type="button"
 									variant="destructive"

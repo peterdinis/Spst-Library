@@ -33,7 +33,7 @@ export function RateLimitAlert() {
 				>
 					<div className="relative overflow-hidden rounded-2xl border-2 border-red-500/30 bg-red-50/90 p-4 shadow-[0_0_40px_-10px_rgba(239,68,68,0.4)] backdrop-blur-xl dark:bg-red-950/80">
 						<div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-red-500/20 blur-3xl" />
-						
+
 						<div className="relative flex items-start gap-4">
 							<div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/50 dark:text-red-400 shadow-sm">
 								<AlertTriangle className="h-5 w-5" />
@@ -43,19 +43,20 @@ export function RateLimitAlert() {
 									Spomaľte prosím!
 								</h3>
 								<p className="mt-2 text-sm font-medium text-red-800/80 dark:text-red-200/80">
-									Dosiahli ste limit požiadaviek. Náš systém zaznamenal príliš vysokú aktivitu. Skúste to znova o minútu.
+									Dosiahli ste limit požiadaviek. Náš systém zaznamenal príliš
+									vysokú aktivitu. Skúste to znova o minútu.
 								</p>
 							</div>
-							<button 
+							<button
 								onClick={() => setShow(false)}
 								className="shrink-0 rounded-lg p-1 text-red-500/60 hover:bg-red-500/10 hover:text-red-600 transition-colors"
 							>
 								<X className="h-4 w-4" />
 							</button>
 						</div>
-						
+
 						{/* Progress bar timer */}
-						<motion.div 
+						<motion.div
 							initial={{ width: "100%" }}
 							animate={{ width: "0%" }}
 							transition={{ duration: 6, ease: "linear" }}

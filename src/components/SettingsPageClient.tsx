@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Bell, BookOpen, Mail, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { trpc } from "@/trpc/client";
@@ -140,9 +146,9 @@ export function SettingsPageClient() {
 						Čitateľská výzva
 					</CardTitle>
 					<CardDescription>
-						Ročný cieľ počtu kníh, ktoré si prečítate (podľa vrátených výpožičiek v
-						histórii). Voliteľné – môžete kedykoľvek zmeniť alebo vypnúť vyprázdnením
-						poľa.
+						Ročný cieľ počtu kníh, ktoré si prečítate (podľa vrátených
+						výpožičiek v histórii). Voliteľné – môžete kedykoľvek zmeniť alebo
+						vypnúť vyprázdnením poľa.
 					</CardDescription>
 				</CardHeader>
 				<CardContent className="space-y-4">
@@ -179,8 +185,8 @@ export function SettingsPageClient() {
 							</Button>
 						</div>
 						<p className="text-xs text-muted-foreground">
-							Prázdne pole = žiadny zobrazený cieľ na dashboarde profilu (nie je to
-							limit výpožičiek).
+							Prázdne pole = žiadny zobrazený cieľ na dashboarde profilu (nie je
+							to limit výpožičiek).
 						</p>
 					</div>
 				</CardContent>

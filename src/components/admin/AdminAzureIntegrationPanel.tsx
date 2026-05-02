@@ -90,7 +90,9 @@ export function AdminAzureIntegrationPanel({
 								<Cloud className="size-5" />
 							</div>
 							<div>
-								<CardTitle className="text-base">Microsoft Graph (Entra)</CardTitle>
+								<CardTitle className="text-base">
+									Microsoft Graph (Entra)
+								</CardTitle>
 								<CardDescription className="text-xs">
 									Zoznam používateľov, prihlásenie cez Entra
 								</CardDescription>

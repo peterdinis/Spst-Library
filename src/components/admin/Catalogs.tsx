@@ -34,7 +34,9 @@ type AdminCategoryRow = { id: string; name: string };
 
 export function AuthorsTable() {
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-	const [selectedAuthor, setSelectedAuthor] = useState<AdminAuthorRow | null>(null);
+	const [selectedAuthor, setSelectedAuthor] = useState<AdminAuthorRow | null>(
+		null,
+	);
 	const [currentPage, setCurrentPage] = useState(1);
 	const ITEMS_PER_PAGE = 8;
 	const { data: authors, isLoading } = trpc.authors.getAll.useQuery();
@@ -74,74 +76,79 @@ export function AuthorsTable() {
 					</TableHeader>
 					<TableBody>
 						{(authors || [])
-							.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+							.slice(
+								(currentPage - 1) * ITEMS_PER_PAGE,
+								currentPage * ITEMS_PER_PAGE,
+							)
 							.map((a) => (
-							<TableRow
-								key={a.id}
-								className="transition-colors hover:bg-muted/40"
-							>
-								<TableCell className="pl-4 align-middle">
-									{a.imageUrl ? (
-										<div className="relative size-9 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
-											<Image
-												src={a.imageUrl}
-												alt=""
-												fill
-												sizes="36px"
-												className="object-cover"
-											/>
-										</div>
-									) : (
-										<div className="size-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700">
-											<User className="size-4 text-slate-400" />
-										</div>
-									)}
-								</TableCell>
-								<TableCell className="font-medium">{a.name}</TableCell>
-								<TableCell className="max-w-md text-sm text-muted-foreground">
-									<span className="line-clamp-2">{a.bio || "Bez popisu"}</span>
-								</TableCell>
-								<TableCell className="space-x-2 pr-4 text-right align-middle whitespace-nowrap">
-									<Dialog
-										open={isEditDialogOpen && selectedAuthor?.id === a.id}
-										onOpenChange={(open) => {
-											setIsEditDialogOpen(open);
-											if (open) setSelectedAuthor(a);
-										}}
-									>
-										<DialogTrigger
-											render={
-												<Button
-													variant="ghost"
-													size="icon"
-													className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary"
+								<TableRow
+									key={a.id}
+									className="transition-colors hover:bg-muted/40"
+								>
+									<TableCell className="pl-4 align-middle">
+										{a.imageUrl ? (
+											<div className="relative size-9 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+												<Image
+													src={a.imageUrl}
+													alt=""
+													fill
+													sizes="36px"
+													className="object-cover"
 												/>
-											}
+											</div>
+										) : (
+											<div className="size-9 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700">
+												<User className="size-4 text-slate-400" />
+											</div>
+										)}
+									</TableCell>
+									<TableCell className="font-medium">{a.name}</TableCell>
+									<TableCell className="max-w-md text-sm text-muted-foreground">
+										<span className="line-clamp-2">
+											{a.bio || "Bez popisu"}
+										</span>
+									</TableCell>
+									<TableCell className="space-x-2 pr-4 text-right align-middle whitespace-nowrap">
+										<Dialog
+											open={isEditDialogOpen && selectedAuthor?.id === a.id}
+											onOpenChange={(open) => {
+												setIsEditDialogOpen(open);
+												if (open) setSelectedAuthor(a);
+											}}
 										>
-											<Edit className="h-4 w-4" />
-										</DialogTrigger>
-										<DialogContent className="sm:max-w-md rounded-3xl">
-											<AuthorForm
-												initialData={a}
-												onSuccess={() => setIsEditDialogOpen(false)}
-											/>
-										</DialogContent>
-									</Dialog>
-									<Button
-										variant="ghost"
-										size="icon"
-										className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
-										onClick={() => {
-											if (confirm("Naozaj chcete vymazať tohto autora?")) {
-												deleteAuthor.mutate({ id: a.id });
-											}
-										}}
-									>
-										<Trash2 className="h-4 w-4" />
-									</Button>
-								</TableCell>
-							</TableRow>
-						))}
+											<DialogTrigger
+												render={
+													<Button
+														variant="ghost"
+														size="icon"
+														className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary"
+													/>
+												}
+											>
+												<Edit className="h-4 w-4" />
+											</DialogTrigger>
+											<DialogContent className="sm:max-w-md rounded-3xl">
+												<AuthorForm
+													initialData={a}
+													onSuccess={() => setIsEditDialogOpen(false)}
+												/>
+											</DialogContent>
+										</Dialog>
+										<Button
+											variant="ghost"
+											size="icon"
+											className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
+											onClick={() => {
+												if (confirm("Naozaj chcete vymazať tohto autora?")) {
+													deleteAuthor.mutate({ id: a.id });
+												}
+											}}
+										>
+											<Trash2 className="h-4 w-4" />
+										</Button>
+									</TableCell>
+								</TableRow>
+							))}
 						{(!authors || authors.length === 0) && (
 							<TableRow>
 								<TableCell
@@ -166,7 +173,8 @@ export function AuthorsTable() {
 
 export function CategoriesTable() {
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-	const [selectedCategory, setSelectedCategory] = useState<AdminCategoryRow | null>(null);
+	const [selectedCategory, setSelectedCategory] =
+		useState<AdminCategoryRow | null>(null);
 	const [currentPage, setCurrentPage] = useState(1);
 	const ITEMS_PER_PAGE = 10;
 	const { data: categories, isLoading } = trpc.categories.getAll.useQuery();
@@ -202,54 +210,57 @@ export function CategoriesTable() {
 					</TableHeader>
 					<TableBody>
 						{(categories || [])
-							.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+							.slice(
+								(currentPage - 1) * ITEMS_PER_PAGE,
+								currentPage * ITEMS_PER_PAGE,
+							)
 							.map((c) => (
-							<TableRow
-								key={c.id}
-								className="transition-colors hover:bg-muted/40"
-							>
-								<TableCell className="pl-4 font-medium">{c.name}</TableCell>
-								<TableCell className="space-x-2 pr-4 text-right whitespace-nowrap">
-									<Dialog
-										open={isEditDialogOpen && selectedCategory?.id === c.id}
-										onOpenChange={(open) => {
-											setIsEditDialogOpen(open);
-											if (open) setSelectedCategory(c);
-										}}
-									>
-										<DialogTrigger
-											render={
-												<Button
-													variant="ghost"
-													size="icon"
-													className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary"
-												/>
-											}
+								<TableRow
+									key={c.id}
+									className="transition-colors hover:bg-muted/40"
+								>
+									<TableCell className="pl-4 font-medium">{c.name}</TableCell>
+									<TableCell className="space-x-2 pr-4 text-right whitespace-nowrap">
+										<Dialog
+											open={isEditDialogOpen && selectedCategory?.id === c.id}
+											onOpenChange={(open) => {
+												setIsEditDialogOpen(open);
+												if (open) setSelectedCategory(c);
+											}}
 										>
-											<Edit className="h-4 w-4" />
-										</DialogTrigger>
-										<DialogContent className="sm:max-w-md rounded-3xl">
-											<CategoryForm
-												initialData={c}
-												onSuccess={() => setIsEditDialogOpen(false)}
-											/>
-										</DialogContent>
-									</Dialog>
-									<Button
-										variant="ghost"
-										size="icon"
-										className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
-										onClick={() => {
-											if (confirm("Naozaj chcete vymazať túto kategóriu?")) {
-												deleteCategory.mutate({ id: c.id });
-											}
-										}}
-									>
-										<Trash2 className="h-4 w-4" />
-									</Button>
-								</TableCell>
-							</TableRow>
-						))}
+											<DialogTrigger
+												render={
+													<Button
+														variant="ghost"
+														size="icon"
+														className="h-8 w-8 rounded-full hover:bg-primary/10 hover:text-primary"
+													/>
+												}
+											>
+												<Edit className="h-4 w-4" />
+											</DialogTrigger>
+											<DialogContent className="sm:max-w-md rounded-3xl">
+												<CategoryForm
+													initialData={c}
+													onSuccess={() => setIsEditDialogOpen(false)}
+												/>
+											</DialogContent>
+										</Dialog>
+										<Button
+											variant="ghost"
+											size="icon"
+											className="h-8 w-8 rounded-full hover:bg-destructive/10 hover:text-destructive"
+											onClick={() => {
+												if (confirm("Naozaj chcete vymazať túto kategóriu?")) {
+													deleteCategory.mutate({ id: c.id });
+												}
+											}}
+										>
+											<Trash2 className="h-4 w-4" />
+										</Button>
+									</TableCell>
+								</TableRow>
+							))}
 						{(!categories || categories.length === 0) && (
 							<TableRow>
 								<TableCell
@@ -274,7 +285,9 @@ export function CategoriesTable() {
 
 export function BooksTable() {
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-	const [selectedBook, setSelectedBook] = useState<BookFormInitial | null>(null);
+	const [selectedBook, setSelectedBook] = useState<BookFormInitial | null>(
+		null,
+	);
 	const [currentPage, setCurrentPage] = useState(1);
 	const ITEMS_PER_PAGE = 8;
 	const { data: books, isLoading } = trpc.books.getAll.useQuery();
@@ -318,95 +331,98 @@ export function BooksTable() {
 					</TableHeader>
 					<TableBody>
 						{(books?.items || [])
-							.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+							.slice(
+								(currentPage - 1) * ITEMS_PER_PAGE,
+								currentPage * ITEMS_PER_PAGE,
+							)
 							.map((b) => (
-							<TableRow
-								key={b.id}
-								className="group transition-colors hover:bg-muted/40"
-							>
-								<TableCell className="pl-4 align-middle whitespace-nowrap">
-									{b.coverUrl ? (
-										<div className="relative h-12 w-9">
-											<Image
-												src={b.coverUrl}
-												alt={b.title}
-												fill
-												sizes="36px"
-												className="object-cover rounded shadow-sm group-hover:shadow-md transition-shadow"
-											/>
-										</div>
-									) : (
-										<div className="h-12 w-9 bg-slate-100 dark:bg-slate-800 rounded flex items-center justify-center">
-											<BookOpen className="h-4 w-4 text-slate-400" />
-										</div>
-									)}
-								</TableCell>
-								<TableCell className="max-w-[min(100%,18rem)] font-medium">
-									<div>
-										<div className="text-foreground">{b.title}</div>
-										<div className="text-xs font-normal text-muted-foreground">
-											{b.isbn || "ISBN chýba"}
-										</div>
-									</div>
-								</TableCell>
-								<TableCell className="whitespace-nowrap">
-									<Badge
-										variant="outline"
-										className="rounded-lg bg-slate-50 font-normal"
-									>
-										{b.author?.name || "Neznámy autor"}
-									</Badge>
-								</TableCell>
-								<TableCell className="whitespace-nowrap">
-									<span className="font-mono text-sm font-bold text-primary">
-										{b.availableCopies}
-									</span>
-								</TableCell>
-								<TableCell className="space-x-2 pr-4 text-right align-middle whitespace-nowrap">
-									<Dialog
-										open={isEditDialogOpen && selectedBook?.id === b.id}
-										onOpenChange={(open) => {
-											setIsEditDialogOpen(open);
-											if (open) setSelectedBook(b);
-										}}
-									>
-										<DialogTrigger
-											render={
-												<Button
-													variant="ghost"
-													size="icon"
-													className="h-9 w-9 rounded-xl hover:bg-violet-50 hover:text-violet-600 border border-transparent hover:border-violet-100"
-												/>
-											}
-										>
-											<Edit className="h-4 w-4" />
-										</DialogTrigger>
-										<DialogContent className="sm:max-w-4xl rounded-3xl p-0 overflow-hidden border-none shadow-2xl">
-											<div className="max-h-[90vh] overflow-y-auto p-6 bg-white dark:bg-slate-950">
-												<BookForm
-													initialData={b}
-													onSuccess={() => setIsEditDialogOpen(false)}
+								<TableRow
+									key={b.id}
+									className="group transition-colors hover:bg-muted/40"
+								>
+									<TableCell className="pl-4 align-middle whitespace-nowrap">
+										{b.coverUrl ? (
+											<div className="relative h-12 w-9">
+												<Image
+													src={b.coverUrl}
+													alt={b.title}
+													fill
+													sizes="36px"
+													className="object-cover rounded shadow-sm group-hover:shadow-md transition-shadow"
 												/>
 											</div>
-										</DialogContent>
-									</Dialog>
-									<Button
-										variant="ghost"
-										size="icon"
-										className="h-9 w-9 rounded-xl hover:bg-rose-50 hover:text-rose-600 border border-transparent hover:border-rose-100"
-										onClick={() => {
-											if (
-												confirm(`Naozaj chcete vymazať knihu "${b.title}"?`)
-											) {
-												deleteBook.mutate({ id: b.id });
-											}
-										}}
-									>
-										<Trash2 className="h-4 w-4" />
-									</Button>
-								</TableCell>
-							</TableRow>
-						))}
+										) : (
+											<div className="h-12 w-9 bg-slate-100 dark:bg-slate-800 rounded flex items-center justify-center">
+												<BookOpen className="h-4 w-4 text-slate-400" />
+											</div>
+										)}
+									</TableCell>
+									<TableCell className="max-w-[min(100%,18rem)] font-medium">
+										<div>
+											<div className="text-foreground">{b.title}</div>
+											<div className="text-xs font-normal text-muted-foreground">
+												{b.isbn || "ISBN chýba"}
+											</div>
+										</div>
+									</TableCell>
+									<TableCell className="whitespace-nowrap">
+										<Badge
+											variant="outline"
+											className="rounded-lg bg-slate-50 font-normal"
+										>
+											{b.author?.name || "Neznámy autor"}
+										</Badge>
+									</TableCell>
+									<TableCell className="whitespace-nowrap">
+										<span className="font-mono text-sm font-bold text-primary">
+											{b.availableCopies}
+										</span>
+									</TableCell>
+									<TableCell className="space-x-2 pr-4 text-right align-middle whitespace-nowrap">
+										<Dialog
+											open={isEditDialogOpen && selectedBook?.id === b.id}
+											onOpenChange={(open) => {
+												setIsEditDialogOpen(open);
+												if (open) setSelectedBook(b);
+											}}
+										>
+											<DialogTrigger
+												render={
+													<Button
+														variant="ghost"
+														size="icon"
+														className="h-9 w-9 rounded-xl hover:bg-violet-50 hover:text-violet-600 border border-transparent hover:border-violet-100"
+													/>
+												}
+											>
+												<Edit className="h-4 w-4" />
+											</DialogTrigger>
+											<DialogContent className="sm:max-w-4xl rounded-3xl p-0 overflow-hidden border-none shadow-2xl">
+												<div className="max-h-[90vh] overflow-y-auto p-6 bg-white dark:bg-slate-950">
+													<BookForm
+														initialData={b}
+														onSuccess={() => setIsEditDialogOpen(false)}
+													/>
+												</div>
+											</DialogContent>
+										</Dialog>
+										<Button
+											variant="ghost"
+											size="icon"
+											className="h-9 w-9 rounded-xl hover:bg-rose-50 hover:text-rose-600 border border-transparent hover:border-rose-100"
+											onClick={() => {
+												if (
+													confirm(`Naozaj chcete vymazať knihu "${b.title}"?`)
+												) {
+													deleteBook.mutate({ id: b.id });
+												}
+											}}
+										>
+											<Trash2 className="h-4 w-4" />
+										</Button>
+									</TableCell>
+								</TableRow>
+							))}
 						{(!books?.items || books.items.length === 0) && (
 							<TableRow>
 								<TableCell

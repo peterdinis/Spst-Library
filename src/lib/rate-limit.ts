@@ -24,9 +24,11 @@ export class RateLimiter {
 	 * @param identifier A unique string identifying the requester (e.g., IP address or User ID)
 	 * @returns Object indicating success and remaining requests
 	 */
-	limit(
-		identifier: string,
-	): { success: boolean; limit: number; remaining: number } {
+	limit(identifier: string): {
+		success: boolean;
+		limit: number;
+		remaining: number;
+	} {
 		const now = Date.now();
 		const record = this.cache.get(identifier);
 

@@ -16,7 +16,8 @@ export default async function MyBooksPage() {
 					Moje požičané knihy
 				</h1>
 				<p className="text-lg text-slate-500">
-					Prezerajte si a spravujte knihy, ktoré momentálne čítate, alebo si pozrite vašu históriu.
+					Prezerajte si a spravujte knihy, ktoré momentálne čítate, alebo si
+					pozrite vašu históriu.
 				</p>
 			</div>
 			<MyBooksList />

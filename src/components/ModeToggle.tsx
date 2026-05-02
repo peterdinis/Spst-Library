@@ -59,7 +59,9 @@ export function ModeToggle({ triggerClassName }: ModeToggleProps) {
 				>
 					<Sun className="h-4 w-4" />
 					Svetlá
-					{activeTheme === "light" ? <Check className="ml-auto h-4 w-4" /> : null}
+					{activeTheme === "light" ? (
+						<Check className="ml-auto h-4 w-4" />
+					) : null}
 				</DropdownMenuItem>
 				<DropdownMenuItem
 					onClick={() => setTheme("dark")}
@@ -67,7 +69,9 @@ export function ModeToggle({ triggerClassName }: ModeToggleProps) {
 				>
 					<Moon className="h-4 w-4" />
 					Tmavá
-					{activeTheme === "dark" ? <Check className="ml-auto h-4 w-4" /> : null}
+					{activeTheme === "dark" ? (
+						<Check className="ml-auto h-4 w-4" />
+					) : null}
 				</DropdownMenuItem>
 				<DropdownMenuItem
 					onClick={() => setTheme("system")}
