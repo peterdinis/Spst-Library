@@ -19,6 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { UrlObject } from "url";
 
 type NavItem = {
 	href: string;
@@ -101,7 +102,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 							return (
 								<Link
 									key={item.href}
-									href={item.href as any}
+									href={item.href as unknown as UrlObject}
 									className={cn(
 										"flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
 										active

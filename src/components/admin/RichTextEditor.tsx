@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
@@ -26,7 +26,7 @@ interface RichTextEditorProps {
 	placeholder?: string;
 }
 
-const Toolbar = ({ editor }: { editor: any }) => {
+const Toolbar = ({ editor }: { editor: Editor }) => {
 	if (!editor) return null;
 
 	const components = [
@@ -150,7 +150,7 @@ export function RichTextEditor({
 
 	return (
 		<div className="w-full rounded-2xl border border-border bg-background focus-within:ring-2 focus-within:ring-primary/20 transition-all overflow-hidden flex flex-col">
-			<Toolbar editor={editor} />
+			<Toolbar editor={editor as unknown as Editor} />
 			<EditorContent editor={editor} />
 			<style>{`
 				.ProseMirror p.is-editor-empty:first-child::before {
