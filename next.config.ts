@@ -7,7 +7,6 @@ const nextConfig: NextConfig = {
 		typedEnv: true,
 		viewTransition: true
 	},
-	cacheComponents: true,
 	images: {
 		remotePatterns: [
 			{
