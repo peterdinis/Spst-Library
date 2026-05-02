@@ -16,6 +16,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { Navbar } from "@/components/layout/Navbar";
 import { SessionProvider } from "@/components/providers/SessionProvider";
+import { RateLimitAlert } from "@/components/RateLimitAlert";
 import { auth } from "@/auth";
 
 export const metadata: Metadata = {
@@ -65,6 +66,7 @@ export default async function RootLayout({
 							<Navbar />
 							<main className="flex-1 pb-10 pt-20">{children}</main>
 							<ScrollToTop />
+							<RateLimitAlert />
 							<Toaster />
 						</TRPCProvider>
 					</ThemeProvider>
