@@ -2,10 +2,6 @@ import { db } from "@/db";
 import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-/**
- * Zhodnotí skutočné `users.id` z DB (email má prednosť pred JWT/sub),
- * aby FK na `borrowed_books` / notifikácie vždy sedeli.
- */
 export async function resolveUserIdFromDb(
 	email: string | null | undefined,
 	fallbackId: string | null | undefined,

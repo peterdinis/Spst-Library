@@ -118,7 +118,7 @@ export default async function Home() {
 										{book.title}
 									</h3>
 									<p className="text-slate-500 text-sm font-medium">
-										{(book).author?.name || "Neznámy autor"}
+										{book.author?.name || "Neznámy autor"}
 									</p>
 								</CardContent>
 							</Card>
