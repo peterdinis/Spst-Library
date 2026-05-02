@@ -9,7 +9,7 @@ const f = createUploadthing();
 
 export const ourFileRouter = {
 	bookCover: f({
-		image: { maxFileSize: "4MB", maxFileCount: 1 },
+		image: { maxFileSize: "8MB", maxFileCount: 1 },
 	})
 		.middleware(async () => {
 			const session = await auth();
@@ -34,7 +34,7 @@ export const ourFileRouter = {
 		}),
 
 	authorPhoto: f({
-		image: { maxFileSize: "4MB", maxFileCount: 1 },
+		image: { maxFileSize: "8MB", maxFileCount: 1 },
 	})
 		.middleware(async () => {
 			const session = await auth();
