@@ -1,23 +1,23 @@
+import {
+	ArrowRight,
+	Bell,
+	BookOpen,
+	ClipboardList,
+	Tags,
+	Users,
+} from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
+import { AdminIntegrationsPanel } from "@/components/admin/AdminIntegrationsPanel";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { buttonVariants } from "@/components/ui/button-variants";
 import {
 	Card,
 	CardContent,
+	CardDescription,
 	CardHeader,
 	CardTitle,
-	CardDescription,
 } from "@/components/ui/card";
-import {
-	BookOpen,
-	Users,
-	Tags,
-	ArrowRight,
-	ClipboardList,
-	Bell,
-} from "lucide-react";
-import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
-import { AdminAzureIntegrationPanel } from "@/components/admin/AdminAzureIntegrationPanel";
-import { buttonVariants } from "@/components/ui/button-variants";
 import { cn } from "@/lib/utils";
 
 export default function AdminDashboardPage() {
@@ -25,7 +25,7 @@ export default function AdminDashboardPage() {
 		{
 			title: "Knihy",
 			description:
-				"Pridávajte, upravujte a mažte knihy v katalógu vrátane obálok (Azure).",
+				"Pridávajte, upravujte a mažte knihy v katalógu vrátane obálok (UploadThing).",
 			href: "/admin/books" as const,
 			icon: BookOpen,
 			iconBg:
@@ -77,19 +77,19 @@ export default function AdminDashboardPage() {
 			<div className="space-y-3">
 				<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
 					<h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-						Stav integrácií Azure
+						Stav integrácií
 					</h2>
 					<Link
-						href={"/admin/azure" as Route}
+						href={"/admin/integrations" as Route}
 						className={cn(
 							buttonVariants({ variant: "outline", size: "sm" }),
 							"rounded-xl w-fit",
 						)}
 					>
-						Podrobnosti a kontrola premenných
+						Všetky platformy a premenné
 					</Link>
 				</div>
-				<AdminAzureIntegrationPanel variant="compact" />
+				<AdminIntegrationsPanel variant="compact" />
 			</div>
 
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

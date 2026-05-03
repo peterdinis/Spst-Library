@@ -10,11 +10,6 @@ export type GraphConfigResult = {
 	message: string;
 };
 
-export type AzureIntegrationStatus = {
-	microsoftGraph: GraphConfigResult;
-	anyReady: boolean;
-};
-
 function readGraphEnv() {
 	const tenantId =
 		process.env.AUTH_MICROSOFT_ENTRA_ID_TENANT_ID ??
@@ -50,12 +45,4 @@ export function getMicrosoftGraphConfigStatus(): GraphConfigResult {
 
 export function isMicrosoftGraphConfigured(): boolean {
 	return getMicrosoftGraphConfigStatus().ready;
-}
-
-export function getAzureIntegrationStatus(): AzureIntegrationStatus {
-	const microsoftGraph = getMicrosoftGraphConfigStatus();
-	return {
-		microsoftGraph,
-		anyReady: microsoftGraph.ready,
-	};
 }

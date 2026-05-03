@@ -11,7 +11,7 @@ import {
 	PanelLeftClose,
 	PanelLeft,
 	ClipboardList,
-	Cloud,
+	Plug2,
 	Bell,
 	ShieldCheck,
 	LucideIcon,
@@ -41,7 +41,7 @@ const NAV: NavItem[] = [
 	},
 	{ href: "/admin/users/regular", label: "Bežní používatelia", icon: Users },
 	{ href: "/admin/permissions", label: "Práva", icon: ShieldCheck },
-	{ href: "/admin/azure", label: "Azure", icon: Cloud },
+	{ href: "/admin/integrations", label: "Integrácie", icon: Plug2 },
 	{ href: "/admin/authors", label: "Autori", icon: Users },
 	{ href: "/admin/categories", label: "Kategórie", icon: Tags },
 ];

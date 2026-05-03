@@ -1,15 +1,15 @@
-import { router, publicProcedure } from "../server";
-import { authorsRouter } from "./authors";
-import { categoriesRouter } from "./categories";
-import { booksRouter } from "./books";
-import { notificationsRouter } from "./notifications";
-import { settingsRouter } from "./settings";
-import { ordersRouter } from "./orders";
-import { entraRouter } from "./entra";
-import { usersRouter } from "./users";
+import { publicProcedure, router } from "../server";
 import { adminWhitelistRouter } from "./adminWhitelist";
+import { authorsRouter } from "./authors";
+import { booksRouter } from "./books";
+import { categoriesRouter } from "./categories";
+import { entraRouter } from "./entra";
+import { integrationsRouter } from "./integrations";
+import { notificationsRouter } from "./notifications";
+import { ordersRouter } from "./orders";
 import { profileRouter } from "./profile";
-import { azureRouter } from "./azure";
+import { settingsRouter } from "./settings";
+import { usersRouter } from "./users";
 
 export const appRouter = router({
 	healthInfo: publicProcedure.query(() => {
@@ -25,7 +25,7 @@ export const appRouter = router({
 	users: usersRouter,
 	adminWhitelist: adminWhitelistRouter,
 	profile: profileRouter,
-	azure: azureRouter,
+	integrations: integrationsRouter,
 });
 
 export type AppRouter = typeof appRouter;
