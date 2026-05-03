@@ -1,20 +1,26 @@
 import { createSafeActionClient } from "next-safe-action";
 import { auth } from "@/auth";
 import { headers } from "next/headers";
+import { getClientIpFromForwardedHeader } from "./client-ip";
 import { defaultRateLimiter } from "./rate-limit";
 
 export const actionClient = createSafeActionClient().use(async ({ next }) => {
 	const headersList = await headers();
-	const ip = headersList.get("x-forwarded-for") || "127.0.0.1";
+	const ip = getClientIpFromForwardedHeader(headersList.get("x-forwarded-for"));
 
-	// Check session for user ID
 	const session = await auth();
-	const identifier = session?.user?.id || ip;
 
-	const { success } = defaultRateLimiter.limit(`action_${identifier}`);
-
-	if (!success) {
+	const { success: ipOk } = defaultRateLimiter.limit(`action_ip_${ip}`);
+	if (!ipOk) {
 		throw new Error("Príliš veľa požiadaviek. Skúste to znova neskôr.");
+	}
+
+	const userId = session?.user?.id;
+	if (userId) {
+		const { success: userOk } = defaultRateLimiter.limit(`action_user_${userId}`);
+		if (!userOk) {
+			throw new Error("Príliš veľa požiadaviek. Skúste to znova neskôr.");
+		}
 	}
 
 	return next({ ctx: { session, ip } });
