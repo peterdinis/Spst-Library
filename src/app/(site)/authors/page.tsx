@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { trpc } from "@/trpc/client";
 import {
 	Card,
@@ -27,31 +27,34 @@ import { motion, AnimatePresence } from "framer-motion";
 const ITEMS_PER_PAGE = 6;
 
 export default function AuthorsPage() {
-	const { data: authors, isLoading } = trpc.authors.getAll.useQuery();
 	const [searchQuery, setSearchQuery] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
 	const [currentPage, setCurrentPage] = useState(1);
 
-	const filteredAuthors = useMemo(() => {
-		if (!authors) return [];
-		return authors.filter(
-			(a) =>
-				a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-				(a.bio || "").toLowerCase().includes(searchQuery.toLowerCase()),
-		);
-	}, [searchQuery, authors]);
+	useEffect(() => {
+		const timer = setTimeout(() => setDebouncedSearch(searchQuery.trim()), 250);
+		return () => clearTimeout(timer);
+	}, [searchQuery]);
+
+	const { data, isLoading, isFetching } = trpc.authors.list.useQuery({
+		search: debouncedSearch || undefined,
+		limit: ITEMS_PER_PAGE,
+		offset: (currentPage - 1) * ITEMS_PER_PAGE,
+	});
 
 	const totalPages = Math.max(
 		1,
-		Math.ceil(filteredAuthors.length / ITEMS_PER_PAGE),
+		Math.ceil((data?.total ?? 0) / ITEMS_PER_PAGE),
 	);
-	const paginatedAuthors = filteredAuthors.slice(
-		(currentPage - 1) * ITEMS_PER_PAGE,
-		currentPage * ITEMS_PER_PAGE,
-	);
+	const paginatedAuthors = data?.items ?? [];
 
-	if (isLoading) return <Loader2 className="size-10 animate-spin" />;
+	useEffect(() => {
+		setCurrentPage(1);
+	}, [debouncedSearch]);
 
-	if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages);
+	useEffect(() => {
+		if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages);
+	}, [currentPage, totalPages]);
 
 	return (
 		<div className="space-y-12 pb-16">
@@ -82,10 +85,22 @@ export default function AuthorsPage() {
 						placeholder="Hľadať autora podľa mena..."
 						className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-lg shadow-none"
 					/>
+					{isFetching && (
+						<Loader2 className="mr-2 h-5 w-5 animate-spin text-slate-400" />
+					)}
 				</div>
 			</div>
 
-			{paginatedAuthors.length > 0 ? (
+			{isLoading ? (
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+					{Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
+						<div
+							key={index}
+							className="h-80 rounded-3xl bg-slate-200/50 dark:bg-slate-800/50 animate-pulse"
+						/>
+					))}
+				</div>
+			) : paginatedAuthors.length > 0 ? (
 				<motion.div
 					layout
 					className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"

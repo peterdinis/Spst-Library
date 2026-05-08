@@ -7,8 +7,41 @@ import { eq } from "drizzle-orm";
 import { resolveUserIdFromDb } from "@/lib/resolve-user-id";
 import bcrypt from "bcryptjs";
 
+const isProduction = process.env.NODE_ENV === "production";
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
 	secret: process.env.AUTH_SECRET,
+	// Cookie voľby: bezpečné defaulty pre lokálny vývoj aj produkciu.
+	cookies: {
+		sessionToken: {
+			name: isProduction
+				? "__Secure-authjs.session-token"
+				: "authjs.session-token",
+			options: {
+				httpOnly: true,
+				sameSite: "lax",
+				path: "/",
+				secure: isProduction,
+			},
+		},
+		callbackUrl: {
+			name: isProduction ? "__Secure-authjs.callback-url" : "authjs.callback-url",
+			options: {
+				sameSite: "lax",
+				path: "/",
+				secure: isProduction,
+			},
+		},
+		csrfToken: {
+			name: isProduction ? "__Host-authjs.csrf-token" : "authjs.csrf-token",
+			options: {
+				httpOnly: true,
+				sameSite: "lax",
+				path: "/",
+				secure: isProduction,
+			},
+		},
+	},
 	providers: [
 		MicrosoftEntraID({
 			clientId: process.env.AUTH_MICROSOFT_ENTRA_ID_CLIENT_ID,
