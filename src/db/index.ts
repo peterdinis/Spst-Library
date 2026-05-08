@@ -3,7 +3,7 @@ import { Pool } from "pg";
 import * as schema from "./schema";
 
 function getConnectionString(): string {
-	const url = process.env.DATABASE_URL?.trim();
+	const url = process.env.DATABASE_URL;
 	if (!url) {
 		throw new Error(
 			"DATABASE_URL is not set. Add it to your environment (PostgreSQL connection string).",
