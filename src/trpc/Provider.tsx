@@ -41,8 +41,10 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 				defaultOptions: {
 					queries: {
 						refetchOnWindowFocus: false,
-						staleTime: 60 * 1000,
-						gcTime: 5 * 60 * 1000,
+						refetchOnMount: false,
+						refetchOnReconnect: false,
+						staleTime: 5 * 60 * 1000, // Dáta sú "čerstvé" 5 minút (žiadne refetche na pozadí)
+						gcTime: 60 * 60 * 1000, // Cache sa drží v pamäti 1 hodinu aj keď sa nepoužíva
 					},
 				},
 			}),
