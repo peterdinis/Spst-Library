@@ -9,17 +9,16 @@ import {
 	Library,
 	Users,
 } from "lucide-react";
-import { getBooks, getAuthors, getCategories } from "@/lib/data";
+import { getBooks, getFavoriteAuthors, getPopularCategories } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Footer } from "@/components/layout/Footer";
 
 export default async function Home() {
 	const { items: books } = await getBooks({ limit: 4 });
-	const authors = await getAuthors();
-	const categories = await getCategories();
+	const topAuthors = await getFavoriteAuthors(3);
+	const topCategories = await getPopularCategories(4);
 
 	const topBooks = books;
-	const topAuthors = authors.slice(0, 3);
-	const topCategories = categories.slice(0, 4);
 
 	return (
 		<div className="flex flex-col min-h-screen">
@@ -203,6 +202,7 @@ export default async function Home() {
 					</div>
 				</section>
 			</div>
+			<Footer />
 		</div>
 	);
 }

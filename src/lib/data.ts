@@ -1,8 +1,8 @@
 import { unstable_cache } from "next/cache";
 import { CACHE_TAGS } from "@/trpc/cache-config";
 import { db } from "@/db";
-import { authors, books, borrowedBooks } from "@/db/schema";
-import { eq, and, like, or, count, inArray, sql } from "drizzle-orm";
+import { authors, books, borrowedBooks, categories } from "@/db/schema";
+import { eq, and, like, or, count, inArray, sql, desc } from "drizzle-orm";
 
 export interface BookFilters {
 	search?: string;
@@ -96,6 +96,47 @@ export const getCategories = unstable_cache(
 		tags: [CACHE_TAGS.categories],
 		revalidate: 3600,
 	},
+);
+
+// HMR refresh trigger
+export const getPopularCategories = unstable_cache(
+	async (limitCount: number = 4) => {
+		const result = await db
+			.select({
+				id: categories.id,
+				name: categories.name,
+				bookCount: count(books.id),
+			})
+			.from(categories)
+			.leftJoin(books, eq(categories.id, books.categoryId))
+			.groupBy(categories.id)
+			.orderBy(desc(count(books.id)))
+			.limit(limitCount);
+		return result;
+	},
+	["popular-categories"],
+	{ tags: [CACHE_TAGS.categories, CACHE_TAGS.books], revalidate: 3600 }
+);
+
+export const getFavoriteAuthors = unstable_cache(
+	async (limitCount: number = 3) => {
+		const result = await db
+			.select({
+				id: authors.id,
+				name: authors.name,
+				bio: authors.bio,
+				imageUrl: authors.imageUrl,
+				bookCount: count(books.id),
+			})
+			.from(authors)
+			.leftJoin(books, eq(authors.id, books.authorId))
+			.groupBy(authors.id)
+			.orderBy(desc(count(books.id)))
+			.limit(limitCount);
+		return result;
+	},
+	["favorite-authors"],
+	{ tags: [CACHE_TAGS.authors, CACHE_TAGS.books], revalidate: 3600 }
 );
 
 export const getBorrowedByUserId = unstable_cache(
